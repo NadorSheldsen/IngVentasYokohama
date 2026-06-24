@@ -95,6 +95,45 @@ actual class FilePickerUtils {
         }
     }
     
+    actual suspend fun pickImageFromCamera(): FileData? {
+        return suspendCancellableCoroutine { continuation ->
+            val launcher = imagePickerLauncher
+            val context = appContext
+
+            if (launcher == null || context == null) {
+                continuation.resume(null)
+                return@suspendCancellableCoroutine
+            }
+
+            currentContinuation = { fileData ->
+                continuation.resume(fileData)
+            }
+
+            val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            try {
+                val cacheDir = context.cacheDir
+                val imageFile = File.createTempFile("camera_temp_", ".jpg", cacheDir)
+                val authority = "com.megatransportes.yokoh.fileprovider"
+                val uri = FileProvider.getUriForFile(context, authority, imageFile)
+                lastCameraUri = uri
+
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+                cameraIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+                val resInfoList = context.packageManager.queryIntentActivities(cameraIntent, 0)
+                for (resolveInfo in resInfoList) {
+                    val packageName = resolveInfo.activityInfo.packageName
+                    context.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                launcher.launch(cameraIntent)
+            } catch (e: Exception) {
+                lastCameraUri = null
+                continuation.resume(null)
+            }
+        }
+    }
+
     actual suspend fun pickFile(vararg extensions: String): FileData? {
         return suspendCancellableCoroutine { continuation ->
             val launcher = filePickerLauncher

@@ -196,42 +196,17 @@ private fun PhotoSlotCard(
 ) {
     val coroutineScope = rememberCoroutineScope()
     var showFullScreenImage by remember { mutableStateOf(false) }
+    var showSourcePicker by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
             .fillMaxSize()
             .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
             .clickable {
-                // Si ya hay una foto, mostrarla en pantalla completa
                 if (slot.base64Data != null && slot.base64Data.isNotBlank()) {
                     showFullScreenImage = true
                 } else {
-                    // Si no hay foto, abrir el selector de archivos
-                    coroutineScope.launch {
-                        onLoadingChanged(true)
-                        onError("")
-                        try {
-                            val fileData = filePickerUtils.pickImageFile()
-                            if (fileData != null) {
-                                if (fileData.size > 5L * 1024L * 1024L) {
-                                    onError("El archivo es demasiado grande (máximo 5MB)")
-                                } else {
-                                    val base64Data = FileConverter.fileDataToBase64(fileData)
-                                    onPhotoSelected(
-                                        slot.copy(
-                                            base64Data = base64Data,
-                                            fileName = fileData.name,
-                                            fileSize = fileData.size
-                                        )
-                                    )
-                                }
-                            }
-                        } catch (e: Exception) {
-                            onError(ErrorUtils.userMessage(e, "Error al seleccionar imagen"))
-                        } finally {
-                            onLoadingChanged(false)
-                        }
-                    }
+                    showSourcePicker = true
                 }
             },
         shape = RoundedCornerShape(12.dp)
@@ -307,6 +282,79 @@ private fun PhotoSlotCard(
         }
     }
     
+    // Dialog para elegir cámara o galería
+    if (showSourcePicker) {
+        AlertDialog(
+            onDismissRequest = { showSourcePicker = false },
+            title = { Text("Agregar foto") },
+            text = { Text("¿Cómo deseas agregar la foto?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showSourcePicker = false
+                    coroutineScope.launch {
+                        onLoadingChanged(true)
+                        onError("")
+                        try {
+                            val fileData = filePickerUtils.pickImageFromCamera()
+                            if (fileData != null) {
+                                if (fileData.size > 5L * 1024L * 1024L) {
+                                    onError("El archivo es demasiado grande (máximo 5MB)")
+                                } else {
+                                    val base64Data = FileConverter.fileDataToBase64(fileData)
+                                    onPhotoSelected(
+                                        slot.copy(
+                                            base64Data = base64Data,
+                                            fileName = fileData.name,
+                                            fileSize = fileData.size
+                                        )
+                                    )
+                                }
+                            }
+                        } catch (e: Exception) {
+                            onError(ErrorUtils.userMessage(e, "Error al tomar foto"))
+                        } finally {
+                            onLoadingChanged(false)
+                        }
+                    }
+                }) {
+                    Text("Cámara")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showSourcePicker = false
+                    coroutineScope.launch {
+                        onLoadingChanged(true)
+                        onError("")
+                        try {
+                            val fileData = filePickerUtils.pickImageFile()
+                            if (fileData != null) {
+                                if (fileData.size > 5L * 1024L * 1024L) {
+                                    onError("El archivo es demasiado grande (máximo 5MB)")
+                                } else {
+                                    val base64Data = FileConverter.fileDataToBase64(fileData)
+                                    onPhotoSelected(
+                                        slot.copy(
+                                            base64Data = base64Data,
+                                            fileName = fileData.name,
+                                            fileSize = fileData.size
+                                        )
+                                    )
+                                }
+                            }
+                        } catch (e: Exception) {
+                            onError(ErrorUtils.userMessage(e, "Error al seleccionar imagen"))
+                        } finally {
+                            onLoadingChanged(false)
+                        }
+                    }
+                }) {
+                    Text("Galería")
+                }
+            }
+        )
+    }
+
     // Dialog de pantalla completa para ver la imagen
     if (showFullScreenImage && slot.base64Data != null) {
         Dialog(

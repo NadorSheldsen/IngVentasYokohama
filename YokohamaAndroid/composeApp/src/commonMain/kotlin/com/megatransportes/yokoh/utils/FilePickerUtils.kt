@@ -36,6 +36,7 @@ data class FileData(
  */
 expect class FilePickerUtils {
     suspend fun pickImageFile(): FileData?
+    suspend fun pickImageFromCamera(): FileData?
     suspend fun pickFile(vararg extensions: String): FileData?
 }
 

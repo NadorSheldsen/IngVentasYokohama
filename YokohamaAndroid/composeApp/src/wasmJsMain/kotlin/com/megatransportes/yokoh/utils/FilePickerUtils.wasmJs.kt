@@ -9,6 +9,10 @@ actual class FilePickerUtils {
         return null
     }
     
+    actual suspend fun pickImageFromCamera(): FileData? {
+        return null
+    }
+
     actual suspend fun pickFile(vararg extensions: String): FileData? {
         // Implementación WASM simplificada - devuelve null por ahora
         return null

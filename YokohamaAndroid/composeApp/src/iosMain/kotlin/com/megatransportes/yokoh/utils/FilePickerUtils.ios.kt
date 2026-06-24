@@ -47,29 +47,27 @@ actual class FilePickerUtils : NSObject(),
 
     private var imageContinuation: (kotlin.coroutines.Continuation<FileData?>)? = null
     private var fileContinuation: (kotlin.coroutines.Continuation<FileData?>)? = null
-    private var shouldShowGalleryAfterCancellingCamera = false
 
     actual suspend fun pickImageFile(): FileData? = suspendCancellableCoroutine { cont ->
         dispatch_async(dispatch_get_main_queue()) {
             imageContinuation = cont
-            val hasCamera = UIImagePickerController.isSourceTypeAvailable(
-                UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
-            )
-            if (hasCamera) {
-                shouldShowGalleryAfterCancellingCamera = true
-                val picker = UIImagePickerController().apply {
-                    sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
-                    cameraCaptureMode = UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto
-                    delegate = this@FilePickerUtils
-                }
-                topViewController()?.presentViewController(picker, true, null)
-            } else {
-                val picker = UIImagePickerController().apply {
-                    sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
-                    delegate = this@FilePickerUtils
-                }
-                topViewController()?.presentViewController(picker, true, null)
+            val picker = UIImagePickerController().apply {
+                sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
+                delegate = this@FilePickerUtils
             }
+            topViewController()?.presentViewController(picker, true, null)
+        }
+    }
+
+    actual suspend fun pickImageFromCamera(): FileData? = suspendCancellableCoroutine { cont ->
+        dispatch_async(dispatch_get_main_queue()) {
+            imageContinuation = cont
+            val picker = UIImagePickerController().apply {
+                sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
+                cameraCaptureMode = UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto
+                delegate = this@FilePickerUtils
+            }
+            topViewController()?.presentViewController(picker, true, null)
         }
     }
 
@@ -93,7 +91,6 @@ actual class FilePickerUtils : NSObject(),
         picker: UIImagePickerController,
         didFinishPickingMediaWithInfo: NSDictionary?
     ) {
-        shouldShowGalleryAfterCancellingCamera = false
         val image = didFinishPickingMediaWithInfo?.objectForKey(UIImagePickerControllerOriginalImage) as? UIImage
 
         val data = image?.let { UIImageJPEGRepresentation(it, 0.75) }
@@ -118,20 +115,9 @@ actual class FilePickerUtils : NSObject(),
 
     @ObjCAction
     override fun imagePickerControllerDidCancel(picker: UIImagePickerController) {
+        imageContinuation?.resume(null)
+        imageContinuation = null
         picker.dismissViewControllerAnimated(true, null)
-        if (shouldShowGalleryAfterCancellingCamera) {
-            shouldShowGalleryAfterCancellingCamera = false
-            dispatch_async(dispatch_get_main_queue()) {
-                val picker = UIImagePickerController().apply {
-                    sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
-                    delegate = this@FilePickerUtils
-                }
-                topViewController()?.presentViewController(picker, true, null)
-            }
-        } else {
-            imageContinuation?.resume(null)
-            imageContinuation = null
-        }
     }
 
     @ObjCAction
