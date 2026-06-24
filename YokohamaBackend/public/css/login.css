@@ -1,0 +1,360 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-light: #f5f5f5;
+  --bg-dark: #1a1a1a;
+  --text-light: #333333;
+  --text-dark: #ffffff;
+  --card-light: #ffffff;
+  --card-dark: #2d2d2d;
+  --input-bg-light: #f9f9f9;
+  --input-bg-dark: #3a3a3a;
+  --input-border-light: #e0e0e0;
+  --input-border-dark: #4a4a4a;
+  --red-yokohama: #d32f2f;
+  --red-glow: rgba(211, 47, 47, 0.3);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: var(--bg-light);
+  color: var(--text-light);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-theme {
+  background: var(--bg-dark);
+  color: var(--text-dark);
+}
+
+/* Fondo con gradiente rojo difuminado animado */
+.red-gradient {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(to top, var(--red-yokohama), transparent);
+  opacity: 0.4;
+  z-index: 1;
+  animation: slideUp 1.5s ease-out forwards;
+  filter: blur(60px);
+}
+
+body.dark-theme .red-gradient {
+  opacity: 0.6;
+  filter: blur(80px);
+}
+
+@keyframes slideUp {
+  0% {
+    height: 0%;
+    opacity: 0;
+  }
+  100% {
+    height: 50%;
+    opacity: 0.4;
+  }
+}
+
+body.dark-theme .red-gradient {
+  animation: slideUpDark 1.5s ease-out forwards;
+}
+
+@keyframes slideUpDark {
+  0% {
+    height: 0%;
+    opacity: 0;
+  }
+  100% {
+    height: 50%;
+    opacity: 0.6;
+  }
+}
+
+/* Contenedor principal */
+.login-container {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* Logo */
+.logo-container {
+  margin-bottom: 40px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.logo-container img {
+  max-width: 280px;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+}
+
+body.dark-theme .logo-container img {
+  filter: drop-shadow(0 4px 16px rgba(255, 255, 255, 0.1));
+}
+
+/* Tarjeta de login */
+.login-card {
+  background: var(--card-light);
+  border-radius: 20px;
+  padding: 50px 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  animation: slideInUp 0.8s ease-out 0.2s both;
+}
+
+body.dark-theme .login-card {
+  background: var(--card-dark);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-card h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+  text-align: center;
+  color: var(--text-light);
+}
+
+body.dark-theme .login-card h1 {
+  color: var(--text-dark);
+}
+
+.login-card p {
+  text-align: center;
+  color: #777;
+  margin-bottom: 35px;
+  font-size: 14px;
+}
+
+body.dark-theme .login-card p {
+  color: #aaa;
+}
+
+/* Form */
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-light);
+}
+
+body.dark-theme .form-group label {
+  color: var(--text-dark);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--input-border-light);
+  border-radius: 10px;
+  font-size: 15px;
+  background: var(--input-bg-light);
+  color: var(--text-light);
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+body.dark-theme .form-group input {
+  background: var(--input-bg-dark);
+  border-color: var(--input-border-dark);
+  color: var(--text-dark);
+}
+
+.form-group input:focus {
+  border-color: var(--red-yokohama);
+  box-shadow: 0 0 0 3px var(--red-glow);
+}
+
+.form-group input::placeholder {
+  color: #999;
+}
+
+body.dark-theme .form-group input::placeholder {
+  color: #666;
+}
+
+.form-group input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Botón de login */
+.login-button {
+  width: 100%;
+  padding: 15px;
+  background: var(--red-yokohama);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.login-button:hover:not(:disabled) {
+  background: #b71c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(211, 47, 47, 0.4);
+}
+
+.login-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.login-button.loading {
+  position: relative;
+  color: transparent;
+}
+
+.login-button.loading::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  margin-left: -10px;
+  margin-top: -10px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spinner 0.6s linear infinite;
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mensaje de error */
+.error-message {
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #ffebee;
+  color: #c62828;
+  font-size: 14px;
+  text-align: center;
+  display: none;
+}
+
+body.dark-theme .error-message {
+  background: #4a2020;
+  color: #ff8a80;
+}
+
+.error-message.show {
+  display: block;
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+/* Toggle de tema */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  background: var(--card-light);
+  border: 2px solid var(--input-border-light);
+  border-radius: 50px;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+body.dark-theme .theme-toggle {
+  background: var(--card-dark);
+  border-color: var(--input-border-dark);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.theme-toggle:hover {
+  transform: scale(1.05);
+}
+
+.theme-icon {
+  font-size: 20px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 40px 30px;
+  }
+
+  .logo-container img {
+    max-width: 220px;
+  }
+
+  .login-card h1 {
+    font-size: 24px;
+  }
+}

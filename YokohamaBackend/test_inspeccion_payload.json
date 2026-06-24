@@ -1,0 +1,12 @@
+{
+  "prueba": {"idPruebaInspeccion":"123","PruebaInspeccionTitulo":"Prueba X"},
+  "flota": {"idFlotas":1,"FlotasNombre":"Demo"},
+  "vehiculos": [{"idVehiculoInspeccion":1,"VehiculoInspeccionNo":"ABC-123"}],
+  "llantasPorVehiculo": {"1":[
+    {"Llantas_idLlantas":1,"LlantasInspeccionPresion":70,"LlantasInspeccionVigia":0,"LlantasInspeccionPiso":"Original","LlantasInspeccionCondPel":0,"LlantasInspeccionObservacion":"","LlantasInspeccionFoto":null,"LlantasMarca":"Yokohama","LlantasMedida":"195/65R15"},
+    {"Llantas_idLlantas":2,"LlantasInspeccionPresion":60,"LlantasInspeccionVigia":0,"LlantasInspeccionPiso":"Vitalizado","LlantasInspeccionCondPel":1,"LlantasInspeccionObservacion":"Corte","LlantasInspeccionFoto":null,"LlantasMarca":"Bridgestone","LlantasMedida":"205/55R16"},
+    {"Llantas_idLlantas":3,"LlantasInspeccionPresion":null,"LlantasInspeccionVigia":1,"LlantasInspeccionPiso":"Original","LlantasInspeccionCondPel":0,"LlantasInspeccionObservacion":"","LlantasInspeccionFoto":null,"LlantasMarca":"Pirelli","LlantasMedida":"195/65R15"}
+  ]},
+  "llantaCatalog": [{"idLlantas":1,"LlantasMarca":"Yokohama","LlantasMedida":"195/65R15"},{"idLlantas":2,"LlantasMarca":"Bridgestone","LlantasMedida":"205/55R16"},{"idLlantas":3,"LlantasMarca":"Pirelli","LlantasMedida":"195/65R15"}],
+  "parametros": [{"Llantas_idLlantas":1,"ParametrosPMin":65,"ParametrosPSug":75},{"Llantas_idLlantas":2,"ParametrosPMin":58,"ParametrosPSug":68},{"Llantas_idLlantas":3,"ParametrosPMin":60,"ParametrosPSug":70}]
+}

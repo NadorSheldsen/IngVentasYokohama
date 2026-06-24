@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Administración Rendimientos - Yokohama</title>
+    <script>
+      (function () {
+        try {
+          var savedTheme = localStorage.getItem('theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+          if (isDark) {
+            document.documentElement.classList.add('dark-theme');
+          }
+          window.__THEME_IS_DARK__ = isDark;
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="/css/index.css" />
+    <link rel="stylesheet" href="/css/rendimientos.css" />
+    <link rel="icon" type="image/png" href="/img/yokohamalogoT.png" />
+  </head>
+  <body>
+    <header class="top-header">
+      <a href="index.html" aria-label="Ir a inicio">
+        <img src="/img/yokohamalogo.png" alt="Yokohama Logo" class="brand-logo" id="brandLogo" />
+      </a>
+      <script>
+        (function() {
+          var logo = document.getElementById('brandLogo');
+          if (logo && window.__THEME_IS_DARK__) {
+            logo.src = '/img/yokohamalogoblanco.png';
+          }
+        })();
+      </script>
+      <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Cambiar tema">
+        <span id="themeIcon">🌙</span>
+      </button>
+    </header>
+
+    <section class="insights-strip" aria-label="Resumen de rendimientos">
+      <div class="insights-strip-line" aria-hidden="true"></div>
+      <button type="button" class="insights-toggle" id="insightsToggle" aria-expanded="true" aria-controls="insightsPanel" aria-label="Mostrar u ocultar resumen por flota y marca">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12A9 9 0 1 1 12 3"></path>
+          <path d="M12 3v9h9"></path>
+        </svg>
+      </button>
+      <div class="insights-panel is-open" id="insightsPanel" aria-hidden="false">
+        <div class="insights-grid">
+          <article class="insight-card">
+            <h3>Empresas</h3>
+            <div class="insight-chart-wrap">
+              <canvas id="chartFlotasPie"></canvas>
+            </div>
+          </article>
+          <article class="insight-card">
+            <h3>Marca</h3>
+            <div class="insight-chart-wrap">
+              <canvas id="chartMarcasPie"></canvas>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <div class="red-line">
+      <main class="menu-row">
+        <button type="button" class="menu-btn" id="btnGoInicio">Administración Actividades</button>
+        <button type="button" class="menu-btn" id="btnAdminIncentivos">Administración incentivos</button>
+        <button type="button" class="menu-btn menu-btn-active" id="btnAdminRendimientos">Administración Rendimientos</button>
+        <div class="user-menu" id="userMenu">
+          <div class="user-pill" id="userMenuToggle" aria-label="Usuario actual" role="button" tabindex="0">
+            <span class="user-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+            </span>
+            <span id="userName">Usuario</span>
+          </div>
+          <div class="user-dropdown" id="userDropdown" aria-hidden="true">
+            <button type="button" class="logout-btn" id="logoutBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+              </svg>
+              Log out
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <section class="rendimientos-section" id="rendimientosSection">
+      <div class="rendimientos-header">
+        <div class="section-title-row">
+          <h2>Pruebas de rendimientos</h2>
+          <nav class="quick-access-icons" aria-label="Accesos rápidos por flota">
+            <a href="desecho.html" class="quick-icon-btn" title="Pruebas de desecho" aria-label="Pruebas de desecho">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="8"></circle>
+                <circle cx="12" cy="12" r="5"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+                <path d="M7 17.5l10 0"></path>
+                <path d="M7 15.2l10 0"></path>
+                <path d="M7 19.8l10 0"></path>
+              </svg>
+            </a>
+            <a href="inspeccion.html" class="quick-icon-btn" title="Inspección vehicular" aria-label="Inspección vehicular">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 20l3.5-3.5"></path>
+                <circle cx="10.5" cy="10.5" r="6.5"></circle>
+                <path d="M8.5 10.5h4"></path>
+                <path d="M10.5 8.5v4"></path>
+                <path d="M15 13h4l1.5 1.5V18h-1"></path>
+                <circle cx="16.5" cy="18" r="1"></circle>
+                <circle cx="19.5" cy="18" r="1"></circle>
+              </svg>
+            </a>
+            <a href="semaforo.html" class="quick-icon-btn" title="Pruebas de semáforo" aria-label="Pruebas de semáforo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="7" y="3" width="10" height="18" rx="2"></rect>
+                <circle cx="12" cy="8" r="1.7"></circle>
+                <circle cx="12" cy="12" r="1.7"></circle>
+                <circle cx="12" cy="16" r="1.7"></circle>
+              </svg>
+            </a>
+            <a href="rendimientos.html" class="quick-icon-btn is-active" title="Pruebas de rendimiento" aria-label="Pruebas de rendimiento">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 16a8 8 0 1 1 16 0"></path>
+                <path d="M12 12l4-3"></path>
+                <path d="M6.5 16h11"></path>
+                <circle cx="12" cy="16" r="1"></circle>
+              </svg>
+            </a>
+          </nav>
+        </div>
+        <div class="filtros-container">
+          <div class="filtro-group">
+            <label for="filtroFlota">Flota:</label>
+            <input type="text" id="filtroFlota" class="filtro-input" list="listaFlotas" placeholder="Escribe flota y Enter" autocomplete="off" title="Selecciona una o más flotas y quítalas con la x">
+            <datalist id="listaFlotas"></datalist>
+          </div>
+          <div class="filtro-group">
+            <label for="filtroGiro">Giro:</label>
+            <input type="text" id="filtroGiro" class="filtro-input" list="listaGiros" placeholder="Todos" autocomplete="off">
+            <datalist id="listaGiros"></datalist>
+          </div>
+          <div class="filtro-group">
+            <label for="filtroResponsable">Responsable:</label>
+            <input type="text" id="filtroResponsable" class="filtro-input" list="listaResponsables" placeholder="Todos" autocomplete="off">
+            <datalist id="listaResponsables"></datalist>
+          </div>
+          <button type="button" id="btnLimpiarFiltros" class="btn-limpiar-filtros" title="Limpiar filtros">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+          <div class="flota-chips" id="flotaChips" aria-live="polite"></div>
+        </div>
+      </div>
+      <div class="rendimientos-table-wrap">
+        <div id="rendimientosList" class="rendimientos-list">
+          <p class="loading-text">Cargando rendimientos...</p>
+        </div>
+      </div>
+      
+      <button type="button" id="btnCompararLlantas" class="btn-comparar-flotante" style="display: none;" title="Comparar llantas seleccionadas">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/>
+        </svg>
+        <span>Comparar (<span id="countSelected">0</span>)</span>
+      </button>
+    </section>
+
+    <!-- Modal de envío de correo para gráfica de comparación -->
+    <div id="modalEnviarEmail" class="modal-send-email" style="display: none;">
+      <div class="modal-send-email-content">
+        <div class="modal-send-email-header">
+          <h4>Enviar Gráfica por Correo</h4>
+          <button type="button" class="modal-close-btn-email" id="btnCerrarModalEmail" aria-label="Cerrar">×</button>
+        </div>
+        <div class="modal-send-email-body">
+          <label for="emailsInput">Correos (separados por comas):</label>
+          <input type="text" id="emailsInput" class="email-input" placeholder="ejemplo@correo.com, otro@correo.com" />
+          <div class="modal-send-email-actions">
+            <button type="button" id="btnConfirmarEnvio" class="btn-confirm-email">Enviar</button>
+            <button type="button" id="btnCancelarEnvio" class="btn-cancel-email">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de comparación -->
+    <div id="modalComparacion" class="modal-comparacion" style="display: none;">
+      <div class="modal-comparacion-content">
+        <div class="modal-comparacion-header">
+          <h3>Comparación de Llantas</h3>
+          <div class="modal-comparacion-actions">
+            <button type="button" class="modal-download-btn modal-icon-btn modal-icon-btn-whatsapp" id="btnEnviarComparacionWhatsapp" title="Enviar gráfica por WhatsApp" aria-label="Enviar gráfica por WhatsApp">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19.11 4.89A9.87 9.87 0 0 0 12.02 2C6.5 2 2 6.49 2 12c0 1.77.47 3.5 1.35 5.02L2 22l5.1-1.33A10 10 0 0 0 12.02 22C17.53 22 22 17.5 22 12a9.95 9.95 0 0 0-2.89-7.11zM12.02 20.2a8.2 8.2 0 0 1-4.18-1.15l-.3-.18-3.03.79.81-2.95-.2-.31A8.1 8.1 0 0 1 3.8 12c0-4.53 3.69-8.22 8.22-8.22 2.2 0 4.26.86 5.82 2.4A8.18 8.18 0 0 1 20.24 12a8.23 8.23 0 0 1-8.22 8.2zm4.51-6.13c-.25-.12-1.47-.73-1.7-.81-.23-.09-.4-.12-.56.12-.17.24-.65.8-.8.96-.15.17-.3.18-.55.06-.25-.13-1.06-.39-2.01-1.26-.74-.66-1.25-1.48-1.39-1.73-.14-.24-.02-.37.1-.49.11-.11.25-.29.38-.43.12-.15.16-.25.24-.42.08-.17.04-.31-.02-.43-.06-.12-.56-1.35-.77-1.85-.2-.48-.4-.41-.56-.42h-.48c-.17 0-.43.06-.66.31s-.87.86-.87 2.09.89 2.41 1.01 2.58c.12.17 1.75 2.67 4.24 3.75.59.26 1.05.41 1.41.53.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.15-.48-.27z"></path>
+              </svg>
+            </button>
+            <button type="button" class="modal-download-btn modal-icon-btn" id="btnEnviarComparacionEmail" title="Enviar gráfica por correo" aria-label="Enviar gráfica por correo">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                <path d="M3 7l9 6 9-6"></path>
+              </svg>
+            </button>
+            <button type="button" class="modal-download-btn" id="btnDescargarComparacionPdf" title="Descargar gráfica en PDF">
+              Descargar PDF
+            </button>
+            <button type="button" class="modal-close-btn" id="btnCerrarModal" aria-label="Cerrar">×</button>
+          </div>
+        </div>
+        <div class="modal-comparacion-body">
+          <canvas id="chartComparacion"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="/js/rendimientos.js"></script>
+  </body>
+</html>

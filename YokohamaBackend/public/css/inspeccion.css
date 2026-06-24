@@ -1,0 +1,175 @@
+@import url('/css/desecho.css');
+
+.tipos-vehiculo-list {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	max-height: 68px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding-right: 2px;
+}
+
+.tipo-vehiculo-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 11px;
+	line-height: 1;
+	padding: 3px 6px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.35);
+}
+
+.tipo-vehiculo-icon {
+	width: 18px;
+	height: 18px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.tipo-vehiculo-icon svg {
+	width: 18px;
+	height: 18px;
+	fill: currentColor;
+}
+
+.tipo-vehiculo-count {
+	font-weight: 800;
+	color: var(--text);
+}
+
+.tipos-vehiculo-card {
+	position: relative;
+	cursor: help;
+}
+
+.tipos-vehiculo-legend-popup {
+	position: absolute;
+	left: 0;
+	bottom: calc(100% + 8px);
+	transform: translateY(2px);
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 8px 10px;
+	border-radius: 8px;
+	background: rgba(17, 24, 39, 0.95);
+	color: #ffffff;
+	font-size: 11px;
+	font-weight: 600;
+	white-space: nowrap;
+	min-width: 180px;
+	max-height: 180px;
+	overflow-y: auto;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.15s ease, transform 0.15s ease;
+	z-index: 50;
+}
+
+.tipos-vehiculo-legend-popup::after {
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 18px;
+	border-width: 5px;
+	border-style: solid;
+	border-color: rgba(17, 24, 39, 0.95) transparent transparent transparent;
+}
+
+.tipos-vehiculo-card:hover .tipos-vehiculo-legend-popup {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.tipos-vehiculo-legend-title {
+	font-size: 10px;
+	font-weight: 800;
+	text-transform: uppercase;
+	opacity: 0.95;
+}
+
+.tipos-vehiculo-legend-item {
+	display: grid;
+	grid-template-columns: 16px 1fr;
+	align-items: center;
+	gap: 6px;
+}
+
+.tipos-vehiculo-legend-icon {
+	width: 16px;
+	height: 16px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.tipos-vehiculo-legend-icon svg {
+	width: 16px;
+	height: 16px;
+	fill: currentColor;
+}
+
+.tipos-vehiculo-legend-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.tipos-vehiculo-legend-empty {
+	opacity: 0.75;
+}
+
+html.dark-theme .tipos-vehiculo-legend-popup {
+	background: rgba(249, 250, 251, 0.96);
+	color: #111827;
+}
+
+html.dark-theme .tipos-vehiculo-legend-popup::after {
+	border-color: rgba(249, 250, 251, 0.96) transparent transparent transparent;
+}
+
+.tipo-vehiculo-empty {
+	font-size: 10px;
+	color: var(--text);
+	opacity: 0.75;
+}
+
+.presion-valor {
+	font-weight: 800;
+}
+
+.presion-verde {
+	color: #15803d;
+}
+
+.presion-amarillo {
+	color: #a16207;
+}
+
+.presion-rojo {
+	color: #b91c1c;
+}
+
+.presion-vigia {
+	color: #7e22ce;
+}
+
+html.dark-theme .presion-verde {
+	color: #4ade80;
+}
+
+html.dark-theme .presion-amarillo {
+	color: #facc15;
+}
+
+html.dark-theme .presion-rojo {
+	color: #f87171;
+}
+
+html.dark-theme .presion-vigia {
+	color: #c084fc;
+}

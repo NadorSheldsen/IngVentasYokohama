@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Inicio - Yokohama</title>
+    <script>
+      (function () {
+        try {
+          var savedTheme = localStorage.getItem('theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+          if (isDark) {
+            document.documentElement.classList.add('dark-theme');
+          }
+          // Store theme state for logo selection
+          window.__THEME_IS_DARK__ = isDark;
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="/css/index.css" />
+    <link rel="icon" type="image/png" href="/img/yokohamalogoT.png" />
+  </head>
+  <body>
+    <header class="top-header">
+      <a href="index.html" aria-label="Ir a inicio">
+        <img src="/img/yokohamalogo.png" alt="Yokohama Logo" class="brand-logo" id="brandLogo" />
+      </a>
+      <script>
+        // Apply correct logo immediately to prevent flicker
+        (function() {
+          var logo = document.getElementById('brandLogo');
+          if (logo && window.__THEME_IS_DARK__) {
+            logo.src = '/img/yokohamalogoblanco.png';
+          }
+        })();
+      </script>
+      <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Cambiar tema">
+        <span id="themeIcon">🌙</span>
+      </button>
+    </header>
+
+    <div class="red-line">
+      <main class="menu-row">
+        <button type="button" class="menu-btn">Administración Actividades</button>
+        <button type="button" class="menu-btn" id="btnAdminIncentivos">Administración incentivos</button>
+        <button type="button" class="menu-btn" id="btnAdminRendimientos">Administración Rendimientos</button>
+        <div class="user-menu" id="userMenu">
+          <div class="user-pill" id="userMenuToggle" aria-label="Usuario actual" role="button" tabindex="0">
+            <span class="user-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+            </span>
+            <span id="userName">Usuario</span>
+          </div>
+          <div class="user-dropdown" id="userDropdown" aria-hidden="true">
+            <button type="button" class="logout-btn" id="logoutBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+              </svg>
+              Log out
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <section class="dashboard-section">
+      <div class="dashboard-grid">
+        <div class="fleet-panel">
+          <h2 class="panel-title">Flotas</h2>
+          <div class="search-container">
+            <input 
+              type="text" 
+              id="searchFleet" 
+              class="search-input" 
+              placeholder="🔍 Buscar por flota..."
+              aria-label="Buscar flota"
+            />
+          </div>
+          <div id="fleetList" class="fleet-list">
+            <p class="loading-text">Cargando flotas...</p>
+          </div>
+        </div>
+
+        <div class="charts-panel">
+          <div class="chart-container">
+            <h3 class="chart-title">Clasificación de Flotas</h3>
+            <canvas id="chartClasificacion"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3 class="chart-title">Distribución por Zona</h3>
+            <canvas id="chartZona"></canvas>
+          </div>
+          <div class="chart-container">
+            <h3 class="chart-title">Pruebas por Tipo</h3>
+            <canvas id="chartPruebas"></canvas>
+          </div>
+
+          <div class="fleet-indicators is-muted" id="fleetIndicators" aria-live="polite">
+            <button class="fleet-indicator fleet-indicator-btn" data-metric="desecho" id="btnIndicadorDesecho" type="button" title="Ver pruebas de desecho de esta flota">
+              <div class="indicator-count" data-count> </div>
+              <div class="indicator-label">P desecho</div>
+              <div class="indicator-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 20l3.5-3.5"></path>
+                  <circle cx="10.5" cy="10.5" r="6.5"></circle>
+                  <path d="M8.5 10.5h4"></path>
+                  <path d="M10.5 8.5v4"></path>
+                  <path d="M15 13h4l1.5 1.5V18h-1"></path>
+                  <circle cx="16.5" cy="18" r="1"></circle>
+                  <circle cx="19.5" cy="18" r="1"></circle>
+                </svg>
+              </div>
+            </button>
+            <button class="fleet-indicator fleet-indicator-btn" data-metric="inspeccion" id="btnIndicadorInspeccion" type="button" title="Ver inspecciones vehiculares de esta flota">
+              <div class="indicator-count" data-count> </div>
+              <div class="indicator-label">inspecciones</div>
+              <div class="indicator-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 20l3.5-3.5"></path>
+                  <circle cx="10.5" cy="10.5" r="6.5"></circle>
+                  <path d="M8.5 10.5h4"></path>
+                  <path d="M10.5 8.5v4"></path>
+                  <path d="M15 13h4l1.5 1.5V18h-1"></path>
+                  <circle cx="16.5" cy="18" r="1"></circle>
+                  <circle cx="19.5" cy="18" r="1"></circle>
+                </svg>
+              </div>
+            </button>
+
+            <button class="fleet-indicator fleet-indicator-btn" data-metric="semaforo" id="btnIndicadorSemaforo" type="button" title="Ver semáforos de esta flota">
+              <div class="indicator-count" data-count> </div>
+              <div class="indicator-label">semáforos</div>
+              <div class="indicator-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="7" y="3" width="10" height="18" rx="2"></rect>
+                  <circle cx="12" cy="8" r="1.7"></circle>
+                  <circle cx="12" cy="12" r="1.7"></circle>
+                  <circle cx="12" cy="16" r="1.7"></circle>
+                </svg>
+              </div>
+            </button>
+
+            <button class="fleet-indicator fleet-indicator-btn" data-metric="vehiculos" id="btnIndicadorVehiculos" type="button" title="Ver rendimientos de esta flota">
+              <div class="indicator-count" data-count> </div>
+              <div class="indicator-label">Rendimientos</div>
+              <div class="indicator-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 16a8 8 0 1 1 16 0"></path>
+                  <path d="M12 12l4-3"></path>
+                  <path d="M6.5 16h11"></path>
+                  <circle cx="12" cy="16" r="1"></circle>
+                </svg>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="/js/index.js"></script>
+  </body>
+</html>

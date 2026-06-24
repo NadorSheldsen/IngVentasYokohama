@@ -1,0 +1,17 @@
+{
+  "prueba": { "idPruebasDesecho": 123, "PruebasDesechoNombre": "Desecho Demo" },
+  "flota": { "id": 1 },
+  "llantaCatalog": [
+    { "idLlantas": 857, "LlantasMarca": "YOKOHAMA" },
+    { "idLlantas": 858, "LlantasMarca": "BRIDGESTONE" }
+  ],
+  "llantasPorVehiculo": {
+    "veh1": [
+      { "Llantas_idLlantas": 857, "LlantasDesechoCausaDes": "Corte", "LlantasDesechoPiso": "Original", "LlantasDesechoRemanente": 6 },
+      { "Llantas_idLlantas": 858, "LlantasDesechoCausaDes": "Desgaste", "LlantasDesechoPiso": "Vitalizado", "LlantasDesechoRemanente": 3 },
+      { "Llantas_idLlantas": 857, "LlantasDesechoCausaDes": "Desgaste", "LlantasDesechoPiso": "Original", "LlantasDesechoRemanente": 4 },
+      { "Llantas_idLlantas": 858, "LlantasDesechoCausaDes": "Otro", "LlantasDesechoPiso": "Original", "LlantasDesechoRemanente": 2 }
+    ]
+  },
+  "llantas": []
+}

@@ -1,0 +1,77 @@
+@import url('/css/desecho.css');
+
+.alerta-retiro {
+	font-weight: 800;
+}
+
+.alerta-retiro-verde {
+	color: #15803d;
+	background-color: rgba(21, 128, 61, 0.15);
+	padding: 4px 8px;
+	border-radius: 6px;
+}
+
+.alerta-retiro-amarillo {
+	color: #a16207;
+	background-color: rgba(161, 98, 7, 0.15);
+	padding: 4px 8px;
+	border-radius: 6px;
+}
+
+.alerta-retiro-rojo {
+	color: #b91c1c;
+	background-color: rgba(185, 28, 28, 0.15);
+	padding: 4px 8px;
+	border-radius: 6px;
+}
+
+html.dark-theme .alerta-retiro-verde {
+	color: #4ade80;
+	background-color: rgba(74, 222, 128, 0.15);
+}
+
+html.dark-theme .alerta-retiro-amarillo {
+	color: #facc15;
+	background-color: rgba(250, 204, 21, 0.15);
+}
+
+html.dark-theme .alerta-retiro-rojo {
+	color: #f87171;
+	background-color: rgba(248, 113, 113, 0.15);
+}
+
+.presion-valor {
+	font-weight: 800;
+}
+
+.presion-verde {
+	color: #15803d;
+}
+
+.presion-amarillo {
+	color: #a16207;
+}
+
+.presion-rojo {
+	color: #b91c1c;
+}
+
+.presion-vigia {
+	color: #7e22ce;
+}
+
+html.dark-theme .presion-verde {
+	color: #4ade80;
+}
+
+html.dark-theme .presion-amarillo {
+	color: #facc15;
+}
+
+html.dark-theme .presion-rojo {
+	color: #f87171;
+}
+
+html.dark-theme .presion-vigia {
+	color: #c084fc;
+}

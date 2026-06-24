@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <!-- Permitir cleartext hacia el host cPanel que usas (solo si confías en él) -->
+        <domain includeSubdomains="true">attractive-rose-beagle.201-131-126-228.cpanel.site</domain>
+    </domain-config>
+</network-security-config>

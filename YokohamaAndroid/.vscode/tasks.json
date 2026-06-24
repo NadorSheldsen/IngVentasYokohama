@@ -1,0 +1,18 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "compile-kotlin-ios-arm64",
+			"type": "shell",
+			"command": "./gradlew",
+			"args": [
+				":composeApp:compileKotlinIosArm64"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		}
+	]
+}
