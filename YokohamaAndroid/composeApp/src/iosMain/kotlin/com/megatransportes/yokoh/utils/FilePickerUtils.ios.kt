@@ -12,12 +12,7 @@ import platform.Foundation.NSURL
 import platform.Foundation.NSString
 import platform.Foundation.NSDictionary
 import platform.Foundation.NSArray
-import platform.UIKit.UIAlertController
-import platform.UIKit.UIAlertControllerStyle
-import platform.UIKit.UIAlertAction
-import platform.UIKit.UIAlertActionStyle
-import platform.UIKit.UIDevice
-import platform.UIKit.UIUserInterfaceIdiom
+
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
 import platform.UIKit.UIImagePickerController
@@ -52,6 +47,7 @@ actual class FilePickerUtils : NSObject(),
 
     private var imageContinuation: (kotlin.coroutines.Continuation<FileData?>)? = null
     private var fileContinuation: (kotlin.coroutines.Continuation<FileData?>)? = null
+    private var shouldShowGalleryAfterCancellingCamera = false
 
     actual suspend fun pickImageFile(): FileData? = suspendCancellableCoroutine { cont ->
         dispatch_async(dispatch_get_main_queue()) {
@@ -59,59 +55,22 @@ actual class FilePickerUtils : NSObject(),
             val hasCamera = UIImagePickerController.isSourceTypeAvailable(
                 UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
             )
-            if (!hasCamera) {
-                val picker = UIImagePickerController().apply {
-                    sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
-                    delegate = this@FilePickerUtils
-                }
-                topViewController()?.presentViewController(picker, true, null)
-            } else {
-                presentImageSourcePicker()
-            }
-        }
-    }
-
-    private fun presentImageSourcePicker() {
-        val isPad = UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiom.UIUserInterfaceIdiomPad
-        val style = if (isPad) {
-            UIAlertControllerStyle.UIAlertControllerStyleAlert
-        } else {
-            UIAlertControllerStyle.UIAlertControllerStyleActionSheet
-        }
-        val alert = UIAlertController("Seleccionar foto", null, style)
-
-        alert.addAction(UIAlertAction(
-            "Tomar foto",
-            UIAlertActionStyle.UIAlertActionStyleDefault,
-            { _: UIAlertAction ->
+            if (hasCamera) {
+                shouldShowGalleryAfterCancellingCamera = true
                 val picker = UIImagePickerController().apply {
                     sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
                     cameraCaptureMode = UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto
                     delegate = this@FilePickerUtils
                 }
                 topViewController()?.presentViewController(picker, true, null)
-            }
-        ))
-        alert.addAction(UIAlertAction(
-            "Seleccionar de galería",
-            UIAlertActionStyle.UIAlertActionStyleDefault,
-            { _: UIAlertAction ->
+            } else {
                 val picker = UIImagePickerController().apply {
                     sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
                     delegate = this@FilePickerUtils
                 }
                 topViewController()?.presentViewController(picker, true, null)
             }
-        ))
-        alert.addAction(UIAlertAction(
-            "Cancelar",
-            UIAlertActionStyle.UIAlertActionStyleCancel,
-            { _: UIAlertAction ->
-                imageContinuation?.resume(null)
-                imageContinuation = null
-            }
-        ))
-        topViewController()?.presentViewController(alert, true, null)
+        }
     }
 
     actual suspend fun pickFile(vararg extensions: String): FileData? = suspendCancellableCoroutine { cont ->
@@ -134,6 +93,7 @@ actual class FilePickerUtils : NSObject(),
         picker: UIImagePickerController,
         didFinishPickingMediaWithInfo: NSDictionary?
     ) {
+        shouldShowGalleryAfterCancellingCamera = false
         val image = didFinishPickingMediaWithInfo?.objectForKey(UIImagePickerControllerOriginalImage) as? UIImage
 
         val data = image?.let { UIImageJPEGRepresentation(it, 0.75) }
@@ -158,9 +118,20 @@ actual class FilePickerUtils : NSObject(),
 
     @ObjCAction
     override fun imagePickerControllerDidCancel(picker: UIImagePickerController) {
-        imageContinuation?.resume(null)
-        imageContinuation = null
         picker.dismissViewControllerAnimated(true, null)
+        if (shouldShowGalleryAfterCancellingCamera) {
+            shouldShowGalleryAfterCancellingCamera = false
+            dispatch_async(dispatch_get_main_queue()) {
+                val picker = UIImagePickerController().apply {
+                    sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
+                    delegate = this@FilePickerUtils
+                }
+                topViewController()?.presentViewController(picker, true, null)
+            }
+        } else {
+            imageContinuation?.resume(null)
+            imageContinuation = null
+        }
     }
 
     @ObjCAction
