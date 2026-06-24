@@ -16,6 +16,8 @@ import platform.UIKit.UIAlertController
 import platform.UIKit.UIAlertControllerStyle
 import platform.UIKit.UIAlertAction
 import platform.UIKit.UIAlertActionStyle
+import platform.UIKit.UIDevice
+import platform.UIKit.UIUserInterfaceIdiom
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
 import platform.UIKit.UIImagePickerController
@@ -70,46 +72,46 @@ actual class FilePickerUtils : NSObject(),
     }
 
     private fun presentImageSourcePicker() {
-        val alert = UIAlertController(
-            title = "Seleccionar foto",
-            message = null,
-            preferredStyle = UIAlertControllerStyle.UIAlertControllerStyleActionSheet
-        )
-        alert.addAction(UIAlertAction(
-            title = "Tomar foto",
-            style = UIAlertActionStyle.UIAlertActionStyleDefault
-        ) { _ ->
-            val picker = UIImagePickerController().apply {
-                sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
-                cameraCaptureMode = UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto
-                delegate = this@FilePickerUtils
-            }
-            topViewController()?.presentViewController(picker, true, null)
-        })
-        alert.addAction(UIAlertAction(
-            title = "Seleccionar de galería",
-            style = UIAlertActionStyle.UIAlertActionStyleDefault
-        ) { _ ->
-            val picker = UIImagePickerController().apply {
-                sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
-                delegate = this@FilePickerUtils
-            }
-            topViewController()?.presentViewController(picker, true, null)
-        })
-        alert.addAction(UIAlertAction(
-            title = "Cancelar",
-            style = UIAlertActionStyle.UIAlertActionStyleCancel
-        ) { _ ->
-            imageContinuation?.resume(null)
-            imageContinuation = null
-        })
-        // iPad requires a popover source view for action sheets
-        val vc = topViewController()
-        if (vc != null) {
-            alert.popoverPresentationController?.sourceView = vc.view
-            alert.popoverPresentationController?.sourceRect = vc.view.bounds
+        val isPad = UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiom.UIUserInterfaceIdiomPad
+        val style = if (isPad) {
+            UIAlertControllerStyle.UIAlertControllerStyleAlert
+        } else {
+            UIAlertControllerStyle.UIAlertControllerStyleActionSheet
         }
-        vc?.presentViewController(alert, true, null)
+        val alert = UIAlertController("Seleccionar foto", null, style)
+
+        alert.addAction(UIAlertAction(
+            "Tomar foto",
+            UIAlertActionStyle.UIAlertActionStyleDefault,
+            { _: UIAlertAction ->
+                val picker = UIImagePickerController().apply {
+                    sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
+                    cameraCaptureMode = UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto
+                    delegate = this@FilePickerUtils
+                }
+                topViewController()?.presentViewController(picker, true, null)
+            }
+        ))
+        alert.addAction(UIAlertAction(
+            "Seleccionar de galería",
+            UIAlertActionStyle.UIAlertActionStyleDefault,
+            { _: UIAlertAction ->
+                val picker = UIImagePickerController().apply {
+                    sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
+                    delegate = this@FilePickerUtils
+                }
+                topViewController()?.presentViewController(picker, true, null)
+            }
+        ))
+        alert.addAction(UIAlertAction(
+            "Cancelar",
+            UIAlertActionStyle.UIAlertActionStyleCancel,
+            { _: UIAlertAction ->
+                imageContinuation?.resume(null)
+                imageContinuation = null
+            }
+        ))
+        topViewController()?.presentViewController(alert, true, null)
     }
 
     actual suspend fun pickFile(vararg extensions: String): FileData? = suspendCancellableCoroutine { cont ->

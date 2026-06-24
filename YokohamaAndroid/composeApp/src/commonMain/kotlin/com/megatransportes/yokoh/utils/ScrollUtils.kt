@@ -42,7 +42,7 @@ private class SmoothFlingBehavior(
                 break
             }
 
-            if (abs(velocity) <= minVelocity || velocity.sign != previousVelocity.sign) {
+            if (abs(velocity) <= minVelocity || (velocity > 0f) != (previousVelocity > 0f)) {
                 break
             }
         }
