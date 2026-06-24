@@ -54,7 +54,7 @@
 
 ```kotlin
 // Paso 1: Agregar import (línea 2-20)
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 
 // Paso 2: Reemplazar error block (línea ~248)
 ANTES:
@@ -138,7 +138,7 @@ suspend fun fetchVehiculosInspeccion() {
 
 ```kotlin
 // Paso 1: Agregar import
-import com.megatransportes.yokohama.ui.components.ErrorCard
+import com.megatransportes.yokoh.ui.components.ErrorCard
 
 // Paso 2: Reemplazar error (línea ~191 dentro del when)
 ANTES:
@@ -200,7 +200,7 @@ Cada una: 3-5 minutos (mismo patrón que VehiculosScreen)
 
 **PASO 1:** Busca línea de imports y agrega:
 ```kotlin
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 ```
 
 **PASO 2:** Busca el bloque `when` dentro del `Scaffold` y reemplaza el caso de error:
@@ -229,7 +229,7 @@ when {
 
 **PASO 1:** Busca línea de imports y agrega:
 ```kotlin
-import com.megatransportes.yokohama.ui.components.ErrorCard
+import com.megatransportes.yokoh.ui.components.ErrorCard
 ```
 
 **PASO 2:** Busca el bloque de error dentro de Column/Box:
@@ -313,7 +313,7 @@ Una vez actualizada, prueba así:
 **Problema:** "Unresolved reference: ErrorScreen"
 ```kotlin
 // Solución: Verifica el import exacto
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 ```
 
 **Problema:** Botón no funciona

@@ -33,7 +33,7 @@
         <!-- FileProvider used to share files from app cache with other apps -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.megatransportes.yokohama.fileprovider"
+            android:authorities="com.megatransportes.yokoh.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

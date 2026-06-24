@@ -1,4 +1,4 @@
 headers = /Users/nador/AndroidStudioProjects/yokohamareferencia/YokohamaAndroid/iosApp/SpeechRecognitionBridge.h
-package = com.megatransportes.yokohama.utils
+package = com.megatransportes.yokoh.utils
 linkerOpts = -framework Speech -framework AVFoundation
 compilerOpts = -DKOTLIN_NATIVE_INTEROP

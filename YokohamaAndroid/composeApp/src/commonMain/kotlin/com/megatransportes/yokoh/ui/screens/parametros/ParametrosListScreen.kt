@@ -392,7 +392,7 @@ fun ParametrosListScreen(
 
                                 // Mostrar llantas sugeridas primero
 
-                                items(suggestedLlantas) { llanta ->
+                                items(suggestedLlantas, key = { it.idLlantas }) { llanta ->
 
                                     SuggestedLlantaCard(
 
@@ -406,7 +406,7 @@ fun ParametrosListScreen(
 
                                 // Luego los parámetros existentes
 
-                                items(displayed) { parametro -> ParametroCard(parametro = parametro, onClick = { onParametroClick(parametro) }) }
+                                items(displayed, key = { it.idParametros }) { parametro -> ParametroCard(parametro = parametro, onClick = { onParametroClick(parametro) }) }
 
                             }
 
@@ -1134,7 +1134,7 @@ private fun LlantaSearchDialog(
 
                     ) {
 
-                        items(searchResults) { llanta ->
+                        items(searchResults, key = { it.idLlantas }) { llanta ->
 
                             Card(
 

@@ -258,7 +258,7 @@ fun LlantasDesechoScreen(
 
                     LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
 
-                        items(llantasDesecho) { llanta ->
+                        items(llantasDesecho, key = { it.idLlantasDesecho }) { llanta ->
 
                             var showConfirm by remember { mutableStateOf(false) }
 

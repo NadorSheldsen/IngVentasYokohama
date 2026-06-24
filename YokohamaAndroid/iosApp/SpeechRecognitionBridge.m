@@ -27,7 +27,7 @@ static os_log_t logger;
 - (instancetype)init {
     self = [super init];
     if (self) {
-        logger = os_log_create("com.megatransportes.yokohama", "SpeechRecognition");
+        logger = os_log_create("com.megatransportes.yokoh", "SpeechRecognition");
         os_log(logger, "SpeechRecognitionBridge initialized");
         
         NSLocale *currentLocale = [NSLocale currentLocale];

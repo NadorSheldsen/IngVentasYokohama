@@ -274,7 +274,7 @@ fun VehiculosInspeccionListScreen(
 
                     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
 
-                        items(vehiculos) { veh ->
+                        items(vehiculos, key = { it.idVehiculoInspeccion }) { veh ->
 
                             var showConfirm by remember { mutableStateOf(false) }
 

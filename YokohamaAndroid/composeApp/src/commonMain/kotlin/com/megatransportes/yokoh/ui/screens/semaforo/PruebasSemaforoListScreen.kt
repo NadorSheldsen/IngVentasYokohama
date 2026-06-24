@@ -482,7 +482,7 @@ fun PruebasSemaforoListScreen(
 
                     ) {
 
-                        items(pruebasSemaforo) { prueba ->
+                        items(pruebasSemaforo, key = { it.idPruebasSemaforo }) { prueba ->
 
                             PruebaSemaforoCard(
 

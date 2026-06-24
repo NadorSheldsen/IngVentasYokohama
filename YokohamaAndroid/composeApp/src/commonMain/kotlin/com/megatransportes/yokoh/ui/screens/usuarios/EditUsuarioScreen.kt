@@ -506,7 +506,7 @@ private fun FlotaAssignmentDialog(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(flotasDisponibles) { flota ->
+                    items(flotasDisponibles, key = { it.idFlotas }) { flota ->
                         Card(
                             onClick = {
                                 onFlotaSelected(flota)

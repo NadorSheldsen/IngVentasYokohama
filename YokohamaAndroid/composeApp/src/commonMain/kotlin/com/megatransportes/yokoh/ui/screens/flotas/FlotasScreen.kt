@@ -10,6 +10,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 
 import androidx.compose.foundation.lazy.items
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+
+import com.megatransportes.yokoh.utils.rememberSmoothFlingBehavior
+
 import androidx.compose.material.icons.Icons
 
 import androidx.compose.material.icons.filled.Add
@@ -544,7 +548,13 @@ fun FlotasScreen(
 
                     else -> {
 
+                        val listState = rememberLazyListState()
+                        val flingBehavior = rememberSmoothFlingBehavior()
+
                         LazyColumn(
+
+                            state = listState,
+                            flingBehavior = flingBehavior,
 
                             modifier = Modifier.fillMaxSize(),
 
@@ -554,7 +564,7 @@ fun FlotasScreen(
 
                         ) {
 
-                            items(filteredFlotas) { flota ->
+                            items(filteredFlotas, key = { it.idFlotas }) { flota ->
 
                                 FlotaItem(
 

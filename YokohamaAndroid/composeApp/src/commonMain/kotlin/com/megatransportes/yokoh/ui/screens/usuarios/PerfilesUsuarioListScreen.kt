@@ -118,7 +118,7 @@ fun PerfilesUsuarioListScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(perfiles) { perfil ->
+                        items(perfiles, key = { it.idPerfilesUsuario }) { perfil ->
                             PerfilUsuarioCard(
                                 perfil = perfil,
                                 onClick = {

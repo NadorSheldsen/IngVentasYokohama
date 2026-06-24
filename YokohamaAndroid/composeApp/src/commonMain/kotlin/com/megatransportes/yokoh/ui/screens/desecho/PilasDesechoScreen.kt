@@ -246,7 +246,7 @@ fun PilasDesechoScreen(
 
                     LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
 
-                        items(pruebasDesecho) { prueba ->
+                        items(pruebasDesecho, key = { it.idPruebasDesecho }) { prueba ->
 
                             Card(
 

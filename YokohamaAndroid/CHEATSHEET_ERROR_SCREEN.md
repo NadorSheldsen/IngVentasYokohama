@@ -4,9 +4,9 @@
 
 ### 1️⃣ IMPORT
 ```kotlin
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 // O
-import com.megatransportes.yokohama.ui.components.ErrorCard
+import com.megatransportes.yokoh.ui.components.ErrorCard
 ```
 
 ### 2️⃣ FUNCIÓN
@@ -84,7 +84,7 @@ errorMessage != null -> {
 
 ### Pantallas de LISTA (Vehicles, etc)
 ```kotlin
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 
 Scaffold(...) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -100,7 +100,7 @@ Scaffold(...) {
 
 ### Pantallas con BÚSQUEDA (Usuarios, Parámetros)
 ```kotlin
-import com.megatransportes.yokohama.ui.components.ErrorCard
+import com.megatransportes.yokoh.ui.components.ErrorCard
 
 Column {
     SearchBar()
@@ -115,7 +115,7 @@ Column {
 
 ### Pantallas COMPLEJAS (Reports)
 ```kotlin
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 
 when {
     isLoading -> Loader()
@@ -325,10 +325,10 @@ var data by remember { mutableStateOf<List<T>>(emptyList()) }
 val coroutineScope = rememberCoroutineScope()
 
 // REQUIERE importar:
-import com.megatransportes.yokohama.utils.ErrorUtils
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.utils.ErrorUtils
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 // O
-import com.megatransportes.yokohama.ui.components.ErrorCard
+import com.megatransportes.yokoh.ui.components.ErrorCard
 ```
 
 ---

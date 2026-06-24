@@ -50,7 +50,7 @@ En tus pantallas, reemplaza el código actual con este patrón:
 
 ```kotlin
 // 1. Importar el componente
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 
 // 2. En tu función Composable, dentro del Scaffold
 ) { paddingValues ->

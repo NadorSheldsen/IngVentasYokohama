@@ -118,7 +118,7 @@ fun TipoVehiculosAdminScreen(
                 }
 
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(displayed) { tipo ->
+                    items(displayed, key = { it.idTipoVehiculos }) { tipo ->
                                 Card(modifier = Modifier
                                     .fillMaxWidth()
                                     .border(BorderStroke(2.dp, Color.Red), shape = RoundedCornerShape(8.dp))) {

@@ -96,7 +96,7 @@ fun AsignarLlantasScreen(
                     }
 
                     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(8.dp)) {
-                        items(filtered) { llanta ->
+                        items(filtered, key = { it.idLlantas }) { llanta ->
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()

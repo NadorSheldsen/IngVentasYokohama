@@ -77,7 +77,7 @@ Yokohama/
 
 ### Opción 1: Pantalla Completa (ErrorScreen)
 ```kotlin
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 
 when {
     isLoading && data.isEmpty() -> 
@@ -99,7 +99,7 @@ when {
 
 ### Opción 2: Card Compacto (ErrorCard)
 ```kotlin
-import com.megatransportes.yokohama.ui.components.ErrorCard
+import com.megatransportes.yokoh.ui.components.ErrorCard
 
 Column {
     SearchBar()
@@ -134,9 +134,9 @@ Column {
 ### Paso 1: Preparativos
 ```kotlin
 // Agregar import
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 // O
-import com.megatransportes.yokohama.ui.components.ErrorCard
+import com.megatransportes.yokoh.ui.components.ErrorCard
 ```
 
 ### Paso 2: Crear Función Fetch
@@ -224,7 +224,7 @@ errorMessage != null -> {
 ## 🐛 Troubleshooting
 
 **P: "Unresolved reference: ErrorScreen"**  
-R: Verifica que el import está: `import com.megatransportes.yokohama.ui.components.ErrorScreen`
+R: Verifica que el import está: `import com.megatransportes.yokoh.ui.components.ErrorScreen`
 
 **P: El botón no funciona**  
 R: Asegúrate que `fetchData()` es `suspend` y lo llamas en `coroutineScope.launch {}`

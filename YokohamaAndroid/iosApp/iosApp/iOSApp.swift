@@ -25,7 +25,7 @@ class SpeechRecognitionManagerSwift: NSObject {
     private var lastResult: String = ""
     private var isRecording = false
     
-    private let logger = OSLog(subsystem: "com.megatransportes.yokohama", category: "SpeechRecognition")
+    private let logger = OSLog(subsystem: "com.megatransportes.yokoh", category: "SpeechRecognition")
     private var checkTimer: Timer?
     
     private override init() {

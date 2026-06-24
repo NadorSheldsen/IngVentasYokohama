@@ -644,7 +644,7 @@ fun VehiculosScreen(
 
                             ) {
 
-                                items(filteredVehiculos) { vehiculo ->
+                                items(filteredVehiculos, key = { it.idVehiculos }) { vehiculo ->
 
                                     // Prefer the latest PruebaRendimiento odometer if published by the repository
 

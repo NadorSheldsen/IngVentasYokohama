@@ -195,7 +195,7 @@ fun LlantaBitacoraScreen(
                                 currentKm != prevKm || currentMm != prevMm
                             }
 
-                            items(filteredEntries) { entry ->
+                            items(filteredEntries, key = { it.idLlantasRendimiento }) { entry ->
                                 val prueba = pruebasMap[entry.PruebaRendimiento_idPruebaRendimiento]
                                 val fecha = prueba?.PruebaRendimientoFecha?.take(10) ?: "-"
                                 // KM: prefer server-provided `kmRecorrido`, otherwise compute locally

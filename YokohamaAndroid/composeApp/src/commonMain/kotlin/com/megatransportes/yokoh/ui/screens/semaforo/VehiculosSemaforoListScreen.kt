@@ -312,7 +312,7 @@ fun VehiculosSemaforoListScreen(
 
                     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
 
-                                items(vehiculos) { veh ->
+                                items(vehiculos, key = { it.idVehiculoSemaforo }) { veh ->
 
                                     val typeName = tipoVehiculos.firstOrNull { it.idTipoVehiculos == veh.TipoVehiculos_idTipoVehiculos }?.TipoVehiculosNombre
 

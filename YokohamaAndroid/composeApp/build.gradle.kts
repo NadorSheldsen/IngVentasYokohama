@@ -39,10 +39,14 @@ kotlin {
     // Target para la aplicación de Escritorio (JVM)
     jvm()
 
-    // Configurar opciones del compilador Kotlin
+    // Configurar opciones del compilador Kotlin con optimizaciones
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).configureEach {
         kotlinOptions {
-            freeCompilerArgs += "-Xexpect-actual-classes"
+            freeCompilerArgs += listOf(
+                "-Xexpect-actual-classes",
+                "-Xopt-in=kotlin.RequiresOptIn",
+                "-Xjvm-default=all"
+            )
         }
     }
 
@@ -98,11 +102,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.megatransportes.yokohama"
+    namespace = "com.megatransportes.yokoh"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.megatransportes.yokohama"
+        applicationId = "com.megatransportes.yokoh"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -117,7 +121,16 @@ android {
     
     buildTypes {
         getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+        getByName("debug") {
             isMinifyEnabled = false
+            applicationIdSuffix = ".debug"
         }
     }
     
@@ -133,11 +146,11 @@ dependencies {
 
 compose.desktop {
     application {
-        mainClass = "com.megatransportes.yokohama.MainKt"
+        mainClass = "com.megatransportes.yokoh.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.megatransportes.yokohama"
+            packageName = "com.megatransportes.yokoh"
             packageVersion = "1.0.0"
         }
     }

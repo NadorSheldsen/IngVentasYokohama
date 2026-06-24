@@ -492,7 +492,7 @@ fun UsuariosScreen(
 
                         ) {
 
-                            items(filteredUsuarios) { usuario ->
+                            items(filteredUsuarios, key = { it.idUsuarios }) { usuario ->
 
                                 UsuarioItem(
 

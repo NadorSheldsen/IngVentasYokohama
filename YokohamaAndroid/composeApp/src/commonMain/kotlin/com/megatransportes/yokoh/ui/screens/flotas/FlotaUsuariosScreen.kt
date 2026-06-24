@@ -102,7 +102,7 @@ fun FlotaUsuariosScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(usuariosAsociados) { usuario ->
+                        items(usuariosAsociados, key = { it.idUsuarios }) { usuario ->
                             UsuarioAsociadoItem(
                                 usuario = usuario,
                                 onDesasociar = {
@@ -159,7 +159,7 @@ fun FlotaUsuariosScreen(
                         )
                     } else {
                         LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(filteredUsuarios) { usuario ->
+                            items(filteredUsuarios, key = { it.idUsuarios }) { usuario ->
                                 UsuarioDisponibleItem(
                                     usuario = usuario,
                                     onAsociar = {

@@ -12,9 +12,14 @@ import platform.Foundation.NSURL
 import platform.Foundation.NSString
 import platform.Foundation.NSDictionary
 import platform.Foundation.NSArray
+import platform.UIKit.UIAlertController
+import platform.UIKit.UIAlertControllerStyle
+import platform.UIKit.UIAlertAction
+import platform.UIKit.UIAlertActionStyle
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
 import platform.UIKit.UIImagePickerController
+import platform.UIKit.UIImagePickerControllerCameraCaptureMode
 import platform.UIKit.UIImagePickerControllerDelegateProtocol
 import platform.UIKit.UIImagePickerControllerOriginalImage
 import platform.UIKit.UIImagePickerControllerSourceType
@@ -47,14 +52,64 @@ actual class FilePickerUtils : NSObject(),
     private var fileContinuation: (kotlin.coroutines.Continuation<FileData?>)? = null
 
     actual suspend fun pickImageFile(): FileData? = suspendCancellableCoroutine { cont ->
-        imageContinuation = cont
         dispatch_async(dispatch_get_main_queue()) {
-            val picker = UIImagePickerController().apply {
+            imageContinuation = cont
+            val hasCamera = UIImagePickerController.isSourceTypeAvailable(
+                UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
+            )
+            if (!hasCamera) {
+                val picker = UIImagePickerController().apply {
                     sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
+                    delegate = this@FilePickerUtils
+                }
+                topViewController()?.presentViewController(picker, true, null)
+            } else {
+                presentImageSourcePicker()
+            }
+        }
+    }
+
+    private fun presentImageSourcePicker() {
+        val alert = UIAlertController(
+            title = "Seleccionar foto",
+            message = null,
+            preferredStyle = UIAlertControllerStyle.UIAlertControllerStyleActionSheet
+        )
+        alert.addAction(UIAlertAction(
+            title = "Tomar foto",
+            style = UIAlertActionStyle.UIAlertActionStyleDefault
+        ) { _ ->
+            val picker = UIImagePickerController().apply {
+                sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera
+                cameraCaptureMode = UIImagePickerControllerCameraCaptureMode.UIImagePickerControllerCameraCaptureModePhoto
                 delegate = this@FilePickerUtils
             }
             topViewController()?.presentViewController(picker, true, null)
+        })
+        alert.addAction(UIAlertAction(
+            title = "Seleccionar de galería",
+            style = UIAlertActionStyle.UIAlertActionStyleDefault
+        ) { _ ->
+            val picker = UIImagePickerController().apply {
+                sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypePhotoLibrary
+                delegate = this@FilePickerUtils
+            }
+            topViewController()?.presentViewController(picker, true, null)
+        })
+        alert.addAction(UIAlertAction(
+            title = "Cancelar",
+            style = UIAlertActionStyle.UIAlertActionStyleCancel
+        ) { _ ->
+            imageContinuation?.resume(null)
+            imageContinuation = null
+        })
+        // iPad requires a popover source view for action sheets
+        val vc = topViewController()
+        if (vc != null) {
+            alert.popoverPresentationController?.sourceView = vc.view
+            alert.popoverPresentationController?.sourceRect = vc.view.bounds
         }
+        vc?.presentViewController(alert, true, null)
     }
 
     actual suspend fun pickFile(vararg extensions: String): FileData? = suspendCancellableCoroutine { cont ->

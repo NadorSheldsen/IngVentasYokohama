@@ -268,7 +268,7 @@ fun LlantasAdminScreen(
 
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 
-                    items(llantas) { llanta ->
+                    items(llantas, key = { it.idLlantas }) { llanta ->
 
                         Card(modifier = Modifier
 

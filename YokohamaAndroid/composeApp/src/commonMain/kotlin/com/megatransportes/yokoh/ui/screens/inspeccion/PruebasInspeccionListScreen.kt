@@ -464,7 +464,7 @@ fun PruebasInspeccionListScreen(
 
                     ) {
 
-                        items(pruebasInspeccion) { prueba ->
+                        items(pruebasInspeccion, key = { it.idPruebaInspeccion }) { prueba ->
 
                             Card(
 

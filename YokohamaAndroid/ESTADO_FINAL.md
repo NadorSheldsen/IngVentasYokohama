@@ -227,7 +227,7 @@ Pantallas Actualizadas (4):
 // Just 3 steps:
 
 // 1. Import
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 
 // 2. Create function
 suspend fun fetchData() { /* ... */ }

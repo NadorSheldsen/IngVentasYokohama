@@ -32,7 +32,7 @@ errorMessage != null -> {
 
 ### PASO 1: Agregar Import
 ```kotlin
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 ```
 
 ### PASO 2: Refactorizar Lógica (Crear función suspend)
@@ -98,7 +98,7 @@ errorMessage != null -> {
 
 ### PASO 1: Agregar Import
 ```kotlin
-import com.megatransportes.yokohama.ui.components.ErrorCard
+import com.megatransportes.yokoh.ui.components.ErrorCard
 ```
 
 ### PASO 2: Crear función suspend si no existe
@@ -228,7 +228,7 @@ every { repository.getVehiculos() } returns Result.failure(
 ### ❌ Error: "Unresolved reference: ErrorScreen"
 **Solución:** Asegúrate de agregar el import correcto
 ```kotlin
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 ```
 
 ### ❌ Error: "coroutineScope not available"

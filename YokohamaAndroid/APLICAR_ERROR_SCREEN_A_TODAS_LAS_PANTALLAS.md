@@ -52,9 +52,9 @@ Para cada pantalla, sigue este patrón:
 
 ### Paso 1: Agregar Import
 ```kotlin
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 // O si es parte de una columna más grande:
-import com.megatransportes.yokohama.ui.components.ErrorCard
+import com.megatransportes.yokoh.ui.components.ErrorCard
 ```
 
 ### Paso 2: Reemplazar Manejo de Error
@@ -166,13 +166,13 @@ Column {
 
 ```kotlin
 // Para pantalla completa
-import com.megatransportes.yokohama.ui.components.ErrorScreen
+import com.megatransportes.yokoh.ui.components.ErrorScreen
 
 // Para card dentro de otros elementos
-import com.megatransportes.yokohama.ui.components.ErrorCard
+import com.megatransportes.yokoh.ui.components.ErrorCard
 
 // ErrorUtils ya debería estar importado
-import com.megatransportes.yokohama.utils.ErrorUtils
+import com.megatransportes.yokoh.utils.ErrorUtils
 ```
 
 ---

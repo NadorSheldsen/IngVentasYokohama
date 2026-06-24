@@ -414,7 +414,7 @@ fun PruebaDesechoReportScreen(
 
                 // Conditionally show the detailed list
                 if (showDetails) {
-                    items(llantas) { ll ->
+                    items(llantas, key = { it.idLlantasDesecho }) { ll ->
                         Card(modifier = Modifier.fillMaxWidth()) {
                             Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Column(modifier = Modifier.weight(1f)) {

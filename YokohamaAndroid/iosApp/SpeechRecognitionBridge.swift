@@ -11,7 +11,7 @@ import os.log
     private var audioEngine: AVAudioEngine?
     private var lastResult: String = ""
     
-    private let logger = OSLog(subsystem: "com.megatransportes.yokohama", category: "SpeechRecognition")
+    private let logger = OSLog(subsystem: "com.megatransportes.yokoh", category: "SpeechRecognition")
     
     @objc(sharedInstance) public static let sharedInstance = SpeechRecognitionBridge()
     
