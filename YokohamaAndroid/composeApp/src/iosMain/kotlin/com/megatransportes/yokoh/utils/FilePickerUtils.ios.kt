@@ -123,7 +123,7 @@ actual class FilePickerUtils : NSObject(),
     }
 
     @ObjCAction
-    fun documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAtURLs: NSArray?) {
+    fun documentPicker(picker: UIDocumentPickerViewController, didPickDocumentsAtURLs: NSArray?) {
         val url = if (didPickDocumentsAtURLs != null && didPickDocumentsAtURLs.count > 0u) {
             didPickDocumentsAtURLs.objectAtIndex(0u) as? NSURL
         } else null

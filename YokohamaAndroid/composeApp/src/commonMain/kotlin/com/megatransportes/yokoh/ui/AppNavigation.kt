@@ -175,8 +175,8 @@ fun AppNavigation(
     ) {
 
         key(screen, refreshTick) {
-
-            when (screen) {
+            val s = screen
+            when (s) {
 
         is Screen.Login -> {
 
@@ -298,7 +298,7 @@ fun AppNavigation(
 
                 repository = repository,
 
-                usuario = screen.usuario,
+                usuario = s.usuario,
 
                 onUsuarioUpdated = { navigator.pop() },
 
@@ -348,7 +348,7 @@ fun AppNavigation(
 
                 repository = repository,
 
-                perfil = screen.perfil,
+                perfil = s.perfil,
 
                 onPerfilSaved = { navigator.pop() },
 
@@ -372,25 +372,25 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
-                onPruebasRendimientoClick = { navigator.navigate(Screen.Vehiculos(screen.flota)) },
+                onPruebasRendimientoClick = { navigator.navigate(Screen.Vehiculos(s.flota)) },
 
-                onSemaforosClick = { navigator.navigate(Screen.PruebasSemaforoList(screen.flota)) },
+                onSemaforosClick = { navigator.navigate(Screen.PruebasSemaforoList(s.flota)) },
 
-                onInspeccionesClick = { navigator.navigate(Screen.PruebasInspeccionList(screen.flota)) },
+                onInspeccionesClick = { navigator.navigate(Screen.PruebasInspeccionList(s.flota)) },
 
-                onPilasDesechoClick = { navigator.navigate(Screen.PilasDesecho(screen.flota)) },
+                onPilasDesechoClick = { navigator.navigate(Screen.PilasDesecho(s.flota)) },
 
-                onParametrosClick = { navigator.navigate(Screen.ParametrosList(screen.flota)) },
+                onParametrosClick = { navigator.navigate(Screen.ParametrosList(s.flota)) },
 
-                onParametrosGoToLlantas = { navigator.navigate(Screen.ParametrosList(screen.flota, initialTab = 1)) },
+                onParametrosGoToLlantas = { navigator.navigate(Screen.ParametrosList(s.flota, initialTab = 1)) },
 
                 onBack = back,
 
                 // Add navigation to AsignarLlantas
 
-                onAsignarLlantasClick = { navigator.navigate(Screen.Agregar(screen.flota)) }
+                onAsignarLlantasClick = { navigator.navigate(Screen.Agregar(s.flota)) }
 
             )
 
@@ -408,7 +408,7 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
                 onBack = back
 
@@ -430,7 +430,7 @@ fun AppNavigation(
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -448,17 +448,17 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flotaId = screen.flota.idFlotas,
+                flotaId = s.flota.idFlotas,
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) },
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) },
 
                 onLlantaAssigned = { llantaId ->
 
                     // Open AddParametro directly so user can fill the parameters for the assigned llanta
 
-                    navigator.navigate(Screen.AddParametro(screen.flota, llantaId))
+                    navigator.navigate(Screen.AddParametro(s.flota, llantaId))
 
                 }
 
@@ -476,25 +476,25 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
-                onAddVehiculoClick = { navigator.navigate(Screen.AddVehiculo(screen.flota)) },
+                onAddVehiculoClick = { navigator.navigate(Screen.AddVehiculo(s.flota)) },
 
                 onVehiculoClick = { vehiculo, cantidadLlantas -> 
 
-                    navigator.navigate(Screen.LlantasVehiculo(screen.flota, vehiculo, cantidadLlantas)) 
+                    navigator.navigate(Screen.LlantasVehiculo(s.flota, vehiculo, cantidadLlantas)) 
 
                 },
 
                 onPruebaRendimientoClick = { vehiculo, llantas -> 
 
-                    navigator.navigate(Screen.PruebaRendimiento(screen.flota, vehiculo, llantas)) 
+                    navigator.navigate(Screen.PruebaRendimiento(s.flota, vehiculo, llantas)) 
 
                 },
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -510,13 +510,13 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
                 onVehiculoCreated = { navigator.pop() },
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -532,11 +532,11 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
-                vehiculo = screen.vehiculo,
+                vehiculo = s.vehiculo,
 
-                cantidadLlantas = screen.cantidadLlantas,
+                cantidadLlantas = s.cantidadLlantas,
 
                 onLlantasRegistradas = { 
 
@@ -550,7 +550,7 @@ fun AppNavigation(
 
                 onOpenParametrosList = { llantaIds ->
 
-                    navigator.navigate(Screen.ParametrosList(screen.flota, suggestedLlantaIds = llantaIds))
+                    navigator.navigate(Screen.ParametrosList(s.flota, suggestedLlantaIds = llantaIds))
 
                 }
 
@@ -564,7 +564,7 @@ fun AppNavigation(
 
             navigator.setBackHandler(back)
 
-            val flota = screen.flota
+            val flota = s.flota
 
             PruebaRendimientoScreen(
 
@@ -572,9 +572,9 @@ fun AppNavigation(
 
                 flota = flota,
 
-                vehiculo = screen.vehiculo,
+                vehiculo = s.vehiculo,
 
-                llantasVehiculo = screen.llantasVehiculo,
+                llantasVehiculo = s.llantasVehiculo,
 
                 onPruebaRegistrada = {
 
@@ -610,23 +610,23 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
                 onPruebaClick = { pruebaSemaforo ->
 
-                    navigator.navigate(Screen.VehiculosSemaforoList(screen.flota, pruebaSemaforo))
+                    navigator.navigate(Screen.VehiculosSemaforoList(s.flota, pruebaSemaforo))
 
                 },
 
                 onReportClick = { pruebaSemaforo ->
 
-                    navigator.navigate(Screen.PruebaSemaforoReport(screen.flota, pruebaSemaforo))
+                    navigator.navigate(Screen.PruebaSemaforoReport(s.flota, pruebaSemaforo))
 
                 },
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -644,13 +644,13 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
-                prueba = screen.prueba,
+                prueba = s.prueba,
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -668,23 +668,23 @@ fun AppNavigation(
 
                 repository = repository,
 
-                pruebaSemaforo = screen.pruebaSemaforo,
+                pruebaSemaforo = s.pruebaSemaforo,
 
                 onVehiculoClick = { veh ->
 
-                    navigator.navigate(Screen.Semaforo(screen.flota, screen.pruebaSemaforo, veh.idVehiculoSemaforo))
+                    navigator.navigate(Screen.Semaforo(s.flota, s.pruebaSemaforo, veh.idVehiculoSemaforo))
 
                 },
 
                 onAddVehiculo = {
 
-                    navigator.navigate(Screen.Semaforo(screen.flota, screen.pruebaSemaforo, null))
+                    navigator.navigate(Screen.Semaforo(s.flota, s.pruebaSemaforo, null))
 
                 },
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -702,23 +702,23 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
-                pruebaSemaforo = screen.pruebaSemaforo,
+                pruebaSemaforo = s.pruebaSemaforo,
 
-                initialEditingVehiculoId = screen.initialEditingVehiculoId,
+                initialEditingVehiculoId = s.initialEditingVehiculoId,
 
                 onSemaforoRegistrado = { navigator.pop() },
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) },
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) },
 
                 onOpenLlantasAdmin = { navigator.navigate(Screen.LlantasAdmin) },
 
-                onOpenAddParametro = { llantaId -> navigator.navigate(Screen.AddParametro(screen.flota, llantaId)) },
+                onOpenAddParametro = { llantaId -> navigator.navigate(Screen.AddParametro(s.flota, llantaId)) },
 
-                onOpenParametrosList = { _ -> navigator.navigate(Screen.ParametrosList(screen.flota)) }
+                onOpenParametrosList = { _ -> navigator.navigate(Screen.ParametrosList(s.flota)) }
 
             )
 
@@ -734,19 +734,19 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
                 onPilaSelected = { prueba ->
 
-                    navigator.navigate(Screen.LlantasDesechoScreen(prueba, screen.flota))
+                    navigator.navigate(Screen.LlantasDesechoScreen(prueba, s.flota))
 
                 },
 
-                onReportClick = { prueba -> navigator.navigate(Screen.PruebaDesechoReport(screen.flota, prueba)) },
+                onReportClick = { prueba -> navigator.navigate(Screen.PruebaDesechoReport(s.flota, prueba)) },
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -764,13 +764,13 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
-                prueba = screen.prueba,
+                prueba = s.prueba,
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -788,23 +788,23 @@ fun AppNavigation(
 
                 repository = repository,
 
-                pruebaDesecho = screen.pruebaDesecho,
+                pruebaDesecho = s.pruebaDesecho,
 
                 onNuevaLlantaClick = { 
 
-                    navigator.navigate(Screen.NuevaLlantaDesechoScreen(screen.pruebaDesecho, screen.flota, null)) 
+                    navigator.navigate(Screen.NuevaLlantaDesechoScreen(s.pruebaDesecho, s.flota, null)) 
 
                 },
 
                 onLlantaClick = { llanta ->
 
-                    navigator.navigate(Screen.NuevaLlantaDesechoScreen(screen.pruebaDesecho, screen.flota, llanta))
+                    navigator.navigate(Screen.NuevaLlantaDesechoScreen(s.pruebaDesecho, s.flota, llanta))
 
                 },
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -820,21 +820,21 @@ fun AppNavigation(
 
                 repository = repository,
 
-                pruebaDesecho = screen.pruebaDesecho,
+                pruebaDesecho = s.pruebaDesecho,
 
-                existingLlanta = screen.existing,
+                existingLlanta = s.existing,
 
                 onLlantaCreada = {
 
                     // Replace the current screen with a fresh LlantasDesechoScreen so the list reloads
 
-                    navigator.replace(Screen.LlantasDesechoScreen(screen.pruebaDesecho, screen.flota))
+                    navigator.replace(Screen.LlantasDesechoScreen(s.pruebaDesecho, s.flota))
 
                 },
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -850,25 +850,25 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
                 onPruebaClick = { pruebaInspeccion ->
 
                     // Navigate to intermediate list of vehicles for the selected inspección
 
-                    navigator.navigate(Screen.VehiculosInspeccionList(pruebaInspeccion, screen.flota))
+                    navigator.navigate(Screen.VehiculosInspeccionList(pruebaInspeccion, s.flota))
 
                 },
 
                 onReportClick = { pruebaInspeccion ->
 
-                    navigator.navigate(Screen.PruebaInspeccionReport(screen.flota, pruebaInspeccion))
+                    navigator.navigate(Screen.PruebaInspeccionReport(s.flota, pruebaInspeccion))
 
                 },
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -886,13 +886,13 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
-                prueba = screen.prueba,
+                prueba = s.prueba,
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -908,13 +908,13 @@ fun AppNavigation(
 
                 repository = repository,
 
-                pruebaInspeccion = screen.pruebaInspeccion,
+                pruebaInspeccion = s.pruebaInspeccion,
 
                 onVehiculoClick = { veh ->
 
                     // Open the InspeccionVehicularScreen to edit the selected vehiculoInspeccion
 
-                    navigator.navigate(Screen.InspeccionVehicularScreen(screen.pruebaInspeccion, screen.flota, veh))
+                    navigator.navigate(Screen.InspeccionVehicularScreen(s.pruebaInspeccion, s.flota, veh))
 
                 },
 
@@ -922,13 +922,13 @@ fun AppNavigation(
 
                     // Open InspeccionVehicularScreen to create a new vehicle for this prueba (no existing veh)
 
-                    navigator.navigate(Screen.InspeccionVehicularScreen(prueba, screen.flota, null))
+                    navigator.navigate(Screen.InspeccionVehicularScreen(prueba, s.flota, null))
 
                 },
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -944,11 +944,11 @@ fun AppNavigation(
 
                 repository = repository,
 
-                pruebaInspeccion = screen.pruebaInspeccion,
+                pruebaInspeccion = s.pruebaInspeccion,
 
-                flota = screen.flota,
+                flota = s.flota,
 
-                vehiculoInspeccionExisting = screen.vehiculoInspeccion,
+                vehiculoInspeccionExisting = s.vehiculoInspeccion,
 
                 onInspeccionRegistrada = {
 
@@ -958,19 +958,19 @@ fun AppNavigation(
 
                     // Use replace so the list reloads fresh instead of stacking screens.
 
-                    navigator.replace(Screen.VehiculosInspeccionList(screen.pruebaInspeccion, screen.flota))
+                    navigator.replace(Screen.VehiculosInspeccionList(s.pruebaInspeccion, s.flota))
 
                 },
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) },
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) },
 
                 onOpenLlantasAdmin = { navigator.navigate(Screen.LlantasAdmin) },
 
-                onOpenAddParametro = { llantaId -> navigator.navigate(Screen.AddParametro(screen.flota, llantaId)) },
+                onOpenAddParametro = { llantaId -> navigator.navigate(Screen.AddParametro(s.flota, llantaId)) },
 
-                onOpenParametrosList = { _ -> navigator.navigate(Screen.ParametrosList(screen.flota)) }
+                onOpenParametrosList = { _ -> navigator.navigate(Screen.ParametrosList(s.flota)) }
 
             )
 
@@ -986,25 +986,25 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
                 onParametroClick = { parametro ->
 
-                    navigator.navigate(Screen.EditParametro(screen.flota, parametro))
+                    navigator.navigate(Screen.EditParametro(s.flota, parametro))
 
                 },
 
                 onAddParametroClick = { llantaId ->
 
-                    navigator.navigate(Screen.AddParametro(screen.flota, llantaId))
+                    navigator.navigate(Screen.AddParametro(s.flota, llantaId))
 
                 },
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) },
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) },
 
-                suggestedLlantaIds = screen.suggestedLlantaIds
+                suggestedLlantaIds = s.suggestedLlantaIds
 
             )
 
@@ -1020,21 +1020,21 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
-                llantaId = screen.llantaId,
+                llantaId = s.llantaId,
 
                 parametro = null,
 
                 onParametroSaved = { 
 
-                    navigator.navigate(Screen.ParametrosList(screen.flota))
+                    navigator.navigate(Screen.ParametrosList(s.flota))
 
                 },
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -1050,21 +1050,21 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
+                flota = s.flota,
 
-                llantaId = screen.parametro.Llantas_idLlantas,
+                llantaId = s.parametro.Llantas_idLlantas,
 
-                parametro = screen.parametro,
+                parametro = s.parametro,
 
                 onParametroSaved = { 
 
-                    navigator.navigate(Screen.ParametrosList(screen.flota)) 
+                    navigator.navigate(Screen.ParametrosList(s.flota)) 
 
                 },
 
                 onBack = back,
 
-                onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
+                onHome = { navigator.navigate(Screen.FlotaMenu(s.flota)) }
 
             )
 
@@ -1096,7 +1096,7 @@ fun AppNavigation(
 
                 repository = repository,
 
-                llantaVehiculo = screen.llantaVehiculo,
+                llantaVehiculo = s.llantaVehiculo,
 
                 onBack = back
 

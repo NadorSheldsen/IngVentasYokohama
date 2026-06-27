@@ -56,7 +56,7 @@ fun MicButton(
     // stop and return last partial/final
     stopListening: (suspend () -> String?)? = null,
     // Optional callback so host can render an overlay at top level (center provided in window coordinates)
-    _onOverlayRequested: ((recording: Boolean, centerWindow: Offset, circleDp: Dp) -> Unit)? = null
+    onOverlayRequested: ((recording: Boolean, centerWindow: Offset, circleDp: Dp) -> Unit)? = null
 ) {
     val coroutineScope = rememberCoroutineScope()
     var recording by remember { mutableStateOf(false) }

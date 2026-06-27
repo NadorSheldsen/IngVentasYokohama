@@ -218,7 +218,7 @@ fun PruebaDesechoReportScreen(
     val causaCounts = llantas.groupingBy { it.LlantasDesechoCausaDes }.eachCount()
     val marcaCounts = llantas.map { brandMap[it.Llantas_idLlantas] ?: "Otras" }.groupingBy { it }.eachCount()
     val remanentes = llantas.mapNotNull { it.LlantasDesechoRemanente }
-    val dateCounts = llantas.groupingBy { it.LlantasDesechoFecha.split('T',' ').firstOrNull() ?: "Sin fecha" }.eachCount()
+    val dateCounts = llantas.groupingBy { it.LlantasDesechoFecha?.split('T',' ')?.firstOrNull() ?: "Sin fecha" }.eachCount()
 
     // Pie dialog state (used for pies like Tipo de piso)
     var showPieDialog by remember { mutableStateOf(false) }
