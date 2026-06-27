@@ -18,7 +18,7 @@ import androidx.compose.material.icons.filled.Clear
 
 import androidx.compose.material.icons.filled.DarkMode
 
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 
 import androidx.compose.material.icons.filled.Person
 
@@ -208,7 +208,7 @@ fun UsuariosScreen(
 
                         Icon(
 
-                            imageVector = Icons.Default.ExitToApp,
+                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
 
                             contentDescription = "Cerrar sesión"
 

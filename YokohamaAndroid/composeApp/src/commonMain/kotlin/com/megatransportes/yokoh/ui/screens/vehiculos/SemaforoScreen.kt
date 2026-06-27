@@ -5,7 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
@@ -116,11 +116,11 @@ fun SemaforoScreen(
         coroutineScope.launch {
             repository.getTiposVehiculos()
                 .onSuccess { result -> tipoVehiculos = result }
-                .onFailure { error -> errorMessage = "Error cargando tipos de vehículos" }
+                .onFailure { _ -> errorMessage = "Error cargando tipos de vehículos" }
             
             repository.getLlantasByFlota(flota.idFlotas)
                 .onSuccess { result -> llantas = result }
-                .onFailure { error -> errorMessage = "Error cargando llantas" }
+                .onFailure { _ -> errorMessage = "Error cargando llantas" }
             repository.getParametrosByFlotaId(flota.idFlotas)
                 .onSuccess { result -> parametros = result }
                 .onFailure { _ -> }
@@ -142,7 +142,7 @@ fun SemaforoScreen(
                 // Cargar el vehículo individualmente usando el endpoint específico
                 repository.getVehiculoSemaforoById(id)
                     .onSuccess { v ->
-                        vehiculoSemaforoNo = v.VehiculoSemaforoNo ?: ""
+                        vehiculoSemaforoNo = v.VehiculoSemaforoNo
                         selectedTipoVehiculo = tipoVehiculos.firstOrNull { it.idTipoVehiculos == v.TipoVehiculos_idTipoVehiculos }
 
                         repository.getLlantasSemaforoByVehiculoId(v.idVehiculoSemaforo)
@@ -170,7 +170,7 @@ fun SemaforoScreen(
                                         // Prefer explicit vigia flag from backend; fallback to presion==0 for older records
                                         vigia = (ll.LlantasSemaforoVigia == 1) || (ll.LlantasSemaforoPresion == 0),
                                         piso = ll.LlantasSemaforoPiso ?: "Original",
-                                        color = ll.LlantasSemaforoColor ?: "Verde",
+                                        color = ll.LlantasSemaforoColor,
                                         condicionPeligrosa = ll.LlantasSemaforoCondPel ?: false,
                                         observacion = ll.LlantasSemaforoObserv ?: "LLANTA OK",
                                         comentarios = ll.LlantasSemaforoComent ?: "Ninguno",
@@ -219,7 +219,7 @@ fun SemaforoScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Regresar"
                         )
                     }
@@ -479,8 +479,8 @@ fun SemaforoScreen(
                                 return@launch
                             }
                             
-                            val parametros = parametrosResult.getOrNull() ?: emptyList()
-                            val medidasConParametro = parametros.mapNotNull { it.LlantasMedida }.toSet()
+                            val parametrosList = parametrosResult.getOrNull() ?: emptyList()
+                            val medidasConParametro = parametrosList.mapNotNull { it.LlantasMedida }.toSet()
                             val missingLlantaIds = llantasSemaforoData.mapNotNull { data ->
                                 val llanta = data.selectedLlanta
                                 val medida = llanta?.LlantasMedida
@@ -798,11 +798,8 @@ private fun LlantaSemaforoForm(
     var filteredLlantas by remember { mutableStateOf<List<Llanta>>(emptyList()) }
     var isLoadingFile1 by remember { mutableStateOf(false) }
     var fileError1 by remember { mutableStateOf<String?>(null) }
-    var isLoadingFile2 by remember { mutableStateOf(false) }
-    var fileError2 by remember { mutableStateOf<String?>(null) }
     var showPhotoPickerDialog by remember { mutableStateOf(false) }
     var showExtraFields by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
 
     val formBorderColor = when {
         data.isValid() -> Color(0xFF2E7D32)
@@ -1224,7 +1221,7 @@ private fun LlantaSemaforoForm(
                 }
             }
 
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 thickness = 2.5.dp,
                 color = MaterialTheme.colorScheme.onSurface

@@ -40,8 +40,6 @@ fun PhotoPickerDialog(
 ) {
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val coroutineScope = rememberCoroutineScope()
-
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier

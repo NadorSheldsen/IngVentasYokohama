@@ -7,7 +7,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Warning
@@ -140,28 +140,27 @@ fun PruebaRendimientoScreen(
     var lastRendimientoMap by remember { mutableStateOf<Map<Int, LlantaRendimiento>>(emptyMap()) }
     // Map de pruebaId -> PruebaRendimiento para poder leer PruebaRendimientoOdometro asociado
     var lastPruebaMap by remember { mutableStateOf<Map<Int, PruebaRendimiento>>(emptyMap()) }
-    var historialCount by remember { mutableStateOf(0) }
     // Lista local editable de llantas del vehículo; un elemento `null` indica
     // que en esa posición hay un espacio para montar una nueva llanta.
-    var displayedLlantas by remember { mutableStateOf(llantasVehiculo.toMutableList() as MutableList<LlantaVehiculo?>) }
+    var displayedLlantas by remember { mutableStateOf(mutableListOf<LlantaVehiculo?>().apply { addAll(llantasVehiculo) }) }
     LaunchedEffect(llantasVehiculo) {
         // Map incoming llantasVehiculo into positional slots when possible.
         try {
             // Find max position from piso values like "Pos N"
             val posRegex = Regex("(?i)pos\\s+([0-9]+)")
             val positions = llantasVehiculo.mapNotNull { lv ->
-                lv.LlantasVehiculosPiso?.let { piso ->
+                lv.LlantasVehiculosPiso.let { piso ->
                     val m = posRegex.find(piso)
                     m?.groups?.get(1)?.value?.toIntOrNull()
                 }
             }
             val maxPos = (positions.maxOrNull() ?: llantasVehiculo.size).coerceAtLeast(llantasVehiculo.size)
-            val slots = MutableList(maxPos) { null as LlantaVehiculo? }
+            val slots = MutableList<LlantaVehiculo?>(maxPos) { null }
 
             // First place those with explicit Pos N
             llantasVehiculo.forEach { lv ->
                 val piso = lv.LlantasVehiculosPiso
-                val m = piso?.let { posRegex.find(it) }
+                val m = piso.let { posRegex.find(it) }
                 if (m != null) {
                     val idx = m.groups[1]?.value?.toIntOrNull()?.minus(1) ?: -1
                     if (idx in slots.indices) slots[idx] = lv else slots.add(lv)
@@ -184,7 +183,7 @@ fun PruebaRendimientoScreen(
             // Fallback to direct copy on error
             // Fallback: copy current list but ensure an empty slot exists so the form can be shown
             // Fallback: copy current list without forcing an empty slot
-            displayedLlantas = llantasVehiculo.toMutableList() as MutableList<LlantaVehiculo?>
+            displayedLlantas = mutableListOf<LlantaVehiculo?>().apply { addAll(llantasVehiculo) }
         }
     }
 
@@ -617,7 +616,7 @@ fun PruebaRendimientoScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Regresar"
                         )
                     }
@@ -724,8 +723,6 @@ fun PruebaRendimientoScreen(
                             llanta = llanta,
                             data = currentData,
                             lastRecorded = last,
-                            displayedOdometer = displayedOdometerFloat,
-                            lastPruebaMap = lastPruebaMap,
                             repository = repository,
                             canTerminatePrueba = canTerminatePrueba,
                             showValidationErrors = validationAttempted,
@@ -745,7 +742,7 @@ fun PruebaRendimientoScreen(
                     }
 
                     if (index < displayedLlantas.size - 1) {
-                        Divider(
+                        HorizontalDivider(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp),
@@ -1020,8 +1017,6 @@ private fun LlantaRendimientoForm(
     llanta: LlantaVehiculo,
     data: LlantaRendimientoFormData,
     lastRecorded: LlantaRendimiento?,
-    displayedOdometer: Float,
-    lastPruebaMap: Map<Int, PruebaRendimiento>,
     repository: YokohamaRepository,
     canTerminatePrueba: Boolean,
     showValidationErrors: Boolean,
@@ -1139,36 +1134,6 @@ private fun LlantaRendimientoForm(
                     }
                 }
 
-                val launchPickImage: () -> Unit = {
-                    coroutineScope.launch {
-                        isLoadingFile = true
-                        fileError = null
-                        try {
-                            val fileData = filePickerUtils.pickImageFile()
-
-                            if (fileData != null) {
-                                // Validar tamaño del archivo (máximo 5MB)
-                                if (fileData.size > 5L * 1024L * 1024L) {
-                                    fileError = "El archivo es demasiado grande (máximo 5MB)"
-                                } else {
-                                    val base64Data = FileConverter.fileDataToBase64(fileData)
-                                    onDataChange(
-                                        data.copy(
-                                            foto = base64Data,
-                                            fotoNombre = fileData.name,
-                                            fotoTamano = fileData.size
-                                        )
-                                    )
-                                }
-                            }
-                        } catch (e: Exception) {
-                            fileError = ErrorUtils.userMessage(e, "Error al seleccionar imagen")
-                        } finally {
-                            isLoadingFile = false
-                        }
-                    }
-                }
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -1197,7 +1162,7 @@ private fun LlantaRendimientoForm(
                                                 coroutineScope.launch {
                                                     terminadaUpdating.value = true
                                                     try {
-                                                        val llantaVehiculoId = lastRecorded?.LlantasVehiculos_idLlantasVehiculos ?: llanta.idLlantasVehiculos
+                                                        val llantaVehiculoId = lastRecorded.LlantasVehiculos_idLlantasVehiculos ?: llanta.idLlantasVehiculos
                                                         val res = repository.updateUltimaLlantaRendimiento(llantaVehiculoId, newValue)
                                                         if (res.isFailure) {
                                                             onDataChange(data.copy(pTerminada = !newValue))
@@ -1454,22 +1419,22 @@ private fun LlantaRendimientoForm(
                 // MM fields + helpers (existing implementation preserved)
                 Column {
                     // Shared state for MM fields so MicButton can update them
-                    var mm1State by remember { mutableStateOf(TextFieldValue(data.mm1)) }
-                    var mm2State by remember { mutableStateOf(TextFieldValue(data.mm2)) }
-                    var mm3State by remember { mutableStateOf(TextFieldValue(data.mm3)) }
-                    var mm4State by remember { mutableStateOf(TextFieldValue(data.mm4)) }
-                    var mm1Focused by remember { mutableStateOf(false) }
-                    var mm2Focused by remember { mutableStateOf(false) }
-                    var mm3Focused by remember { mutableStateOf(false) }
-                    var mm4Focused by remember { mutableStateOf(false) }
-                    LaunchedEffect(data.mm1) { if (data.mm1 != mm1State.text) mm1State = TextFieldValue(data.mm1) }
-                    LaunchedEffect(mm1Focused) { if (mm1Focused) mm1State = mm1State.copy(selection = TextRange(0, mm1State.text.length)) }
-                    LaunchedEffect(data.mm2) { if (data.mm2 != mm2State.text) mm2State = TextFieldValue(data.mm2) }
-                    LaunchedEffect(mm2Focused) { if (mm2Focused) mm2State = mm2State.copy(selection = TextRange(0, mm2State.text.length)) }
-                    LaunchedEffect(data.mm3) { if (data.mm3 != mm3State.text) mm3State = TextFieldValue(data.mm3) }
-                    LaunchedEffect(mm3Focused) { if (mm3Focused) mm3State = mm3State.copy(selection = TextRange(0, mm3State.text.length)) }
-                    LaunchedEffect(data.mm4) { if (data.mm4 != mm4State.text) mm4State = TextFieldValue(data.mm4) }
-                    LaunchedEffect(mm4Focused) { if (mm4Focused) mm4State = mm4State.copy(selection = TextRange(0, mm4State.text.length)) }
+                    var mm1StateLocal by remember { mutableStateOf(TextFieldValue(data.mm1)) }
+                    var mm2StateLocal by remember { mutableStateOf(TextFieldValue(data.mm2)) }
+                    var mm3StateLocal by remember { mutableStateOf(TextFieldValue(data.mm3)) }
+                    var mm4StateLocal by remember { mutableStateOf(TextFieldValue(data.mm4)) }
+                    var mm1FocusedLocal by remember { mutableStateOf(false) }
+                    var mm2FocusedLocal by remember { mutableStateOf(false) }
+                    var mm3FocusedLocal by remember { mutableStateOf(false) }
+                    var mm4FocusedLocal by remember { mutableStateOf(false) }
+                    LaunchedEffect(data.mm1) { if (data.mm1 != mm1StateLocal.text) mm1StateLocal = TextFieldValue(data.mm1) }
+                    LaunchedEffect(mm1FocusedLocal) { if (mm1FocusedLocal) mm1StateLocal = mm1StateLocal.copy(selection = TextRange(0, mm1StateLocal.text.length)) }
+                    LaunchedEffect(data.mm2) { if (data.mm2 != mm2StateLocal.text) mm2StateLocal = TextFieldValue(data.mm2) }
+                    LaunchedEffect(mm2FocusedLocal) { if (mm2FocusedLocal) mm2StateLocal = mm2StateLocal.copy(selection = TextRange(0, mm2StateLocal.text.length)) }
+                    LaunchedEffect(data.mm3) { if (data.mm3 != mm3StateLocal.text) mm3StateLocal = TextFieldValue(data.mm3) }
+                    LaunchedEffect(mm3FocusedLocal) { if (mm3FocusedLocal) mm3StateLocal = mm3StateLocal.copy(selection = TextRange(0, mm3StateLocal.text.length)) }
+                    LaunchedEffect(data.mm4) { if (data.mm4 != mm4StateLocal.text) mm4StateLocal = TextFieldValue(data.mm4) }
+                    LaunchedEffect(mm4FocusedLocal) { if (mm4FocusedLocal) mm4StateLocal = mm4StateLocal.copy(selection = TextRange(0, mm4StateLocal.text.length)) }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1514,19 +1479,19 @@ private fun LlantaRendimientoForm(
 
                         // MM1
                         CompactOutlinedTextField(
-                            value = mm1State,
+                            value = mm1StateLocal,
                             onValueChange = {
                                 val allowedMax = lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1
                                 val newText = it.text
                                 val parsed = newText.toFloatOrNull()
                                 val finalText = if (parsed != null && parsed > allowedMax) allowedMax.toString() else newText
-                                mm1State = TextFieldValue(finalText, selection = TextRange(finalText.length))
+                                mm1StateLocal = TextFieldValue(finalText, selection = TextRange(finalText.length))
                                 onDataChange(data.copy(mm1 = finalText))
                             },
                             label = "MM",
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(onNext = { focusRequester2.requestFocus() }),
-                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester1).onFocusChanged { mm1Focused = it.isFocused },
+                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester1).onFocusChanged { mm1FocusedLocal = it.isFocused },
                             singleLine = true,
                             enabled = !data.pTerminada,
                             isError = showValidationErrors && (data.mm1.isBlank() || data.mm1.toFloatOrNull() == null)
@@ -1534,19 +1499,19 @@ private fun LlantaRendimientoForm(
 
                         // MM2
                         CompactOutlinedTextField(
-                            value = mm2State,
+                            value = mm2StateLocal,
                             onValueChange = {
                                 val allowedMax = lastRecorded?.LlantasRendimientoMm2 ?: llanta.LlantasVehiculosMM2
                                 val newText = it.text
                                 val parsed = newText.toFloatOrNull()
                                 val finalText = if (parsed != null && parsed > allowedMax) allowedMax.toString() else newText
-                                mm2State = TextFieldValue(finalText, selection = TextRange(finalText.length))
+                                mm2StateLocal = TextFieldValue(finalText, selection = TextRange(finalText.length))
                                 onDataChange(data.copy(mm2 = finalText))
                             },
                             label = "MM",
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(onNext = { focusRequester3.requestFocus() }),
-                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester2).onFocusChanged { mm2Focused = it.isFocused },
+                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester2).onFocusChanged { mm2FocusedLocal = it.isFocused },
                             singleLine = true,
                             enabled = !data.pTerminada,
                             isError = showValidationErrors && !data.pTerminada && (data.mm2.isBlank() || data.mm2.toFloatOrNull() == null)
@@ -1554,19 +1519,19 @@ private fun LlantaRendimientoForm(
 
                         // MM3
                         CompactOutlinedTextField(
-                            value = mm3State,
+                            value = mm3StateLocal,
                             onValueChange = {
                                 val allowedMax = lastRecorded?.LlantasRendimientoMm3 ?: llanta.LlantasVehiculosMM3
                                 val newText = it.text
                                 val parsed = newText.toFloatOrNull()
                                 val finalText = if (parsed != null && parsed > allowedMax) allowedMax.toString() else newText
-                                mm3State = TextFieldValue(finalText, selection = TextRange(finalText.length))
+                                mm3StateLocal = TextFieldValue(finalText, selection = TextRange(finalText.length))
                                 onDataChange(data.copy(mm3 = finalText))
                             },
                             label = "MM",
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(onNext = { focusRequester4.requestFocus() }),
-                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester3).onFocusChanged { mm3Focused = it.isFocused },
+                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester3).onFocusChanged { mm3FocusedLocal = it.isFocused },
                             singleLine = true,
                             enabled = !data.pTerminada,
                             isError = showValidationErrors && !data.pTerminada && (data.mm3.isBlank() || data.mm3.toFloatOrNull() == null)
@@ -1574,19 +1539,19 @@ private fun LlantaRendimientoForm(
 
                         // MM4
                         CompactOutlinedTextField(
-                            value = mm4State,
+                            value = mm4StateLocal,
                             onValueChange = {
                                 val allowedMax = lastRecorded?.LlantasRendimientoMm4 ?: llanta.LlantasVehiculosMM4
                                 val newText = it.text
                                 val parsed = newText.toFloatOrNull()
                                 val finalText = if (parsed != null && parsed > allowedMax) allowedMax.toString() else newText
-                                mm4State = TextFieldValue(finalText, selection = TextRange(finalText.length))
+                                mm4StateLocal = TextFieldValue(finalText, selection = TextRange(finalText.length))
                                 onDataChange(data.copy(mm4 = finalText))
                             },
                             label = "MM",
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester4).onFocusChanged { mm4Focused = it.isFocused },
+                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester4).onFocusChanged { mm4FocusedLocal = it.isFocused },
                             singleLine = true,
                             enabled = !data.pTerminada,
                             isError = showValidationErrors && !data.pTerminada && (data.mm4.isBlank() || data.mm4.toFloatOrNull() == null)

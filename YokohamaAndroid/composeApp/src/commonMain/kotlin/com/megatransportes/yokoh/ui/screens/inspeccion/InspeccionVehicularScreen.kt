@@ -5,7 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.filled.Warning
@@ -114,11 +114,11 @@ fun InspeccionVehicularScreen(
     LaunchedEffect(key1 = Unit) {
         repository.getTiposVehiculos()
             .onSuccess { result -> tipoVehiculos = result }
-            .onFailure { error -> errorMessage = "Error cargando tipos de vehículos" }
+            .onFailure { _ -> errorMessage = "Error cargando tipos de vehículos" }
 
         repository.getLlantasByFlota(flota.idFlotas)
             .onSuccess { result -> llantas = result }
-            .onFailure { error -> errorMessage = "Error cargando llantas" }
+            .onFailure { _ -> errorMessage = "Error cargando llantas" }
 
         // Cargar parámetros de la flota para validar selección de llantas
         repository.getParametrosByFlotaId(flota.idFlotas)
@@ -156,8 +156,8 @@ fun InspeccionVehicularScreen(
                                 piso = li.LlantasInspeccionPiso ?: "",
                                 dot = li.LlantasInspeccionDOT ?: "",
                                     // Default presion to "0" for compatibility with semaforo behavior
-                                    presion = li.LlantasInspeccionPresion?.toString() ?: "0",
-                                    previousPresion = li.LlantasInspeccionPresion?.toString(),
+                                    presion = li.LlantasInspeccionPresion.toString(),
+                                    previousPresion = li.LlantasInspeccionPresion.toString(),
                                         // Prefer explicit vigia flag from backend; fallback to presion==0 for older records
                                     vigia = (li.LlantasInspeccionVigia == 1) || (li.LlantasInspeccionPresion == 0),
                                 mm1 = li.LlantasInspeccionMm1.toString(),
@@ -233,8 +233,8 @@ fun InspeccionVehicularScreen(
                             selectedLlanta = llantas.firstOrNull { it.idLlantas == li.Llantas_idLlantas },
                             piso = li.LlantasInspeccionPiso ?: "",
                             dot = li.LlantasInspeccionDOT ?: "",
-                            presion = li.LlantasInspeccionPresion?.toString() ?: "0",
-                            previousPresion = li.LlantasInspeccionPresion?.toString(),
+                            presion = li.LlantasInspeccionPresion.toString(),
+                            previousPresion = li.LlantasInspeccionPresion.toString(),
                             vigia = (li.LlantasInspeccionVigia == 1) || (li.LlantasInspeccionPresion == 0),
                             mm1 = li.LlantasInspeccionMm1.toString(),
                             mm2 = li.LlantasInspeccionMm2.toString(),
@@ -275,7 +275,7 @@ fun InspeccionVehicularScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Regresar"
                         )
                     }
@@ -283,7 +283,7 @@ fun InspeccionVehicularScreen(
                 actions = {
                     IconButton(onClick = onHome) { Icon(Icons.Default.Home, contentDescription = "Flota") }
                 },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
@@ -466,10 +466,10 @@ fun InspeccionVehicularScreen(
                                     for (i in (index + 1) until updatedList.size) {
                                         updatedList[i] = updatedList[i].copy(
                                             selectedLlanta = newData.selectedLlanta,
-                                            mm1 = newData.selectedLlanta?.LlantasMm?.toString() ?: updatedList[i].mm1,
-                                            mm2 = newData.selectedLlanta?.LlantasMm?.toString() ?: updatedList[i].mm2,
-                                            mm3 = newData.selectedLlanta?.LlantasMm?.toString() ?: updatedList[i].mm3,
-                                            mm4 = newData.selectedLlanta?.LlantasMm?.toString() ?: updatedList[i].mm4
+                                            mm1 = newData.selectedLlanta.LlantasMm.toString() ?: updatedList[i].mm1,
+                                            mm2 = newData.selectedLlanta.LlantasMm.toString() ?: updatedList[i].mm2,
+                                            mm3 = newData.selectedLlanta.LlantasMm.toString() ?: updatedList[i].mm3,
+                                            mm4 = newData.selectedLlanta.LlantasMm.toString() ?: updatedList[i].mm4
                                         )
                                     }
                                     llantasInspeccionData = updatedList
@@ -478,7 +478,7 @@ fun InspeccionVehicularScreen(
                         )
 
                         if (index != llantasInspeccionData.lastIndex) {
-                            Divider(
+                            HorizontalDivider(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                                 thickness = 2.5.dp,
                                 color = Color.Black
@@ -517,7 +517,7 @@ fun InspeccionVehicularScreen(
                         )
 
                         if (index != llantasInspeccionData.lastIndex) {
-                            Divider(
+                            HorizontalDivider(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                                 thickness = 2.5.dp,
                                 color = Color.Black
@@ -593,8 +593,8 @@ fun InspeccionVehicularScreen(
                                 return@launch
                             }
                             
-                            val parametros = parametrosResult.getOrNull() ?: emptyList()
-                            val medidasConParametro = parametros.mapNotNull { it.LlantasMedida }.toSet()
+                            val parametrosList = parametrosResult.getOrNull() ?: emptyList()
+                            val medidasConParametro = parametrosList.mapNotNull { it.LlantasMedida }.toSet()
                             val missingLlantaIds = llantasInspeccionData.mapNotNull { data ->
                                 val llanta = data.selectedLlanta
                                 val medida = llanta?.LlantasMedida
@@ -699,7 +699,7 @@ fun InspeccionVehicularScreen(
                                                 )
                                                 // Debug: log update payload for this llanta
                                                 try { println("[UI][Inspeccion] updateLlantaInspeccion id=${data.id} body=${ubody}") } catch (_: Exception) {}
-                                                val res = repository.updateLlantaInspeccion(data.id!!, ubody)
+                                                val res = repository.updateLlantaInspeccion(data.id, ubody)
                                                 // If update succeeded, reflect server values in UI state so changes appear without reload
                                                 if (res.isSuccess) {
                                                     val updated = res.getOrNull()
@@ -979,8 +979,6 @@ private fun LlantaInspeccionForm(
     var filteredLlantas by remember { mutableStateOf<List<Llanta>>(emptyList()) }
     var showExtraFields by remember { mutableStateOf(false) }
     var showPhotoPickerDialog by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
-
     val formBorderColor = when {
         data.isValid() -> Color(0xFF2E7D32)
         showValidationErrors -> MaterialTheme.colorScheme.error

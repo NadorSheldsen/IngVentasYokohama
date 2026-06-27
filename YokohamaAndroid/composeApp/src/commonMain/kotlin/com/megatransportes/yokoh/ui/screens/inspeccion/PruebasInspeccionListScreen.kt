@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.items
 
 import androidx.compose.material.icons.Icons
 
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 import androidx.compose.material.icons.filled.Add
 
@@ -322,7 +322,7 @@ fun PruebasInspeccionListScreen(
 
                         Icon(
 
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
 
                             contentDescription = "Regresar"
 

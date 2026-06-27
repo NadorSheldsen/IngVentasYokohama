@@ -11,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -50,7 +50,7 @@ fun AsignarLlantasScreen(
                 title = { Text("Asignar Llantas") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.Black)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = Color.Black)
                     }
                 },
                 actions = {
@@ -91,7 +91,7 @@ fun AsignarLlantasScreen(
                     val filtered = llantas.filter { l ->
                         val text = "${l.LlantasMarca} ${l.LlantasModelo} ${l.LlantasMedida}".lowercase()
                         val matches = text.contains(filter.lowercase())
-                        val assoc = (l as? Map<String, Any?>)?.get("asociada")?.toString() == "1" || (l.asociada == 1)
+                        val assoc = (l.asociada == 1)
                         (if (showOnlyAssociated) assoc else true) && matches
                     }
 

@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.items
 
 import androidx.compose.material.icons.Icons
 
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 import androidx.compose.material.icons.filled.Add
 
@@ -57,8 +57,6 @@ fun LlantasDesechoScreen(
     repository: YokohamaRepository,
 
     pruebaDesecho: PruebasDesecho,
-
-    flota: Flota,
 
     onNuevaLlantaClick: () -> Unit,
 
@@ -154,7 +152,7 @@ fun LlantasDesechoScreen(
 
                     IconButton(onClick = onBack) {
 
-                        Icon(Icons.Default.ArrowBack, "Regresar")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Regresar")
 
                     }
 

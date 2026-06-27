@@ -176,7 +176,7 @@ fun AppNavigation(
 
         key(screen, refreshTick) {
 
-            when (val screen = screen) {
+            when (screen) {
 
         is Screen.Login -> {
 
@@ -428,8 +428,6 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
-
                 onBack = back,
 
                 onHome = { navigator.navigate(Screen.FlotaMenu(screen.flota)) }
@@ -670,8 +668,6 @@ fun AppNavigation(
 
                 repository = repository,
 
-                flota = screen.flota,
-
                 pruebaSemaforo = screen.pruebaSemaforo,
 
                 onVehiculoClick = { veh ->
@@ -794,8 +790,6 @@ fun AppNavigation(
 
                 pruebaDesecho = screen.pruebaDesecho,
 
-                flota = screen.flota,
-
                 onNuevaLlantaClick = { 
 
                     navigator.navigate(Screen.NuevaLlantaDesechoScreen(screen.pruebaDesecho, screen.flota, null)) 
@@ -827,8 +821,6 @@ fun AppNavigation(
                 repository = repository,
 
                 pruebaDesecho = screen.pruebaDesecho,
-
-                flota = screen.flota,
 
                 existingLlanta = screen.existing,
 
@@ -917,8 +909,6 @@ fun AppNavigation(
                 repository = repository,
 
                 pruebaInspeccion = screen.pruebaInspeccion,
-
-                flota = screen.flota,
 
                 onVehiculoClick = { veh ->
 

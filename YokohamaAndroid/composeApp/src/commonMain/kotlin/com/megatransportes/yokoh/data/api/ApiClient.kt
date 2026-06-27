@@ -910,18 +910,19 @@ class ApiClient(
             }
             if (!call.status.isSuccess()) {
                 val text = try { call.body<String>() } catch (_: Exception) { "(no body)" }
-                return Result.failure(Exception(extractMessageFromResponse(call.status, text, call.headers)))
-            }
-            val bodyText: String = call.body()
-            try {
-                val json = kotlinx.serialization.json.Json.parseToJsonElement(bodyText).jsonObject
-                val terminadaId = json["terminadaId"]?.jsonPrimitive?.intOrNull
-                return Result.success(terminadaId ?: -1)
-            } catch (e: Exception) {
-                return Result.success(-1)
+                Result.failure(Exception(extractMessageFromResponse(call.status, text, call.headers)))
+            } else {
+                val bodyText: String = call.body()
+                try {
+                    val json = kotlinx.serialization.json.Json.parseToJsonElement(bodyText).jsonObject
+                    val terminadaId = json["terminadaId"]?.jsonPrimitive?.intOrNull
+                    Result.success(terminadaId ?: -1)
+                } catch (e: Exception) {
+                    Result.success(-1)
+                }
             }
         } catch (e: Exception) {
-            return Result.failure(e)
+            Result.failure(e)
         }
     }
 
@@ -1159,7 +1160,7 @@ class ApiClient(
                     val ultimoRes = getUltimoPruebaRendimientoByVehiculo(v.idVehiculos)
                     if (ultimoRes.isSuccess) {
                         val prueba = ultimoRes.getOrNull()
-                        if (prueba != null && prueba.PruebaRendimientoOdometro != null) {
+                        if (prueba != null) {
                             map[v.idVehiculos] = prueba.PruebaRendimientoOdometro
                         }
                     }

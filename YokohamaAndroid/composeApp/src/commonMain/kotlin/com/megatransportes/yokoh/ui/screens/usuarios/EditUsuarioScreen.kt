@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
@@ -49,7 +49,6 @@ fun EditUsuarioScreen(
     var flotas by remember { mutableStateOf<List<Flota>>(emptyList()) }
     var flotasAsignadas by remember { mutableStateOf<List<Flota>>(emptyList()) }
     var flotasUsuarios by remember { mutableStateOf<List<FlotasUsuarios>>(emptyList()) }
-    var flotaSearch by remember { mutableStateOf("") }
     var showFlotaDialog by remember { mutableStateOf(false) }
     
     var isLoading by remember { mutableStateOf(false) }
@@ -86,7 +85,7 @@ fun EditUsuarioScreen(
             // Cargar relaciones FlotasUsuarios (necesario para poder desasignar correctamente)
             repository.getFlotasUsuariosByUsuarioId(usuario.idUsuarios)
                 .onSuccess { result -> flotasUsuarios = result }
-                .onFailure { e ->
+                .onFailure { _ ->
                     // If the endpoint is not available, fall back silently (don't show raw error to users)
                 }
         }
@@ -98,7 +97,7 @@ fun EditUsuarioScreen(
                 title = { Text("Editar Usuario") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Regresar")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Regresar")
                     }
                 }
             )

@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ExpandMore
@@ -211,15 +211,14 @@ fun PruebaDesechoReportScreen(
     }
 
     // helper maps
-    val brandMap = catalog.associateBy({ it.idLlantas }) { it.LlantasMarca ?: "Otras" }
+    val brandMap = catalog.associateBy({ it.idLlantas }) { it.LlantasMarca }
     val catalogMap = catalog.associateBy { it.idLlantas }
 
     // Aggregations
-    val causaCounts = llantas.groupingBy { it.LlantasDesechoCausaDes ?: "Sin causa" }.eachCount()
+    val causaCounts = llantas.groupingBy { it.LlantasDesechoCausaDes }.eachCount()
     val marcaCounts = llantas.map { brandMap[it.Llantas_idLlantas] ?: "Otras" }.groupingBy { it }.eachCount()
     val remanentes = llantas.mapNotNull { it.LlantasDesechoRemanente }
-    val pisoCounts = llantas.groupingBy { it.LlantasDesechoPiso ?: "Desconocido" }.eachCount()
-    val dateCounts = llantas.groupingBy { (it.LlantasDesechoFecha ?: "Sin fecha").split('T',' ').firstOrNull() ?: "Sin fecha" }.eachCount()
+    val dateCounts = llantas.groupingBy { it.LlantasDesechoFecha.split('T',' ').firstOrNull() ?: "Sin fecha" }.eachCount()
 
     // Pie dialog state (used for pies like Tipo de piso)
     var showPieDialog by remember { mutableStateOf(false) }
@@ -234,7 +233,7 @@ fun PruebaDesechoReportScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Reporte - ${prueba.PruebasDesechoNombre}", maxLines = 2, overflow = TextOverflow.Ellipsis) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Back") } },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") } },
                 actions = {
                     IconButton(onClick = onHome) { Icon(Icons.Default.Home, "Home") }
                     IconButton(onClick = {
@@ -260,12 +259,12 @@ fun PruebaDesechoReportScreen(
                                 // Build payload similar shape to other report screens
                                 val pruebaMap = mapOf(
                                     "idPruebasDesecho" to prueba.idPruebasDesecho,
-                                    "PruebasDesechoNombre" to (prueba.PruebasDesechoNombre ?: "")
+                                    "PruebasDesechoNombre" to prueba.PruebasDesechoNombre
                                 )
 
                                 val flotaMap = mapOf(
                                     "idFlotas" to flota.idFlotas,
-                                    "FlotasNombre" to (flota.FlotasNombre ?: "")
+                                    "FlotasNombre" to flota.FlotasNombre
                                 )
 
                                 val llantasList = llantas.map { ll ->

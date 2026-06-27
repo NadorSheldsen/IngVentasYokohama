@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Settings
@@ -50,7 +50,6 @@ fun AddVehiculoScreen(
     var odometro by remember { mutableStateOf("") }
     var tiposVehiculos by remember { mutableStateOf<List<TipoVehiculo>>(emptyList()) }
     var selectedTipoVehiculo by remember { mutableStateOf<TipoVehiculo?>(null) }
-    var expandedDropdown by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var isLoadingTipos by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -79,7 +78,7 @@ fun AddVehiculoScreen(
     Scaffold(topBar = {
         TopAppBar(
             title = { Text("Agregar Vehículo a ${flota.FlotasNombre}") },
-            navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Regresar") } },
+            navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Regresar") } },
             actions = { IconButton(onClick = onHome) { Icon(Icons.Default.Home, contentDescription = "Flota") } }
         )
     }) { paddingValues ->

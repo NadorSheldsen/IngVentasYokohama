@@ -45,7 +45,18 @@ kotlin {
             freeCompilerArgs += listOf(
                 "-Xexpect-actual-classes",
                 "-Xopt-in=kotlin.RequiresOptIn",
+                "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
                 "-Xjvm-default=all"
+            )
+        }
+    }
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile::class.java).configureEach {
+        kotlinOptions {
+            freeCompilerArgs += listOf(
+                "-Xexpect-actual-classes",
+                "-Xopt-in=kotlin.RequiresOptIn",
+                "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi",
+                "-Xopt-in=kotlinx.cinterop.BetaInteropApi"
             )
         }
     }

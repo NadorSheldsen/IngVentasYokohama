@@ -2,7 +2,7 @@ package com.megatransportes.yokoh.ui.screens.inspecciones
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Home
@@ -36,7 +36,6 @@ import com.megatransportes.yokoh.utils.NumberFormatter
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -112,15 +111,13 @@ fun PruebaInspeccionReportScreen(
             TopAppBar(
                 title = { Text("Reporte - ${prueba.PruebaInspeccionTitulo}", maxLines = 2, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Back") }
+                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") }
                 },
                 actions = {
                     IconButton(onClick = onHome) { Icon(Icons.Default.Home, contentDescription = "Home") }
                     IconButton(onClick = {
                         coroutineScope.launch {
                             try {
-                                val jsonLib = Json { prettyPrint = false; isLenient = true; ignoreUnknownKeys = true }
-
                                 fun toJsonElem(value: Any?): kotlinx.serialization.json.JsonElement {
                                     return when (value) {
                                         null -> kotlinx.serialization.json.JsonNull
@@ -140,7 +137,7 @@ fun PruebaInspeccionReportScreen(
 
                                 val flotaMap = mapOf(
                                     "idFlotas" to flota.idFlotas,
-                                    "FlotasNombre" to (flota.FlotasNombre ?: "")
+                                    "FlotasNombre" to flota.FlotasNombre
                                 )
 
                                 val vehiculosList = vehiculos.map { v ->
@@ -265,7 +262,7 @@ fun PruebaInspeccionReportScreen(
                             val topN = 3
                             val top = sorted.take(topN)
                             val othersCount = sorted.drop(topN).sumOf { it.value }
-                            val displayList: List<Pair<String, Int>> = top.map { (k, v) -> (k ?: "Otras") to v }
+                            val displayList: List<Pair<String, Int>> = top.map { (k, v) -> k to v }
                                 .let { if (othersCount > 0) it + listOf("Otras" to othersCount) else it }
 
                             Row(modifier = Modifier.fillMaxWidth().clickable {
@@ -372,7 +369,6 @@ fun PruebaInspeccionReportScreen(
                             }
                         }
 
-                        val mmTotalConsidered = (mmBelow + mmBetween + mmAbove).coerceAtLeast(1)
                         Card(modifier = Modifier.fillMaxWidth().clickable {
                             pieTitle = "Milimetraje"
                             pieData = listOf("< ProfMin" to mmBelow, "Entre ProfMin-ProfMax" to mmBetween, "> ProfMax" to mmAbove)
@@ -425,12 +421,6 @@ fun PruebaInspeccionReportScreen(
                                 "llantaId=${ll.Llantas_idLlantas} vehiculoInspeccion=${ll.vehiculosinspeccion_idVehiculoInspeccion} pres=$p medida=$medida paramId=${param?.idParametros} pmin=${param?.ParametrosPMin} psug=${param?.ParametrosPSug}"
                             )
 
-                            if (p == null) {
-                                // No pressure reading at all
-                                presionNoData++
-                                continue
-                            }
-
                             if (param == null) {
                                 // No parametros entry for this llanta id; fallback: we have a numeric
                                 // pressure value from the API, so count it as OK rather than "Sin dato".
@@ -447,7 +437,6 @@ fun PruebaInspeccionReportScreen(
                             }
                         }
 
-                        val presTotalConsidered = (presionRed + presionGreen + presionYellow + presionNoData).coerceAtLeast(1)
                         com.megatransportes.yokoh.utils.DebugLog.d(
                             "PRUEBA_INSPECCION",
                             "presionRed=$presionRed presionGreen=$presionGreen presionYellow=$presionYellow presionNoData=$presionNoData vigiaCount=$vigiaCount"
@@ -486,8 +475,6 @@ fun PruebaInspeccionReportScreen(
                         val originalCount = flattened.count { it.LlantasInspeccionPiso == "Original" }
                         val vitalizadoCount = flattened.count { it.LlantasInspeccionPiso == "Vitalizado" }
                         val otherPisoCount = (flattened.size - originalCount - vitalizadoCount).coerceAtLeast(0)
-                        val totalPisoDenom = (originalCount + vitalizadoCount).coerceAtLeast(1)
-
                         Card(modifier = Modifier.fillMaxWidth().clickable {
                             pieTitle = "Tipo de piso"
                             pieData = listOf("Original" to originalCount, "Vitalizado" to vitalizadoCount, "Otros" to otherPisoCount)
@@ -510,8 +497,6 @@ fun PruebaInspeccionReportScreen(
                         // Condición peligrosa: mostrar porcentaje de llantas con condición peligrosa (1 == peligrosa)
                         val condPelTrue = flattened.count { it.LlantasInspeccionCondPel == 1 }
                         val condPelFalse = (flattened.size - condPelTrue).coerceAtLeast(0)
-                        val condDenom = (condPelTrue + condPelFalse).coerceAtLeast(1)
-
                         Card(modifier = Modifier.fillMaxWidth().clickable {
                             pieTitle = "Condición peligrosa"
                             pieData = listOf("Peligrosa" to condPelTrue, "Normal" to condPelFalse)
@@ -645,7 +630,7 @@ fun PruebaInspeccionReportScreen(
                                         if (isCompact) {
                                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                                 Column {
-                                                    Text(veh.VehiculoInspeccionNo ?: "Sin placa", fontWeight = FontWeight.Bold)
+                                                    Text(veh.VehiculoInspeccionNo, fontWeight = FontWeight.Bold)
                                                     Text(tipoName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                                 }
                                                 Row(
@@ -672,7 +657,7 @@ fun PruebaInspeccionReportScreen(
                                         } else {
                                             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                                                 Column(modifier = Modifier.weight(1f)) {
-                                                    Text(veh.VehiculoInspeccionNo ?: "Sin placa", fontWeight = FontWeight.Bold)
+                                                    Text(veh.VehiculoInspeccionNo, fontWeight = FontWeight.Bold)
                                                     Text(tipoName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                                 }
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -701,7 +686,7 @@ fun PruebaInspeccionReportScreen(
                                             Card(modifier = Modifier.fillMaxWidth()) {
                                                 Row(modifier = Modifier.fillMaxWidth().padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
                                                     Column(modifier = Modifier.weight(1f)) {
-                                                        val presText = if (ll.LlantasInspeccionVigia == 1) "Vigía" else (ll.LlantasInspeccionPresion?.toString() ?: "Sin dato")
+                                                        val presText = if (ll.LlantasInspeccionVigia == 1) "Vigía" else ll.LlantasInspeccionPresion.toString()
                                                         Text("Presión: $presText", style = MaterialTheme.typography.bodyMedium)
                                                         val mmText = listOfNotNull(ll.LlantasInspeccionMm1, ll.LlantasInspeccionMm2, ll.LlantasInspeccionMm3, ll.LlantasInspeccionMm4).joinToString(" / ")
                                                         if (mmText.isNotBlank()) Text("Milimetraje: $mmText", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

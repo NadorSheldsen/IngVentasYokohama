@@ -5,7 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Warning
@@ -84,7 +84,7 @@ fun LlantasVehiculoScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Regresar"
                         )
                     }
@@ -173,10 +173,10 @@ fun LlantasVehiculoScreen(
                                     updatedList[i] = updatedList[i].copy(
                                         selectedLlanta = newData.selectedLlanta,
                                         precio = "0",
-                                        mm1 = newData.selectedLlanta?.LlantasMm?.toString() ?: updatedList[i].mm1,
-                                        mm2 = newData.selectedLlanta?.LlantasMm?.toString() ?: updatedList[i].mm2,
-                                        mm3 = newData.selectedLlanta?.LlantasMm?.toString() ?: updatedList[i].mm3,
-                                        mm4 = newData.selectedLlanta?.LlantasMm?.toString() ?: updatedList[i].mm4
+                                        mm1 = newData.selectedLlanta.LlantasMm.toString() ?: updatedList[i].mm1,
+                                        mm2 = newData.selectedLlanta.LlantasMm.toString() ?: updatedList[i].mm2,
+                                        mm3 = newData.selectedLlanta.LlantasMm.toString() ?: updatedList[i].mm3,
+                                        mm4 = newData.selectedLlanta.LlantasMm.toString() ?: updatedList[i].mm4
                                     )
                                 }
                                 llantasData = updatedList
@@ -233,12 +233,12 @@ fun LlantasVehiculoScreen(
                         }
 
                         // Validar que todas las llantas tengan parámetros
-                        val medidasConParametro = parametros.mapNotNull { it.LlantasMedida }.toSet()
+                        val medidasConParametroSet = parametros.mapNotNull { it.LlantasMedida }.toSet()
                         val missingLlantaIds = llantasData.mapIndexedNotNull { index, data ->
                             if (collapsedForms.getOrNull(index) == true) return@mapIndexedNotNull null
                             val llanta = data.selectedLlanta
                             val medida = llanta?.LlantasMedida
-                            if (llanta != null && medida != null && !medidasConParametro.contains(medida)) llanta.idLlantas to medida else null
+                            if (llanta != null && medida != null && !medidasConParametroSet.contains(medida)) llanta.idLlantas to medida else null
                         }.distinctBy { it.second }.map { it.first }
                         if (missingLlantaIds.isNotEmpty()) {
                             suggestedLlantaIdsForParametros = missingLlantaIds

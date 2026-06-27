@@ -16,7 +16,7 @@ import androidx.compose.material.icons.Icons
 
 import androidx.compose.material.icons.filled.Add
 
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 import androidx.compose.material.icons.filled.Close
 
@@ -290,7 +290,7 @@ fun ParametrosListScreen(
 
                 navigationIcon = {
 
-                    IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Volver") }
+                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver") }
 
                 },
 
@@ -564,7 +564,7 @@ private fun SuggestedLlantaCard(
 
                     Text(
 
-                        text = "${llanta.LlantasMarca ?: ""} ${llanta.LlantasModelo ?: ""}".trim(),
+                        text = "${llanta.LlantasMarca} ${llanta.LlantasModelo}".trim(),
 
                         fontSize = 14.sp,
 

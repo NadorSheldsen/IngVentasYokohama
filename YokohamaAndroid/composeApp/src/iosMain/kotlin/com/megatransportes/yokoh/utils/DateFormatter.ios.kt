@@ -12,7 +12,7 @@ actual object DateFormatter {
         val formatter = NSDateFormatter()
         formatter.dateFormat = pattern
         val date = NSDate(timestamp / 1000.0)
-        return formatter.stringFromDate(date) ?: ""
+        return formatter.stringFromDate(date)
     }
     
     actual fun format(year: Int, month: Int, day: Int, pattern: String): String {
@@ -26,6 +26,6 @@ actual object DateFormatter {
         components.day = day.toLong()
         
         val date = calendar.dateFromComponents(components)
-        return formatter.stringFromDate(date ?: NSDate()) ?: ""
+        return formatter.stringFromDate(date ?: NSDate())
     }
 }

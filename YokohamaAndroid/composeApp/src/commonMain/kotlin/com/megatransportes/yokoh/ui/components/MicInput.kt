@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.window.Popup
@@ -57,7 +56,7 @@ fun MicButton(
     // stop and return last partial/final
     stopListening: (suspend () -> String?)? = null,
     // Optional callback so host can render an overlay at top level (center provided in window coordinates)
-    onOverlayRequested: ((recording: Boolean, centerWindow: Offset, circleDp: Dp) -> Unit)? = null
+    _onOverlayRequested: ((recording: Boolean, centerWindow: Offset, circleDp: Dp) -> Unit)? = null
 ) {
     val coroutineScope = rememberCoroutineScope()
     var recording by remember { mutableStateOf(false) }
@@ -362,7 +361,6 @@ fun MicButton(
     )
 
     // Track global position and size to place an overlay Popup centered on the button
-    val density = LocalDensity.current
     var centerWindowPos by remember { mutableStateOf(Offset.Zero) }
     var buttonSizePx by remember { mutableStateOf(IntSize(0, 0)) }
 

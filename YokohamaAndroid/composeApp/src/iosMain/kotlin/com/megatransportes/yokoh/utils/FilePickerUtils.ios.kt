@@ -2,6 +2,7 @@ package com.megatransportes.yokoh.utils
 
 import androidx.compose.runtime.Composable
 import kotlinx.cinterop.ObjCAction
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.usePinned
@@ -39,7 +40,7 @@ import platform.posix.SEEK_SET
 import kotlin.coroutines.resume
 import kotlin.system.getTimeMillis
 
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 actual class FilePickerUtils : NSObject(),
     UIImagePickerControllerDelegateProtocol,
     UINavigationControllerDelegateProtocol,
@@ -95,6 +96,7 @@ actual class FilePickerUtils : NSObject(),
 
         val data = image?.let { UIImageJPEGRepresentation(it, 0.75) }
         val bytes = data?.let { NSDataToByteArray(it) }
+        @Suppress("DEPRECATION")
         val name = "imagen_${getTimeMillis()}.jpg"
 
         val fileData = if (bytes != null) {
@@ -121,7 +123,7 @@ actual class FilePickerUtils : NSObject(),
     }
 
     @ObjCAction
-    fun documentPicker(controller: UIDocumentPickerViewController, didPickDocumentsAtURLs: NSArray?) {
+    fun documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAtURLs: NSArray?) {
         val url = if (didPickDocumentsAtURLs != null && didPickDocumentsAtURLs.count > 0u) {
             didPickDocumentsAtURLs.objectAtIndex(0u) as? NSURL
         } else null

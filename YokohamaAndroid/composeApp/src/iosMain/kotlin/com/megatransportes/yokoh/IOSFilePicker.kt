@@ -68,7 +68,7 @@ class IOSFilePicker : FilePicker {
         val keyWindow = UIApplication.sharedApplication.keyWindow
         var vc = keyWindow?.rootViewController
         while (vc?.presentedViewController != null) {
-            vc = vc?.presentedViewController
+            vc = vc.presentedViewController
         }
         return vc
     }

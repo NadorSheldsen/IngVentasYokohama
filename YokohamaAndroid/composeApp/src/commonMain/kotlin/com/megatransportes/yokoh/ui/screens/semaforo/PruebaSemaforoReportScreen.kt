@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Home
@@ -122,20 +122,17 @@ fun PruebaSemaforoReportScreen(
 
     // aggregate totals
     val totalLlantas = llantasPorVehiculo.values.sumOf { it.size }
-    val colorCounts = llantasPorVehiculo.values.flatten().groupingBy { it.LlantasSemaforoColor ?: "Desconocido" }.eachCount()
     // map llanta id -> marca from catalog
     val catalogMap = llantaCatalog.associateBy({ it.idLlantas }) { it.LlantasMarca }
     val brandCounts = llantasPorVehiculo.values.flatten().map { ll -> catalogMap[ll.Llantas_idLlantas] ?: "Otras" }
         .groupingBy { it }.eachCount()
-    val brandPercentages = if (totalLlantas > 0) brandCounts.mapValues { (_, cnt) -> (cnt * 100) / totalLlantas } else emptyMap()
-
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Reporte - ${prueba.PruebasSemaforoTitulo}", maxLines = 2, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Back") }
+                    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") }
                 },
                 actions = {
                     IconButton(onClick = onHome) { Icon(Icons.Default.Home, contentDescription = "Home") }
@@ -163,7 +160,7 @@ fun PruebaSemaforoReportScreen(
 
                                 val flotaMap = mapOf(
                                     "idFlotas" to flota.idFlotas,
-                                    "FlotasNombre" to (flota.FlotasNombre ?: "")
+                                    "FlotasNombre" to flota.FlotasNombre
                                 )
 
                                 val vehiculosList = vehiculos.map { v ->
@@ -347,9 +344,6 @@ fun PruebaSemaforoReportScreen(
                             }
                         }
 
-                        val totalNonVigia = (presionRed + presionGreen + presionYellow + presionNoData).coerceAtLeast(1)
-                        val totalAll = flattened.size.coerceAtLeast(1)
-
                         Column(modifier = Modifier.fillMaxWidth().clickable {
                             // prepare pressure pie data
                             pieTitle = "Presión"
@@ -383,7 +377,7 @@ fun PruebaSemaforoReportScreen(
                             val topN = 3
                             val top = sorted.take(topN)
                             val othersCount = sorted.drop(topN).sumOf { it.value }
-                            val displayList: List<Pair<String, Int>> = top.map { (k, v) -> (k ?: "Otras") to v }
+                            val displayList: List<Pair<String, Int>> = top.map { (k, v) -> k to v }
                                 .let { if (othersCount > 0) it + listOf("Otras" to othersCount) else it }
 
                             Row(modifier = Modifier.fillMaxWidth().clickable {
@@ -434,8 +428,6 @@ fun PruebaSemaforoReportScreen(
                         val originalCount = flattened.count { it.LlantasSemaforoPiso == "Original" }
                         val vitalizadoCount = flattened.count { it.LlantasSemaforoPiso == "Vitalizado" }
                         val otherPisoCount = (flattened.size - originalCount - vitalizadoCount).coerceAtLeast(0)
-                        val totalPisoDenom = (originalCount + vitalizadoCount).coerceAtLeast(1)
-
                         Column(modifier = Modifier.fillMaxWidth().clickable {
                             pieTitle = "Tipo de piso"
                             pieData = listOf("Original" to originalCount, "Vitalizado" to vitalizadoCount, "Otros" to otherPisoCount)
@@ -459,8 +451,6 @@ fun PruebaSemaforoReportScreen(
                         val condPelTrue = flattened.count { it.LlantasSemaforoCondPel == true }
                         val condPelFalse = flattened.count { it.LlantasSemaforoCondPel != true }
                         val condPelOther = 0
-                        val condDenom = (condPelTrue + condPelFalse).coerceAtLeast(1)
-
                         Column(modifier = Modifier.fillMaxWidth().clickable {
                             pieTitle = "Condición peligrosa"
                             pieData = listOf("Peligrosa" to condPelTrue, "Normal" to condPelFalse)
@@ -599,7 +589,7 @@ fun PruebaSemaforoReportScreen(
                                         if (isCompact) {
                                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                                 Column {
-                                                    Text(veh.VehiculoSemaforoNo ?: "Sin placa", fontWeight = FontWeight.Bold)
+                                                    Text(veh.VehiculoSemaforoNo, fontWeight = FontWeight.Bold)
                                                     Text(tipoName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                                 }
                                                 Row(
@@ -626,7 +616,7 @@ fun PruebaSemaforoReportScreen(
                                         } else {
                                             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                                                 Column(modifier = Modifier.weight(1f)) {
-                                                    Text(veh.VehiculoSemaforoNo ?: "Sin placa", fontWeight = FontWeight.Bold)
+                                                    Text(veh.VehiculoSemaforoNo, fontWeight = FontWeight.Bold)
                                                     Text(tipoName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                                 }
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -655,7 +645,7 @@ fun PruebaSemaforoReportScreen(
                                             Card(modifier = Modifier.fillMaxWidth()) {
                                                 Row(modifier = Modifier.fillMaxWidth().padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
                                                     // color swatch similar to SemaforoScreen
-                                                    val colorBox = when ((ll.LlantasSemaforoColor ?: "").lowercase()) {
+                                                    val colorBox = when (ll.LlantasSemaforoColor.lowercase()) {
                                                         "verde" -> Color(0xFF2E7D32)
                                                         "amarillo" -> Color(0xFFFFA000)
                                                         "rojo" -> Color(0xFFD32F2F)
@@ -665,7 +655,7 @@ fun PruebaSemaforoReportScreen(
                                                     Spacer(modifier = Modifier.width(8.dp))
 
                                                     Column(modifier = Modifier.weight(1f)) {
-                                                        val presText = if (ll.LlantasSemaforoVigia == 1) "Vigía" else (ll.LlantasSemaforoPresion?.toString() ?: "Sin dato")
+                                                        val presText = if (ll.LlantasSemaforoVigia == 1) "Vigía" else ll.LlantasSemaforoPresion.toString()
                                                         Text("Presión: $presText", style = MaterialTheme.typography.bodyMedium)
                                                         Text("Observación: ${ll.LlantasSemaforoObserv ?: "Sin dato"}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                                     }

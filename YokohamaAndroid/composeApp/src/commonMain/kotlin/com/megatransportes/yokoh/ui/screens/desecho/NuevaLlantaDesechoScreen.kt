@@ -5,7 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.zIndex
 import androidx.compose.foundation.background
@@ -68,7 +67,6 @@ private fun formatFileSize(bytes: Long): String {
 fun NuevaLlantaDesechoScreen(
     repository: YokohamaRepository,
     pruebaDesecho: PruebasDesecho,
-    flota: Flota,
     existingLlanta: LlantasDesecho? = null,
     onLlantaCreada: () -> Unit,
     onBack: () -> Unit,
@@ -193,7 +191,7 @@ fun NuevaLlantaDesechoScreen(
                 title = { Text("Nueva Llanta de Desecho") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Regresar")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Regresar")
                     }
                 },
                 actions = {
@@ -205,7 +203,6 @@ fun NuevaLlantaDesechoScreen(
         }
     ) { paddingValues ->
         // Overlay state for mic recording indicator (host-level Popup to avoid clipping)
-        val density = LocalDensity.current
         var overlayRecording by remember { mutableStateOf(false) }
         var overlayCenterWindow by remember { mutableStateOf(Offset.Zero) }
         var overlaySizeDp by remember { mutableStateOf(40.dp) }
@@ -501,11 +498,7 @@ fun NuevaLlantaDesechoScreen(
             
             // Fotos: icon-only picker + preview (imagen encima)
             item {
-                val coroutineScopeLocal = rememberCoroutineScope()
                 var isLoadingFile1 by remember { mutableStateOf(false) }
-                var fileError1 by remember { mutableStateOf<String?>(null) }
-                var isLoadingFile2 by remember { mutableStateOf(false) }
-                var fileError2 by remember { mutableStateOf<String?>(null) }
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(

@@ -16,7 +16,7 @@ import androidx.compose.material.icons.Icons
 
 import androidx.compose.material.icons.filled.Add
 
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 import androidx.compose.material.icons.filled.Clear
 
@@ -70,7 +70,7 @@ import androidx.compose.ui.graphics.Color
 
 import androidx.compose.ui.graphics.ImageBitmap
 
-import androidx.compose.material.icons.filled.InsertDriveFile
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 
 import androidx.compose.material.icons.filled.Delete
 
@@ -440,7 +440,7 @@ fun VehiculosScreen(
 
                         Icon(
 
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
 
                             contentDescription = "Regresar"
 
@@ -729,18 +729,6 @@ fun VehiculosScreen(
                                                             val isPdfHeader = bytes.size >= 4 && bytes[0] == '%'.code.toByte() && bytes[1] == 'P'.code.toByte() && bytes[2] == 'D'.code.toByte() && bytes[3] == 'F'.code.toByte()
 
                                                             if (!isPdfHeader) {
-
-                                                                val firstHex = bytes.take(32).joinToString(" ") { it.toString(16).uppercase().padStart(2, '0') }
-
-                                                                val snippet = try {
-
-                                                                    bytes.take(256).toByteArray().decodeToString()
-
-                                                                } catch (_: Exception) {
-
-                                                                    "(no utf8 snippet)"
-
-                                                                }
 
                                                                 // Keep the list visible; show a concise snackbar message
 
@@ -1108,7 +1096,7 @@ fun VehiculoItem(
 
                     Icon(
 
-                        imageVector = Icons.Default.InsertDriveFile,
+                        imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
 
                         contentDescription = "Descargar reporte PDF"
 

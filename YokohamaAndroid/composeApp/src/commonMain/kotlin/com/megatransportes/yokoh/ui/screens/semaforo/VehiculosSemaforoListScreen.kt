@@ -12,7 +12,7 @@ import androidx.compose.material.icons.Icons
 
 import androidx.compose.material.icons.filled.Add
 
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 import androidx.compose.material.icons.filled.Home
 
@@ -49,8 +49,6 @@ import kotlinx.coroutines.launch
 fun VehiculosSemaforoListScreen(
 
     repository: YokohamaRepository,
-
-    flota: Flota,
 
     pruebaSemaforo: PruebasSemaforo,
 
@@ -206,7 +204,7 @@ fun VehiculosSemaforoListScreen(
 
                     IconButton(onClick = onBack) {
 
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Regresar")
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Regresar")
 
                     }
 
@@ -326,7 +324,7 @@ fun VehiculosSemaforoListScreen(
 
                                                 Column {
 
-                                                    Text(text = veh.VehiculoSemaforoNo ?: "-", style = MaterialTheme.typography.titleMedium)
+                                                    Text(text = veh.VehiculoSemaforoNo, style = MaterialTheme.typography.titleMedium)
 
                                                     if (typeName != null) {
 
@@ -390,7 +388,7 @@ fun VehiculosSemaforoListScreen(
 
                                                                 title = { Text("Eliminar vehículo") },
 
-                                                                text = { Text("¿Seguro que desea eliminar el vehículo ${veh.VehiculoSemaforoNo ?: ""}? Esta acción no se puede deshacer.") },
+                                                                text = { Text("¿Seguro que desea eliminar el vehículo ${veh.VehiculoSemaforoNo}? Esta acción no se puede deshacer.") },
 
                                                                 confirmButton = {
 

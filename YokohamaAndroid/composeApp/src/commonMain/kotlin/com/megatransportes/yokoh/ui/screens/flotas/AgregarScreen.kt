@@ -2,7 +2,7 @@ package com.megatransportes.yokoh.ui.screens.flotas
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,7 +19,6 @@ import com.megatransportes.yokoh.ui.screens.parametros.TipoVehiculosAdminScreen
 @Composable
 fun AgregarScreen(
     repository: YokohamaRepository,
-    flota: Flota,
     onBack: () -> Unit,
     onHome: () -> Unit
 ) {
@@ -33,7 +32,7 @@ fun AgregarScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Regresar"
                         )
                     }

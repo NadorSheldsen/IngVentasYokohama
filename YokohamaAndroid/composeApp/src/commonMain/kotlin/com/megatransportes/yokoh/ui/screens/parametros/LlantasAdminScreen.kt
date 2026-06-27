@@ -18,7 +18,7 @@ import androidx.compose.material.icons.Icons
 
 import androidx.compose.material.icons.filled.Add
 
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 import androidx.compose.material.icons.filled.Delete
 
@@ -158,7 +158,7 @@ fun LlantasAdminScreen(
 
                     IconButton(onClick = onBack) {
 
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
 
                     }
 
@@ -216,11 +216,11 @@ fun LlantasAdminScreen(
 
                         llantas = allLlantas.filter { l ->
 
-                            val medida = l.LlantasMedida ?: ""
+                            val medida = l.LlantasMedida
 
-                            val marca = l.LlantasMarca ?: ""
+                            val marca = l.LlantasMarca
 
-                            val modelo = l.LlantasModelo ?: ""
+                            val modelo = l.LlantasModelo
 
                             medida.lowercase().contains(lower) || marca.lowercase().contains(lower) || modelo.lowercase().contains(lower)
 
@@ -282,7 +282,7 @@ fun LlantasAdminScreen(
 
                                     Text(text = llanta.LlantasMedida)
 
-                                    Text(text = "${llanta.LlantasMarca ?: ""} ${llanta.LlantasModelo ?: ""}")
+                                    Text(text = "${llanta.LlantasMarca} ${llanta.LlantasModelo}")
 
                                 }
 

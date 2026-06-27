@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.items
 
 import androidx.compose.material.icons.Icons
 
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 import androidx.compose.material.icons.filled.Add
 
@@ -53,8 +53,6 @@ fun VehiculosInspeccionListScreen(
     repository: YokohamaRepository,
 
     pruebaInspeccion: PruebaInspeccion,
-
-    flota: Flota,
 
     onVehiculoClick: (VehiculoInspeccion) -> Unit,
 
@@ -170,7 +168,7 @@ fun VehiculosInspeccionListScreen(
 
                     IconButton(onClick = onBack) {
 
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Regresar")
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Regresar")
 
                     }
 
@@ -318,7 +316,7 @@ fun VehiculosInspeccionListScreen(
 
                                                 Text(
 
-                                                    text = veh.TipoVehiculosNombre ?: "",
+                                                    text = veh.TipoVehiculosNombre,
 
                                                     style = MaterialTheme.typography.bodyMedium,
 

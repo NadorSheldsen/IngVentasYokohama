@@ -43,7 +43,7 @@ fun FlotaNavigation(
 
     val current = navStack.last()
 
-    when (val screen = current.screen) {
+    when (current.screen) {
         Screen.FlotaMenu -> {
             FlotaMenuScreen(
                 repository = repository,
@@ -78,7 +78,6 @@ fun FlotaNavigation(
             prueba?.let { pruebaNonNull ->
                 com.megatransportes.yokoh.ui.screens.semaforo.VehiculosSemaforoListScreen(
                     repository = repository,
-                    flota = flota,
                     pruebaSemaforo = pruebaNonNull,
                     onVehiculoClick = { veh ->
                         // Open editor for selected vehicle

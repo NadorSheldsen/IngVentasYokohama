@@ -18,7 +18,7 @@ import androidx.compose.ui.text.input.KeyboardType
 
 import androidx.compose.material.icons.Icons
 
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 import androidx.compose.material.icons.filled.Add
 
@@ -146,7 +146,7 @@ fun PilasDesechoScreen(
 
                     IconButton(onClick = onBack) {
 
-                        Icon(Icons.Default.ArrowBack, "Regresar")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Regresar")
 
                     }
 
