@@ -8,6 +8,8 @@
 	<string>Se necesita acceso al microfono para dictado de voz.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Se necesita reconocimiento de voz para llenar formularios.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Se necesita acceso a la camara para tomar fotos de llantas y evidencias.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Se necesita acceso a la galeria para seleccionar imagenes.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
