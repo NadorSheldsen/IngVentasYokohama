@@ -108,9 +108,9 @@ fun TipoVehiculosAdminScreen(
             )
             Spacer(modifier = Modifier.height(12.dp))
             if (isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             } else if (tipos.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No hay tipos de vehículo") }
+                Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { Text("No hay tipos de vehículo") }
             } else {
                 val displayed = if (query.isBlank()) tipos else tipos.filter { t ->
                     val q = query.trim().lowercase()

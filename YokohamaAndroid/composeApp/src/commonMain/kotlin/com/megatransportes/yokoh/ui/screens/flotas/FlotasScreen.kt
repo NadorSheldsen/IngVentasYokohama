@@ -18,6 +18,8 @@ import androidx.compose.material.icons.Icons
 
 import androidx.compose.material.icons.filled.Add
 
+import androidx.compose.material.icons.filled.Check
+
 import androidx.compose.material.icons.filled.Clear
 
 import androidx.compose.material.icons.filled.DarkMode
@@ -102,13 +104,15 @@ fun FlotasScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
+    var sortByRecent by remember { mutableStateOf(false) }
+
     
 
-    // Filtrar flotas cuando cambie el texto de búsqueda
+    // Filtrar y ordenar flotas cuando cambie el texto de búsqueda, las flotas o el orden
 
-    LaunchedEffect(searchText, flotas) {
+    LaunchedEffect(searchText, flotas, sortByRecent) {
 
-        filteredFlotas = if (searchText.isEmpty()) {
+        val filtered = if (searchText.isEmpty()) {
 
             flotas
 
@@ -127,6 +131,16 @@ fun FlotasScreen(
                 flota.FlotasCiudad.contains(searchText, ignoreCase = true)
 
             }
+
+        }
+
+        filteredFlotas = if (sortByRecent) {
+
+            filtered.sortedByDescending { it.idFlotas }
+
+        } else {
+
+            filtered.sortedBy { it.FlotasNombre.lowercase() }
 
         }
 
@@ -474,13 +488,33 @@ fun FlotasScreen(
 
             }
 
-            
+            // Orden
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Ordenar:", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                FilterChip(
+                    selected = !sortByRecent,
+                    onClick = { sortByRecent = false },
+                    label = { Text("A-Z") },
+                    leadingIcon = if (!sortByRecent) { { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) } } else null
+                )
+                FilterChip(
+                    selected = sortByRecent,
+                    onClick = { sortByRecent = true },
+                    label = { Text("Más reciente") },
+                    leadingIcon = if (sortByRecent) { { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) } } else null
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Contenido principal
 
             Box(
 
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.weight(1f).fillMaxWidth()
 
             ) {
 

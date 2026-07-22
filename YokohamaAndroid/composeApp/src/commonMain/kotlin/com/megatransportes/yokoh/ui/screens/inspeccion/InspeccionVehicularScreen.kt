@@ -305,7 +305,7 @@ fun InspeccionVehicularScreen(
                 onClick = { /* no-op header */ },
                 shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(2.dp, Color.Red),
-                colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent, contentColor = Color.Black),
+                colors = ButtonDefaults.outlinedButtonColors(containerColor = Color.Transparent),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
@@ -321,18 +321,18 @@ fun InspeccionVehicularScreen(
                     Text(
                         text = "${flota.FlotasNombre}".uppercase(),
                         style = MaterialTheme.typography.headlineSmall,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "Inspección: ${pruebaInspeccion.PruebaInspeccionTitulo}",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "${formatDateOnly(pruebaInspeccion.PruebaInspeccionFecha)}",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -481,7 +481,7 @@ fun InspeccionVehicularScreen(
                             HorizontalDivider(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                                 thickness = 2.5.dp,
-                                color = Color.Black
+                                color = MaterialTheme.colorScheme.outlineVariant
                             )
                         }
                     }
@@ -520,7 +520,7 @@ fun InspeccionVehicularScreen(
                             HorizontalDivider(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                                 thickness = 2.5.dp,
-                                color = Color.Black
+                                color = MaterialTheme.colorScheme.outlineVariant
                             )
                         }
                     }

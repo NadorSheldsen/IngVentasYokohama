@@ -640,11 +640,8 @@ fun PruebaRendimientoScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = CardDefaults.shape,
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color.Black),
                 colors = CardDefaults.cardColors(
-                        // Force a fixed light-gray background (darker) so it's clearly darker than white
-                        // Keeps the dark border and provides better contrast.
-                        containerColor = Color(0xFFD9DDE0)
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             ) {
                 Column(
@@ -747,7 +744,7 @@ fun PruebaRendimientoScreen(
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp),
                             thickness = 2.5.dp,
-                            color = Color.Black
+                            color = MaterialTheme.colorScheme.outlineVariant
                         )
                     }
                 }
@@ -1217,7 +1214,7 @@ private fun LlantaRendimientoForm(
                                 Icon(
                                     imageVector = Icons.Outlined.PhotoCamera,
                                     contentDescription = "Seleccionar imagen",
-                                    tint = if (data.foto?.isNotBlank() == true) MaterialTheme.colorScheme.primary else Color.Black
+                                    tint = if (data.foto?.isNotBlank() == true) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -1616,7 +1613,7 @@ private fun LlantaRendimientoForm(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.05f)),
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)),
                     contentAlignment = Alignment.Center
                 ) {
                     // Request precomputed km from repository: km = lastPrueba.PruebaRendimientoOdometro - vehiculo.VehiculosOdometro

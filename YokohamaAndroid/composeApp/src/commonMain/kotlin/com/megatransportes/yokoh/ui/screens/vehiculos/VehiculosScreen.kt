@@ -582,7 +582,7 @@ fun VehiculosScreen(
 
                 Box(
 
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.weight(1f).fillMaxWidth()
 
                 ) {
 

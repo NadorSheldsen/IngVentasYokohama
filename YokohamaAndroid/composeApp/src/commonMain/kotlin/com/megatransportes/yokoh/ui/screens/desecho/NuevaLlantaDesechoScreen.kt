@@ -524,7 +524,7 @@ fun NuevaLlantaDesechoScreen(
                                             tint = if (foto1?.isNotBlank() == true || foto2?.isNotBlank() == true) 
                                                 MaterialTheme.colorScheme.primary 
                                             else 
-                                                androidx.compose.ui.graphics.Color.Black
+                                                MaterialTheme.colorScheme.onSurface
                                         )
                                     }
                                 }

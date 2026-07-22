@@ -258,11 +258,11 @@ fun LlantasAdminScreen(
 
             if (isLoading) {
 
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
 
             } else if (llantas.isEmpty()) {
 
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No hay llantas") }
+                Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { Text("No hay llantas") }
 
             } else {
 

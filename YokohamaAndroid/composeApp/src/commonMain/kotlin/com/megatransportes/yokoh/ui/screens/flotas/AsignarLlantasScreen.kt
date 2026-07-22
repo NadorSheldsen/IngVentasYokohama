@@ -50,12 +50,12 @@ fun AsignarLlantasScreen(
                 title = { Text("Asignar Llantas") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = Color.Black)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
                 actions = {
                     IconButton(onClick = onHome) {
-                        Icon(imageVector = Icons.Default.Home, contentDescription = "Home", tint = Color.Black)
+                        Icon(imageVector = Icons.Default.Home, contentDescription = "Home")
                     }
                 }
             )
@@ -80,10 +80,10 @@ fun AsignarLlantasScreen(
 
             when {
                 loading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                    Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 }
                 error != null -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Text(text = "Error: $error")
                     }
                 }
@@ -95,7 +95,7 @@ fun AsignarLlantasScreen(
                         (if (showOnlyAssociated) assoc else true) && matches
                     }
 
-                    LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(8.dp)) {
+                    LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(8.dp)) {
                         items(filtered, key = { it.idLlantas }) { llanta ->
                             Card(
                                 modifier = Modifier

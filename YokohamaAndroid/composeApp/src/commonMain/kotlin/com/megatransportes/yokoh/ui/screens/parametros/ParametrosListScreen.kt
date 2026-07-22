@@ -374,7 +374,7 @@ fun ParametrosListScreen(
 
                         when {
 
-                            isLoading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                            isLoading -> Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
 
                             errorMessage != null -> ErrorCard(
 
@@ -386,9 +386,9 @@ fun ParametrosListScreen(
 
                             )
 
-                            displayed.isEmpty() && suggestedLlantas.isEmpty() -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(text = "No hay parámetros registrados.", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(16.dp)) }
+                            displayed.isEmpty() && suggestedLlantas.isEmpty() -> Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { Text(text = "No hay parámetros registrados.", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(16.dp)) }
 
-                            else -> LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            else -> LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
                                 // Mostrar llantas sugeridas primero
 
@@ -1074,7 +1074,7 @@ private fun LlantaSearchDialog(
 
                     Box(
 
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
 
                         contentAlignment = Alignment.Center
 
@@ -1088,7 +1088,7 @@ private fun LlantaSearchDialog(
 
                     Box(
 
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
 
                         contentAlignment = Alignment.Center
 
@@ -1108,7 +1108,7 @@ private fun LlantaSearchDialog(
 
                     Box(
 
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
 
                         contentAlignment = Alignment.Center
 
@@ -1128,7 +1128,7 @@ private fun LlantaSearchDialog(
 
                     LazyColumn(
 
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
 
                         verticalArrangement = Arrangement.spacedBy(8.dp)
 
