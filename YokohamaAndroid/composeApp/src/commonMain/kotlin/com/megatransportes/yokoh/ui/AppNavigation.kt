@@ -10,9 +10,21 @@ import androidx.compose.foundation.layout.imePadding
 
 import androidx.compose.foundation.layout.navigationBarsPadding
 
+import androidx.compose.material.ExperimentalMaterialApi
+
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+
+import androidx.compose.material.pullrefresh.pullRefresh
+
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
+
 import androidx.compose.runtime.*
 
+import androidx.compose.ui.Alignment
+
 import androidx.compose.ui.Modifier
+
+import kotlinx.coroutines.delay
 
 
 
@@ -98,6 +110,7 @@ import com.megatransportes.yokoh.ui.screens.parametros.EditParametroScreen
 
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 
 fun AppNavigation(
@@ -116,6 +129,31 @@ fun AppNavigation(
 
     val screen by remember { derivedStateOf { navigator.currentScreen } }
 
+    var isRefreshing by remember { mutableStateOf(false) }
+
+    var refreshTick by remember { mutableStateOf(0) }
+
+    LaunchedEffect(refreshTick) {
+        if (refreshTick > 0) {
+            delay(1500)
+            isRefreshing = false
+        }
+    }
+
+    val pullRefreshState = rememberPullRefreshState(
+
+        refreshing = isRefreshing,
+
+        onRefresh = {
+
+            isRefreshing = true
+
+            refreshTick += 1
+
+        }
+
+    )
+
     Box(
 
         modifier = Modifier
@@ -126,8 +164,11 @@ fun AppNavigation(
 
             .imePadding()
 
+            .pullRefresh(pullRefreshState)
+
     ) {
         key(screen) {
+            key(refreshTick) {
             val s = screen
             when (s) {
 
@@ -1058,6 +1099,22 @@ fun AppNavigation(
         }
 
         }
+
+        }
+
+        }
+
+        Box(Modifier.fillMaxSize()) {
+
+            PullRefreshIndicator(
+
+                refreshing = isRefreshing,
+
+                state = pullRefreshState,
+
+                modifier = Modifier.align(Alignment.TopCenter)
+
+            )
 
         }
 
