@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 
 import androidx.compose.foundation.layout.fillMaxWidth
 
+import androidx.compose.foundation.layout.height
+
 import androidx.compose.foundation.layout.imePadding
 
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -1103,6 +1105,7 @@ fun AppNavigation(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(40.dp)
                 .align(Alignment.TopCenter)
                 .pointerInput(Unit) {
                     detectVerticalDragGestures(
