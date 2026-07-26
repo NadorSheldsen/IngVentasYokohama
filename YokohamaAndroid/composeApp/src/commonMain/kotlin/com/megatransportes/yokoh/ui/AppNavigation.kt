@@ -2,6 +2,8 @@ package com.megatransportes.yokoh.ui
 
 
 
+import androidx.compose.foundation.border
+
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 
 import androidx.compose.foundation.layout.Box
@@ -27,8 +29,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.Modifier
-
-import androidx.compose.ui.draw.background
 
 import androidx.compose.ui.graphics.Color
 
@@ -1103,13 +1103,13 @@ fun AppNavigation(
 
         }
 
-        // Pull-to-refresh drag area at top (temporal: fondo rojo para ver el área)
+        // Pull-to-refresh drag area at top (temporal: borde rojo para ver el área)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
                 .align(Alignment.TopCenter)
-                .background(Color.Red.copy(alpha = 0.3f))
+                .border(2.dp, Color.Red.copy(alpha = 0.5f))
                 .pointerInput(Unit) {
                     detectVerticalDragGestures(
                         onDragEnd = {
