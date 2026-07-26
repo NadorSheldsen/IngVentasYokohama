@@ -2,6 +2,8 @@ package com.megatransportes.yokoh.ui
 
 
 
+import androidx.compose.foundation.clickable
+
 import androidx.compose.foundation.layout.Box
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,12 +18,6 @@ import androidx.compose.foundation.layout.padding
 
 import androidx.compose.foundation.layout.size
 
-import androidx.compose.material.ExperimentalMaterialApi
-
-import androidx.compose.material.pullrefresh.pullRefresh
-
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
-
 import androidx.compose.material3.CircularProgressIndicator
 
 import androidx.compose.runtime.*
@@ -31,8 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 import androidx.compose.ui.unit.dp
-
-import kotlinx.coroutines.delay
 
 import kotlinx.coroutines.delay
 
@@ -116,7 +110,6 @@ import com.megatransportes.yokoh.ui.screens.parametros.EditParametroScreen
 
 
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 
 fun AppNavigation(
@@ -144,20 +137,6 @@ fun AppNavigation(
         }
     }
 
-    val pullState = rememberPullRefreshState(
-
-        refreshing = isRefreshing,
-
-        onRefresh = {
-
-            isRefreshing = true
-
-            refreshTick += 1
-
-        }
-
-    )
-
     Box(
 
         modifier = Modifier
@@ -167,8 +146,6 @@ fun AppNavigation(
             .navigationBarsPadding()
 
             .imePadding()
-
-            .pullRefresh(pullState)
 
     ) {
         key(screen) {
@@ -1108,29 +1085,33 @@ fun AppNavigation(
 
         }
 
-            val progress = pullState.progress
-            if (progress > 0f || isRefreshing) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.TopCenter)
-                        .padding(top = 100.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (isRefreshing) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        CircularProgressIndicator(
-                            progress = progress.coerceIn(0f, 1f),
-                            modifier = Modifier.size(24.dp),
-                            strokeWidth = 2.dp
-                        )
+        // Área de recarga al tocar en la parte superior
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .clickable {
+                    if (!isRefreshing) {
+                        isRefreshing = true
+                        refreshTick += 1
                     }
                 }
+        )
+
+        if (isRefreshing) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .padding(top = 100.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp
+                )
             }
+        }
 
     }
 
