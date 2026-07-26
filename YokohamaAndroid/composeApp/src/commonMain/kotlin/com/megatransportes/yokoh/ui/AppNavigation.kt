@@ -1106,15 +1106,19 @@ fun AppNavigation(
 
         }
 
-        PullRefreshIndicator(
+        Box(Modifier.fillMaxSize()) {
 
-            refreshing = isRefreshing,
+            PullRefreshIndicator(
 
-            state = pullRefreshState,
+                refreshing = isRefreshing,
 
-            modifier = Modifier.align(Alignment.TopCenter)
+                state = pullRefreshState,
 
-        )
+                modifier = Modifier.align(Alignment.TopCenter)
+
+            )
+
+        }
 
     }
 
