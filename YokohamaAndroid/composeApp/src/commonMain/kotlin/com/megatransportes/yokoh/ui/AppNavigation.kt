@@ -112,6 +112,7 @@ import com.megatransportes.yokoh.ui.screens.parametros.EditParametroScreen
 
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 
 fun AppNavigation(

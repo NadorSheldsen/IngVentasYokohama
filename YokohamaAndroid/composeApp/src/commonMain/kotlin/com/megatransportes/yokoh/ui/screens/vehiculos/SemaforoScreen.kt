@@ -1034,6 +1034,7 @@ private fun LlantaSemaforoForm(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "Presión", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        val _ctx = getPlatformContext()
                         MicButton(
                             fields = listOf(
                                 FieldDescriptor(title = "Presión", type = FieldType.NUMBER, onFill = { v -> onDataChange(data.copy(presion = v)) }),
@@ -1044,7 +1045,7 @@ private fun LlantaSemaforoForm(
                                 FieldDescriptor(title = "Comentarios", type = FieldType.TEXT, onFill = { v -> onDataChange(data.copy(comentarios = v)) })
                             ),
                             modifier = Modifier.size(56.dp),
-                            startListeningAction = { com.megatransportes.yokoh.utils.SpeechRecognitionManager.start(getPlatformContext()) },
+                            startListeningAction = { com.megatransportes.yokoh.utils.SpeechRecognitionManager.start(_ctx) },
                             stopListening = { com.megatransportes.yokoh.utils.SpeechRecognitionManager.stopAndGet() }
                         )
 
