@@ -2,11 +2,15 @@ package com.megatransportes.yokoh.ui
 
 
 
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+
 import androidx.compose.foundation.layout.Box
 
 import androidx.compose.foundation.layout.fillMaxSize
 
 import androidx.compose.foundation.layout.fillMaxWidth
+
+import androidx.compose.foundation.layout.height
 
 import androidx.compose.foundation.layout.imePadding
 
@@ -16,12 +20,6 @@ import androidx.compose.foundation.layout.padding
 
 import androidx.compose.foundation.layout.size
 
-import androidx.compose.material.ExperimentalMaterialApi
-
-import androidx.compose.material.pullrefresh.pullRefresh
-
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
-
 import androidx.compose.material3.CircularProgressIndicator
 
 import androidx.compose.runtime.*
@@ -29,6 +27,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.Modifier
+
+import androidx.compose.ui.draw.background
+
+import androidx.compose.ui.graphics.Color
+
+import androidx.compose.ui.input.pointer.pointerInput
 
 import androidx.compose.ui.unit.dp
 
@@ -116,7 +120,6 @@ import com.megatransportes.yokoh.ui.screens.parametros.EditParametroScreen
 
 
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 
 fun AppNavigation(
@@ -131,9 +134,26 @@ fun AppNavigation(
 
 ) {
 
-    // Observe navigator.currentScreen (state) and render accordingly
-
     val screen by remember { derivedStateOf { navigator.currentScreen } }
+
+    var isRefreshing by remember { mutableStateOf(false) }
+
+    var refreshTick by remember { mutableStateOf(0) }
+
+    var pullDistance by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(refreshTick) {
+        if (refreshTick > 0) {
+            delay(1500)
+            isRefreshing = false
+        }
+    }
+
+    LaunchedEffect(isRefreshing) {
+        if (!isRefreshing) {
+            pullDistance = 0f
+        }
+    }
 
     Box(
 
@@ -147,44 +167,9 @@ fun AppNavigation(
 
     ) {
         key(screen) {
-
-            var isRefreshing by remember { mutableStateOf(false) }
-
-            var refreshTick by remember { mutableStateOf(0) }
-
-            LaunchedEffect(refreshTick) {
-                if (refreshTick > 0) {
-                    delay(1500)
-                    isRefreshing = false
-                }
-            }
-
-            val pullState = rememberPullRefreshState(
-
-                refreshing = isRefreshing,
-
-                onRefresh = {
-
-                    isRefreshing = true
-
-                    refreshTick += 1
-
-                }
-
-            )
-
-            Box(
-
-                modifier = Modifier
-
-                    .fillMaxSize()
-
-                    .pullRefresh(pullState)
-
-            ) {
-                key(refreshTick) {
-                val s = screen
-                when (s) {
+            key(refreshTick) {
+            val s = screen
+            when (s) {
 
         is Screen.Login -> {
 
@@ -1118,30 +1103,57 @@ fun AppNavigation(
 
         }
 
-            val progress = pullState.progress
-            if (progress > 0f || isRefreshing) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.TopCenter)
-                        .padding(top = 16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (isRefreshing) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        CircularProgressIndicator(
-                            progress = progress.coerceIn(0f, 1f),
-                            modifier = Modifier.size(24.dp),
-                            strokeWidth = 2.dp
-                        )
-                    }
+        // Pull-to-refresh drag area at top (temporal: fondo rojo para ver el área)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .align(Alignment.TopCenter)
+                .background(Color.Red.copy(alpha = 0.3f))
+                .pointerInput(Unit) {
+                    detectVerticalDragGestures(
+                        onDragEnd = {
+                            if (pullDistance > 180f && !isRefreshing) {
+                                isRefreshing = true
+                                refreshTick += 1
+                            }
+                            pullDistance = 0f
+                        },
+                        onDragCancel = {
+                            pullDistance = 0f
+                        },
+                        onVerticalDrag = { _, dragAmount ->
+                            if (!isRefreshing && dragAmount > 0f) {
+                                pullDistance = (pullDistance + dragAmount).coerceAtMost(270f)
+                            }
+                        }
+                    )
+                }
+        )
+
+        // Indicator
+        val pullProgress = (pullDistance / 180f).coerceIn(0f, 1f)
+        if (pullProgress > 0f || isRefreshing) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .padding(top = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isRefreshing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    CircularProgressIndicator(
+                        progress = pullProgress,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
                 }
             }
-
         }
 
     }
