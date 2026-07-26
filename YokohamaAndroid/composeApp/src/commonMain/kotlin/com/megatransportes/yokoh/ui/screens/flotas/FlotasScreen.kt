@@ -106,6 +106,7 @@ fun FlotasScreen(
     val coroutineScope = rememberCoroutineScope()
 
     var sortByRecent by remember { mutableStateOf(false) }
+    var showSortMenu by remember { mutableStateOf(false) }
 
     
 
@@ -465,15 +466,49 @@ fun FlotasScreen(
 
                         Row {
 
-                            IconButton(onClick = { sortByRecent = !sortByRecent }) {
+                            Box {
 
-                                Icon(
+                                IconButton(onClick = { showSortMenu = true }) {
 
-                                    imageVector = Icons.Default.FilterList,
+                                    Icon(
 
-                                    contentDescription = if (sortByRecent) "Orden: Más reciente" else "Orden: A-Z"
+                                        imageVector = Icons.Default.FilterList,
 
-                                )
+                                        contentDescription = if (sortByRecent) "Orden: Más reciente" else "Orden: A-Z"
+
+                                    )
+
+                                }
+
+                                DropdownMenu(
+
+                                    expanded = showSortMenu,
+
+                                    onDismissRequest = { showSortMenu = false }
+
+                                ) {
+
+                                    DropdownMenuItem(
+
+                                        text = { Text("A-Z") },
+
+                                        onClick = { sortByRecent = false; showSortMenu = false },
+
+                                        leadingIcon = if (!sortByRecent) {{ Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }} else null
+
+                                    )
+
+                                    DropdownMenuItem(
+
+                                        text = { Text("Más reciente") },
+
+                                        onClick = { sortByRecent = true; showSortMenu = false },
+
+                                        leadingIcon = if (sortByRecent) {{ Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }} else null
+
+                                    )
+
+                                }
 
                             }
 

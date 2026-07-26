@@ -384,22 +384,6 @@ fun SemaforoScreen(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                 )
 
-                // Encabezados tipo tabla: número | color | foto | psi | vigía
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 0.dp),
-                    horizontalArrangement = Arrangement.spacedBy(0.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("#", modifier = Modifier.width(28.dp), style = MaterialTheme.typography.bodyMedium)
-                    //Text("Color", modifier = Modifier.width(1.dp), style = MaterialTheme.typography.bodyMedium)
-                    Spacer(modifier = Modifier.weight(0.2f))
-                    Text("Psi", modifier = Modifier.width(95.dp), style = MaterialTheme.typography.bodyMedium)
-                    Text("Vigía", modifier = Modifier.width(68.dp), style = MaterialTheme.typography.bodyMedium)
-                    Spacer(modifier = Modifier.width(14.dp))
-                }
-
                 val medidasConParametro = parametros.mapNotNull { it.LlantasMedida }.toSet()
                 llantasSemaforoData.forEachIndexed { index, data ->
                     LlantaSemaforoForm(
@@ -1046,24 +1030,25 @@ private fun LlantaSemaforoForm(
                     }
                 }
 
-                // Presión de inflado (sin etiqueta, header mostrará "Presión (psi)")
-                val _ctx = getPlatformContext()
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MicButton(
-                        fields = listOf(
-                            FieldDescriptor(title = "Presión", type = FieldType.NUMBER, onFill = { v -> onDataChange(data.copy(presion = v)) }),
-                            FieldDescriptor(title = "Vigia", type = FieldType.TEXT, onFill = { v -> onDataChange(data.copy(vigia = v.trim().lowercase().startsWith("s"))) }),
-                            FieldDescriptor(title = "Piso", type = FieldType.TEXT, onFill = { v -> onDataChange(data.copy(piso = v)) }),
-                            FieldDescriptor(title = "Condición peligrosa", type = FieldType.TEXT, onFill = { v -> onDataChange(data.copy(condicionPeligrosa = v.trim().lowercase().startsWith("s"))) }),
-                            FieldDescriptor(title = "Observación", type = FieldType.TEXT, onFill = { v -> onDataChange(data.copy(observacion = v)) }),
-                            FieldDescriptor(title = "Comentarios", type = FieldType.TEXT, onFill = { v -> onDataChange(data.copy(comentarios = v)) })
-                        ),
-                        modifier = Modifier.size(56.dp),
-                        startListeningAction = { com.megatransportes.yokoh.utils.SpeechRecognitionManager.start(_ctx) },
-                        stopListening = { com.megatransportes.yokoh.utils.SpeechRecognitionManager.stopAndGet() }
-                    )
+                // Presión
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "Presión", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        MicButton(
+                            fields = listOf(
+                                FieldDescriptor(title = "Presión", type = FieldType.NUMBER, onFill = { v -> onDataChange(data.copy(presion = v)) }),
+                                FieldDescriptor(title = "Vigia", type = FieldType.TEXT, onFill = { v -> onDataChange(data.copy(vigia = v.trim().lowercase().startsWith("s"))) }),
+                                FieldDescriptor(title = "Piso", type = FieldType.TEXT, onFill = { v -> onDataChange(data.copy(piso = v)) }),
+                                FieldDescriptor(title = "Condición peligrosa", type = FieldType.TEXT, onFill = { v -> onDataChange(data.copy(condicionPeligrosa = v.trim().lowercase().startsWith("s"))) }),
+                                FieldDescriptor(title = "Observación", type = FieldType.TEXT, onFill = { v -> onDataChange(data.copy(observacion = v)) }),
+                                FieldDescriptor(title = "Comentarios", type = FieldType.TEXT, onFill = { v -> onDataChange(data.copy(comentarios = v)) })
+                            ),
+                            modifier = Modifier.size(56.dp),
+                            startListeningAction = { com.megatransportes.yokoh.utils.SpeechRecognitionManager.start(getPlatformContext()) },
+                            stopListening = { com.megatransportes.yokoh.utils.SpeechRecognitionManager.stopAndGet() }
+                        )
 
-                    CompactOutlinedTextField(
+                        CompactOutlinedTextField(
                         value = if (data.vigia) "0" else data.presion,
                         onValueChange = {
                             if (!data.vigia) {
@@ -1087,8 +1072,12 @@ private fun LlantaSemaforoForm(
                     )
                 }
 
-                // Condición peligrosa: mostrar imagen de advertencia (opacidad según estado)
-                IconButton(
+                }
+
+                // Condición peligrosa
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "Peligro", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    IconButton(
                     onClick = {
                         val newVal = !data.condicionPeligrosa
                         try { println("[SemaforoScreen] Toggle CondPel id=${data.idLlantasSemaforo} -> $newVal") } catch (_: Exception) {}
@@ -1105,11 +1094,16 @@ private fun LlantaSemaforoForm(
                     )
                 }
 
-                // Vigía (solo checkbox, header mostrará "Vigía")
-                Checkbox(
-                    checked = data.vigia,
-                    onCheckedChange = { checked -> onDataChange(data.copy(vigia = checked, presion = if (checked) "0" else data.presion)) }
-                )
+                }
+
+                // Vigía
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "Vigía", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Checkbox(
+                        checked = data.vigia,
+                        onCheckedChange = { checked -> onDataChange(data.copy(vigia = checked, presion = if (checked) "0" else data.presion)) }
+                    )
+                }
 
                 // Botón para plegar/desplegar campos extra
                 IconButton(onClick = { showExtraFields = !showExtraFields }, modifier = Modifier.size(48.dp)) {

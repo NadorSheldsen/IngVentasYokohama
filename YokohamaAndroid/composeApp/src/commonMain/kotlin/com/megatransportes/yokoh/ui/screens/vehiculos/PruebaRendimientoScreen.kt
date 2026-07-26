@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import kotlin.math.min
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.foundation.Image
 import com.megatransportes.yokoh.utils.byteArrayToImageBitmap
@@ -1235,19 +1236,19 @@ private fun LlantaRendimientoForm(
                                         presionState = TextFieldValue(value, selection = TextRange(value.length))
                                         onDataChange(data.copy(presion = value, mm1 = mm1State.text, mm2 = mm2State.text, mm3 = mm3State.text, mm4 = mm4State.text))
                                     }),
-                                    FieldDescriptor(title = "MM1", type = FieldType.NUMBER, maxValue = lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1, onFill = { v ->
+                                    FieldDescriptor(title = "MM1", type = FieldType.NUMBER, maxValue = min(lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1, 25.4f), onFill = { v ->
                                         mm1State = TextFieldValue(v)
                                         onDataChange(data.copy(mm1 = v, mm2 = mm2State.text, mm3 = mm3State.text, mm4 = mm4State.text, presion = presionState.text))
                                     }),
-                                    FieldDescriptor(title = "MM2", type = FieldType.NUMBER, maxValue = lastRecorded?.LlantasRendimientoMm2 ?: llanta.LlantasVehiculosMM2, onFill = { v ->
+                                    FieldDescriptor(title = "MM2", type = FieldType.NUMBER, maxValue = min(lastRecorded?.LlantasRendimientoMm2 ?: llanta.LlantasVehiculosMM2, 25.4f), onFill = { v ->
                                         mm2State = TextFieldValue(v)
                                         onDataChange(data.copy(mm1 = mm1State.text, mm2 = v, mm3 = mm3State.text, mm4 = mm4State.text, presion = presionState.text))
                                     }),
-                                    FieldDescriptor(title = "MM3", type = FieldType.NUMBER, maxValue = lastRecorded?.LlantasRendimientoMm3 ?: llanta.LlantasVehiculosMM3, onFill = { v ->
+                                    FieldDescriptor(title = "MM3", type = FieldType.NUMBER, maxValue = min(lastRecorded?.LlantasRendimientoMm3 ?: llanta.LlantasVehiculosMM3, 25.4f), onFill = { v ->
                                         mm3State = TextFieldValue(v)
                                         onDataChange(data.copy(mm1 = mm1State.text, mm2 = mm2State.text, mm3 = v, mm4 = mm4State.text, presion = presionState.text))
                                     }),
-                                    FieldDescriptor(title = "MM4", type = FieldType.NUMBER, maxValue = lastRecorded?.LlantasRendimientoMm4 ?: llanta.LlantasVehiculosMM4, onFill = { v ->
+                                    FieldDescriptor(title = "MM4", type = FieldType.NUMBER, maxValue = min(lastRecorded?.LlantasRendimientoMm4 ?: llanta.LlantasVehiculosMM4, 25.4f), onFill = { v ->
                                         mm4State = TextFieldValue(v)
                                         onDataChange(data.copy(mm1 = mm1State.text, mm2 = mm2State.text, mm3 = mm3State.text, mm4 = v, presion = presionState.text))
                                     }),
@@ -1444,28 +1445,28 @@ private fun LlantaRendimientoForm(
                                 // Llenar el primer campo MM vacío con la medición
                                 when {
                                     data.mm1.isBlank() -> {
-                                        val allowedMax = lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1
+                                        val allowedMax = min(lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1, 25.4f)
                                         val finalValue = if (value > allowedMax) allowedMax else value
                                         onDataChange(data.copy(mm1 = finalValue.toString()))
                                     }
                                     data.mm2.isBlank() -> {
-                                        val allowedMax = lastRecorded?.LlantasRendimientoMm2 ?: llanta.LlantasVehiculosMM2
+                                        val allowedMax = min(lastRecorded?.LlantasRendimientoMm2 ?: llanta.LlantasVehiculosMM2, 25.4f)
                                         val finalValue = if (value > allowedMax) allowedMax else value
                                         onDataChange(data.copy(mm2 = finalValue.toString()))
                                     }
                                     data.mm3.isBlank() -> {
-                                        val allowedMax = lastRecorded?.LlantasRendimientoMm3 ?: llanta.LlantasVehiculosMM3
+                                        val allowedMax = min(lastRecorded?.LlantasRendimientoMm3 ?: llanta.LlantasVehiculosMM3, 25.4f)
                                         val finalValue = if (value > allowedMax) allowedMax else value
                                         onDataChange(data.copy(mm3 = finalValue.toString()))
                                     }
                                     data.mm4.isBlank() -> {
-                                        val allowedMax = lastRecorded?.LlantasRendimientoMm4 ?: llanta.LlantasVehiculosMM4
+                                        val allowedMax = min(lastRecorded?.LlantasRendimientoMm4 ?: llanta.LlantasVehiculosMM4, 25.4f)
                                         val finalValue = if (value > allowedMax) allowedMax else value
                                         onDataChange(data.copy(mm4 = finalValue.toString()))
                                     }
                                     else -> {
                                         // Si todos están llenos, actualizar MM1
-                                        val allowedMax = lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1
+                                        val allowedMax = min(lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1, 25.4f)
                                         val finalValue = if (value > allowedMax) allowedMax else value
                                         onDataChange(data.copy(mm1 = finalValue.toString()))
                                     }
@@ -1478,7 +1479,7 @@ private fun LlantaRendimientoForm(
                         CompactOutlinedTextField(
                             value = mm1StateLocal,
                             onValueChange = {
-                                val allowedMax = lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1
+                                val allowedMax = min(lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1, 25.4f)
                                 val newText = it.text
                                 val parsed = newText.toFloatOrNull()
                                 val finalText = if (parsed != null && parsed > allowedMax) allowedMax.toString() else newText
@@ -1498,7 +1499,7 @@ private fun LlantaRendimientoForm(
                         CompactOutlinedTextField(
                             value = mm2StateLocal,
                             onValueChange = {
-                                val allowedMax = lastRecorded?.LlantasRendimientoMm2 ?: llanta.LlantasVehiculosMM2
+                                val allowedMax = min(lastRecorded?.LlantasRendimientoMm2 ?: llanta.LlantasVehiculosMM2, 25.4f)
                                 val newText = it.text
                                 val parsed = newText.toFloatOrNull()
                                 val finalText = if (parsed != null && parsed > allowedMax) allowedMax.toString() else newText
@@ -1518,7 +1519,7 @@ private fun LlantaRendimientoForm(
                         CompactOutlinedTextField(
                             value = mm3StateLocal,
                             onValueChange = {
-                                val allowedMax = lastRecorded?.LlantasRendimientoMm3 ?: llanta.LlantasVehiculosMM3
+                                val allowedMax = min(lastRecorded?.LlantasRendimientoMm3 ?: llanta.LlantasVehiculosMM3, 25.4f)
                                 val newText = it.text
                                 val parsed = newText.toFloatOrNull()
                                 val finalText = if (parsed != null && parsed > allowedMax) allowedMax.toString() else newText
@@ -1538,7 +1539,7 @@ private fun LlantaRendimientoForm(
                         CompactOutlinedTextField(
                             value = mm4StateLocal,
                             onValueChange = {
-                                val allowedMax = lastRecorded?.LlantasRendimientoMm4 ?: llanta.LlantasVehiculosMM4
+                                val allowedMax = min(lastRecorded?.LlantasRendimientoMm4 ?: llanta.LlantasVehiculosMM4, 25.4f)
                                 val newText = it.text
                                 val parsed = newText.toFloatOrNull()
                                 val finalText = if (parsed != null && parsed > allowedMax) allowedMax.toString() else newText
@@ -2011,8 +2012,9 @@ private fun NewLlantaSlotForm(
             ) {
                 OutlinedTextField(
                     value = data.mm1,
-                    onValueChange = { onValueChange ->
-                        data = data.copy(mm1 = onValueChange)
+                    onValueChange = { v ->
+                        val p = v.toFloatOrNull()
+                        data = data.copy(mm1 = if (p != null && p > 25.4f) "25.4" else v)
                     },
                     label = { Text("MM") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -2020,8 +2022,9 @@ private fun NewLlantaSlotForm(
                 )
                 OutlinedTextField(
                     value = data.mm2,
-                    onValueChange = { onValueChange ->
-                        data = data.copy(mm2 = onValueChange)
+                    onValueChange = { v ->
+                        val p = v.toFloatOrNull()
+                        data = data.copy(mm2 = if (p != null && p > 25.4f) "25.4" else v)
                     },
                     label = { Text("MM") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -2029,8 +2032,9 @@ private fun NewLlantaSlotForm(
                 )
                 OutlinedTextField(
                     value = data.mm3,
-                    onValueChange = { onValueChange ->
-                        data = data.copy(mm3 = onValueChange)
+                    onValueChange = { v ->
+                        val p = v.toFloatOrNull()
+                        data = data.copy(mm3 = if (p != null && p > 25.4f) "25.4" else v)
                     },
                     label = { Text("MM") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -2038,8 +2042,9 @@ private fun NewLlantaSlotForm(
                 )
                 OutlinedTextField(
                     value = data.mm4,
-                    onValueChange = { onValueChange ->
-                        data = data.copy(mm4 = onValueChange)
+                    onValueChange = { v ->
+                        val p = v.toFloatOrNull()
+                        data = data.copy(mm4 = if (p != null && p > 25.4f) "25.4" else v)
                     },
                     label = { Text("MM") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),

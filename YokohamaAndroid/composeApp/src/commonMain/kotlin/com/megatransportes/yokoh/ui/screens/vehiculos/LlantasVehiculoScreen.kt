@@ -680,7 +680,7 @@ private fun LlantaVehiculoForm(
                 ) {
                     OutlinedTextField(
                         value = data.mm1,
-                        onValueChange = { onDataChange(data.copy(mm1 = it)) },
+                        onValueChange = { val p = it.toFloatOrNull(); onDataChange(data.copy(mm1 = if (p != null && p > 25.4f) "25.4" else it)) },
                         label = { Text("MM") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),
@@ -688,7 +688,7 @@ private fun LlantaVehiculoForm(
                     )
                     OutlinedTextField(
                         value = data.mm2,
-                        onValueChange = { onDataChange(data.copy(mm2 = it)) },
+                        onValueChange = { val p = it.toFloatOrNull(); onDataChange(data.copy(mm2 = if (p != null && p > 25.4f) "25.4" else it)) },
                         label = { Text("MM") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),
@@ -696,7 +696,7 @@ private fun LlantaVehiculoForm(
                     )
                     OutlinedTextField(
                         value = data.mm3,
-                        onValueChange = { onDataChange(data.copy(mm3 = it)) },
+                        onValueChange = { val p = it.toFloatOrNull(); onDataChange(data.copy(mm3 = if (p != null && p > 25.4f) "25.4" else it)) },
                         label = { Text("MM") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),
@@ -704,7 +704,7 @@ private fun LlantaVehiculoForm(
                     )
                     OutlinedTextField(
                         value = data.mm4,
-                        onValueChange = { onDataChange(data.copy(mm4 = it)) },
+                        onValueChange = { val p = it.toFloatOrNull(); onDataChange(data.copy(mm4 = if (p != null && p > 25.4f) "25.4" else it)) },
                         label = { Text("MM") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.weight(1f),

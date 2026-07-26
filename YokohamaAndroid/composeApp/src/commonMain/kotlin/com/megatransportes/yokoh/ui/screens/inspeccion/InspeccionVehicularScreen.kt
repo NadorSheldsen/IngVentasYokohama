@@ -59,6 +59,7 @@ import com.megatransportes.yokoh.ui.components.MicButton
 import com.megatransportes.yokoh.ui.components.FieldDescriptor
 import com.megatransportes.yokoh.ui.components.FieldType
 import com.megatransportes.yokoh.utils.getPlatformContext
+import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -1142,7 +1143,9 @@ private fun LlantaInspeccionForm(
                 OutlinedTextField(
                     value = mm1State,
                     onValueChange = {
-                        val t = it.text
+                        val raw = it.text
+                        val allowedMax = min(data.selectedLlanta?.LlantasMm ?: 25.4f, 25.4f)
+                        val t = raw.toFloatOrNull()?.let { if (it > allowedMax) allowedMax.toString() else raw } ?: raw
                         mm1State = TextFieldValue(t, selection = TextRange(t.length))
                         val newData = data.copy(mm1 = t)
                         
@@ -1181,7 +1184,9 @@ private fun LlantaInspeccionForm(
                 OutlinedTextField(
                     value = mm2State,
                     onValueChange = {
-                        val t = it.text
+                        val raw = it.text
+                        val allowedMax = min(data.selectedLlanta?.LlantasMm ?: 25.4f, 25.4f)
+                        val t = raw.toFloatOrNull()?.let { if (it > allowedMax) allowedMax.toString() else raw } ?: raw
                         mm2State = TextFieldValue(t, selection = TextRange(t.length))
                         val newData = data.copy(mm2 = t)
                         
@@ -1220,7 +1225,9 @@ private fun LlantaInspeccionForm(
                 OutlinedTextField(
                     value = mm3State,
                     onValueChange = {
-                        val t = it.text
+                        val raw = it.text
+                        val allowedMax = min(data.selectedLlanta?.LlantasMm ?: 25.4f, 25.4f)
+                        val t = raw.toFloatOrNull()?.let { if (it > allowedMax) allowedMax.toString() else raw } ?: raw
                         mm3State = TextFieldValue(t, selection = TextRange(t.length))
                         val newData = data.copy(mm3 = t)
                         
@@ -1259,7 +1266,9 @@ private fun LlantaInspeccionForm(
                 OutlinedTextField(
                     value = mm4State,
                     onValueChange = {
-                        val t = it.text
+                        val raw = it.text
+                        val allowedMax = min(data.selectedLlanta?.LlantasMm ?: 25.4f, 25.4f)
+                        val t = raw.toFloatOrNull()?.let { if (it > allowedMax) allowedMax.toString() else raw } ?: raw
                         mm4State = TextFieldValue(t, selection = TextRange(t.length))
                         val newData = data.copy(mm4 = t)
                         
@@ -1304,10 +1313,10 @@ private fun LlantaInspeccionForm(
                     MicButton(
                         fields = listOf(
                             FieldDescriptor(title = "Presión", type = FieldType.NUMBER, onFill = { v -> onDataChange(data.copy(presion = v)) }),
-                            FieldDescriptor(title = "MM1", type = FieldType.NUMBER, onFill = { v -> onDataChange(data.copy(mm1 = v)) }),
-                            FieldDescriptor(title = "MM2", type = FieldType.NUMBER, onFill = { v -> onDataChange(data.copy(mm2 = v)) }),
-                            FieldDescriptor(title = "MM3", type = FieldType.NUMBER, onFill = { v -> onDataChange(data.copy(mm3 = v)) }),
-                            FieldDescriptor(title = "MM4", type = FieldType.NUMBER, onFill = { v -> onDataChange(data.copy(mm4 = v)) }),
+                            FieldDescriptor(title = "MM1", type = FieldType.NUMBER, maxValue = min(data.selectedLlanta?.LlantasMm ?: 25.4f, 25.4f), onFill = { v -> onDataChange(data.copy(mm1 = v)) }),
+                            FieldDescriptor(title = "MM2", type = FieldType.NUMBER, maxValue = min(data.selectedLlanta?.LlantasMm ?: 25.4f, 25.4f), onFill = { v -> onDataChange(data.copy(mm2 = v)) }),
+                            FieldDescriptor(title = "MM3", type = FieldType.NUMBER, maxValue = min(data.selectedLlanta?.LlantasMm ?: 25.4f, 25.4f), onFill = { v -> onDataChange(data.copy(mm3 = v)) }),
+                            FieldDescriptor(title = "MM4", type = FieldType.NUMBER, maxValue = min(data.selectedLlanta?.LlantasMm ?: 25.4f, 25.4f), onFill = { v -> onDataChange(data.copy(mm4 = v)) }),
                             FieldDescriptor(title = "Vigia", type = FieldType.TEXT, onFill = { v -> onDataChange(data.copy(vigia = v.trim().lowercase().startsWith("s"))) }),
                             FieldDescriptor(title = "Condición peligrosa", type = FieldType.TEXT, onFill = { v -> onDataChange(data.copy(condicionPeligrosa = v.trim().lowercase().startsWith("s"))) }),
                             FieldDescriptor(title = "Comentarios", type = FieldType.TEXT, onFill = { v -> onDataChange(data.copy(comentarios = v)) })
