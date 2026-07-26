@@ -12,15 +12,12 @@ import androidx.compose.foundation.lazy.items
 
 import androidx.compose.foundation.lazy.rememberLazyListState
 
-import com.megatransportes.yokoh.utils.rememberSmoothFlingBehavior
 
 import androidx.compose.material.icons.Icons
 
 import androidx.compose.material.icons.filled.Add
 
-import androidx.compose.material.icons.filled.ArrowDownward
-
-import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.FilterList
 
 import androidx.compose.material.icons.filled.Check
 
@@ -472,9 +469,9 @@ fun FlotasScreen(
 
                                 Icon(
 
-                                    imageVector = if (sortByRecent) Icons.Default.ArrowDownward else Icons.Default.ArrowUpward,
+                                    imageVector = Icons.Default.FilterList,
 
-                                    contentDescription = if (sortByRecent) "Más reciente" else "A-Z"
+                                    contentDescription = if (sortByRecent) "Orden: Más reciente" else "Orden: A-Z"
 
                                 )
 
@@ -583,12 +580,10 @@ fun FlotasScreen(
                     else -> {
 
                         val listState = rememberLazyListState()
-                        val flingBehavior = rememberSmoothFlingBehavior()
 
                         LazyColumn(
 
                             state = listState,
-                            flingBehavior = flingBehavior,
 
                             modifier = Modifier.fillMaxSize(),
 
