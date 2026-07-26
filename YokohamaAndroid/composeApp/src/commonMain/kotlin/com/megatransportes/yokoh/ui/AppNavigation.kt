@@ -2,6 +2,8 @@ package com.megatransportes.yokoh.ui
 
 
 
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+
 import androidx.compose.foundation.layout.Box
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,21 +20,13 @@ import androidx.compose.foundation.layout.size
 
 import androidx.compose.material3.CircularProgressIndicator
 
-import androidx.compose.ui.geometry.Offset
-
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-
-import androidx.compose.ui.unit.Velocity
-
 import androidx.compose.runtime.*
 
 import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.Modifier
+
+import androidx.compose.ui.input.pointer.pointerInput
 
 import androidx.compose.ui.unit.dp
 
@@ -157,49 +151,6 @@ fun AppNavigation(
         }
     }
 
-    val onRefreshRef = remember { mutableStateOf({}) }
-    onRefreshRef.value = {
-        isRefreshing = true
-        refreshTick += 1
-    }
-
-    val pullRefreshConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (available.y < 0f && pullDistance > 0f) {
-                    val consumed = minOf(-available.y, pullDistance)
-                    pullDistance -= consumed
-                    return Offset(0f, consumed)
-                }
-                return Offset.Zero
-            }
-
-            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                if (available.y > 0f && !isRefreshing) {
-                    pullDistance += available.y * 0.4f
-                    return Offset(0f, available.y)
-                }
-                return Offset.Zero
-            }
-
-            override suspend fun onPreFling(available: Velocity): Velocity {
-                if (pullDistance >= PULL_THRESHOLD && !isRefreshing) {
-                    onRefreshRef.value()
-                }
-                pullDistance = 0f
-                return Velocity.Zero
-            }
-
-            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                if (pullDistance >= PULL_THRESHOLD && !isRefreshing) {
-                    onRefreshRef.value()
-                }
-                pullDistance = 0f
-                return Velocity.Zero
-            }
-        }
-    }
-
     Box(
 
         modifier = Modifier
@@ -209,8 +160,6 @@ fun AppNavigation(
             .navigationBarsPadding()
 
             .imePadding()
-
-            .nestedScroll(pullRefreshConnection)
 
     ) {
         key(screen) {
@@ -1149,6 +1098,33 @@ fun AppNavigation(
         }
 
         }
+
+        // Pull-to-refresh drag area at the top
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .pointerInput(Unit) {
+                    detectVerticalDragGestures(
+                        onDragEnd = {
+                            if (pullDistance >= PULL_THRESHOLD && !isRefreshing) {
+                                isRefreshing = true
+                                refreshTick += 1
+                            }
+                            pullDistance = 0f
+                        },
+                        onDragCancel = {
+                            pullDistance = 0f
+                        },
+                        onVerticalDrag = { _, dragAmount ->
+                            if (!isRefreshing && dragAmount > 0f) {
+                                pullDistance = (pullDistance + dragAmount)
+                                    .coerceIn(0f, PULL_THRESHOLD * 1.5f)
+                            }
+                        }
+                    )
+                }
+        )
 
         val pullProgress = (pullDistance / PULL_THRESHOLD).coerceIn(0f, 1f)
         if (pullProgress > 0f || isRefreshing) {
