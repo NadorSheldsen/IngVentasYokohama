@@ -6,21 +6,25 @@ import androidx.compose.foundation.layout.Box
 
 import androidx.compose.foundation.layout.fillMaxSize
 
+import androidx.compose.foundation.layout.fillMaxWidth
+
 import androidx.compose.foundation.layout.imePadding
 
 import androidx.compose.foundation.layout.navigationBarsPadding
 
-import androidx.compose.foundation.layout.padding
-
 import androidx.compose.foundation.layout.size
 
-import androidx.compose.material.icons.Icons
+import androidx.compose.material3.CircularProgressIndicator
 
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.ui.geometry.Offset
 
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 
-import androidx.compose.material3.Icon
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+
+import androidx.compose.ui.unit.Velocity
 
 import androidx.compose.runtime.*
 
@@ -29,6 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 import androidx.compose.ui.unit.dp
+
+import kotlinx.coroutines.delay
+
+private const val PULL_THRESHOLD = 180f
 
 
 
@@ -132,7 +140,66 @@ fun AppNavigation(
 
     val screen by remember { derivedStateOf { navigator.currentScreen } }
 
+    var isRefreshing by remember { mutableStateOf(false) }
+
     var refreshTick by remember { mutableStateOf(0) }
+
+    var pullDistance by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(refreshTick) {
+        if (refreshTick > 0) {
+            delay(1500)
+            isRefreshing = false
+        }
+    }
+
+    LaunchedEffect(isRefreshing) {
+        if (!isRefreshing) {
+            pullDistance = 0f
+        }
+    }
+
+    val currentOnRefresh by rememberUpdatedState {
+        isRefreshing = true
+        refreshTick += 1
+    }
+
+    val pullRefreshConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (available.y < 0f && pullDistance > 0f) {
+                    val consumed = minOf(-available.y, pullDistance)
+                    pullDistance -= consumed
+                    return Offset(0f, consumed)
+                }
+                return Offset.Zero
+            }
+
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                if (available.y > 0f && !isRefreshing) {
+                    pullDistance += available.y * 0.4f
+                    return Offset(0f, available.y)
+                }
+                return Offset.Zero
+            }
+
+            override suspend fun onPreFling(available: Velocity): Velocity {
+                if (pullDistance >= PULL_THRESHOLD && !isRefreshing) {
+                    currentOnRefresh()
+                }
+                pullDistance = 0f
+                return Velocity.Zero
+            }
+
+            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                if (pullDistance >= PULL_THRESHOLD && !isRefreshing) {
+                    currentOnRefresh()
+                }
+                pullDistance = 0f
+                return Velocity.Zero
+            }
+        }
+    }
 
     Box(
 
@@ -143,6 +210,8 @@ fun AppNavigation(
             .navigationBarsPadding()
 
             .imePadding()
+
+            .nestedScroll(pullRefreshConnection)
 
     ) {
         key(screen) {
@@ -1082,14 +1151,28 @@ fun AppNavigation(
 
         }
 
-        FloatingActionButton(
-            onClick = { refreshTick += 1 },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-                .size(40.dp, 40.dp)
-        ) {
-            Icon(Icons.Default.Refresh, contentDescription = "Recargar")
+        val pullProgress = (pullDistance / PULL_THRESHOLD).coerceIn(0f, 1f)
+        if (pullProgress > 0f || isRefreshing) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .padding(top = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isRefreshing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    CircularProgressIndicator(
+                        progress = pullProgress,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                }
+            }
         }
 
     }
