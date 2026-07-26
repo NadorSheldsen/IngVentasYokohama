@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.imePadding
 
 import androidx.compose.foundation.layout.navigationBarsPadding
 
+import androidx.compose.foundation.layout.padding
+
 import androidx.compose.foundation.layout.size
 
 import androidx.compose.material3.CircularProgressIndicator
@@ -159,7 +161,8 @@ fun AppNavigation(
         }
     }
 
-    val currentOnRefresh by rememberUpdatedState {
+    val onRefreshRef = remember { mutableStateOf({}) }
+    onRefreshRef.value = {
         isRefreshing = true
         refreshTick += 1
     }
@@ -185,7 +188,7 @@ fun AppNavigation(
 
             override suspend fun onPreFling(available: Velocity): Velocity {
                 if (pullDistance >= PULL_THRESHOLD && !isRefreshing) {
-                    currentOnRefresh()
+                    onRefreshRef.value()
                 }
                 pullDistance = 0f
                 return Velocity.Zero
@@ -193,7 +196,7 @@ fun AppNavigation(
 
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
                 if (pullDistance >= PULL_THRESHOLD && !isRefreshing) {
-                    currentOnRefresh()
+                    onRefreshRef.value()
                 }
                 pullDistance = 0f
                 return Velocity.Zero
