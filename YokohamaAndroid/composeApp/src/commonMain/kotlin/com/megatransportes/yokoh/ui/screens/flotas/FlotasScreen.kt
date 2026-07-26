@@ -18,6 +18,10 @@ import androidx.compose.material.icons.Icons
 
 import androidx.compose.material.icons.filled.Add
 
+import androidx.compose.material.icons.filled.ArrowDownward
+
+import androidx.compose.material.icons.filled.ArrowUpward
+
 import androidx.compose.material.icons.filled.Check
 
 import androidx.compose.material.icons.filled.Clear
@@ -462,17 +466,33 @@ fun FlotasScreen(
 
                     trailingIcon = {
 
-                        if (searchText.isNotEmpty()) {
+                        Row {
 
-                            IconButton(onClick = { searchText = "" }) {
+                            IconButton(onClick = { sortByRecent = !sortByRecent }) {
 
                                 Icon(
 
-                                    imageVector = Icons.Default.Clear,
+                                    imageVector = if (sortByRecent) Icons.Default.ArrowDownward else Icons.Default.ArrowUpward,
 
-                                    contentDescription = "Limpiar búsqueda"
+                                    contentDescription = if (sortByRecent) "Más reciente" else "A-Z"
 
                                 )
+
+                            }
+
+                            if (searchText.isNotEmpty()) {
+
+                                IconButton(onClick = { searchText = "" }) {
+
+                                    Icon(
+
+                                        imageVector = Icons.Default.Clear,
+
+                                        contentDescription = "Limpiar búsqueda"
+
+                                    )
+
+                                }
 
                             }
 
@@ -488,27 +508,7 @@ fun FlotasScreen(
 
             }
 
-            // Orden
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Ordenar:", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                FilterChip(
-                    selected = !sortByRecent,
-                    onClick = { sortByRecent = false },
-                    label = { Text("A-Z") },
-                    leadingIcon = if (!sortByRecent) { { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) } } else null
-                )
-                FilterChip(
-                    selected = sortByRecent,
-                    onClick = { sortByRecent = true },
-                    label = { Text("Más reciente") },
-                    leadingIcon = if (sortByRecent) { { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) } } else null
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
+
 
             // Contenido principal
 

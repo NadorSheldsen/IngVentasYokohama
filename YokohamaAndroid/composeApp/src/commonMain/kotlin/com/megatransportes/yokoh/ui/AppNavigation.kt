@@ -6,21 +6,7 @@ import androidx.compose.foundation.layout.Box
 
 import androidx.compose.foundation.layout.fillMaxSize
 
-import androidx.compose.foundation.layout.imePadding
-
-import androidx.compose.foundation.layout.navigationBarsPadding
-
-import androidx.compose.material.ExperimentalMaterialApi
-
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-
-import androidx.compose.material.pullrefresh.pullRefresh
-
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
-
 import androidx.compose.runtime.*
-
-import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.Modifier
 
@@ -102,13 +88,11 @@ import com.megatransportes.yokoh.ui.screens.parametros.ParametrosListScreen
 
 import com.megatransportes.yokoh.ui.screens.parametros.EditParametroScreen
 
-import kotlinx.coroutines.delay
-
-import kotlinx.coroutines.launch
 
 
 
-@OptIn(ExperimentalMaterialApi::class)
+
+
 
 @Composable
 
@@ -128,55 +112,15 @@ fun AppNavigation(
 
     val screen by remember { derivedStateOf { navigator.currentScreen } }
 
-    val scope = rememberCoroutineScope()
-
-    var isRefreshing by remember { mutableStateOf(false) }
-
-    var refreshTick by remember { mutableStateOf(0) }
-
-    val pullRefreshState = rememberPullRefreshState(
-
-        refreshing = isRefreshing,
-
-        onRefresh = {
-
-            isRefreshing = true
-
-            refreshTick += 1
-
-            scope.launch {
-
-                // Keep indicator visible briefly so user perceives refresh action.
-
-                delay(600)
-
-                isRefreshing = false
-
-            }
-
-        }
-
-    )
-
-
-
     Box(
 
         modifier = Modifier
 
             .fillMaxSize()
 
-            .navigationBarsPadding()
-
-            .imePadding()
-
-            .pullRefresh(pullRefreshState)
-
     ) {
-
-        key(screen, refreshTick) {
-            val s = screen
-            when (s) {
+        val s = screen
+        when (s) {
 
         is Screen.Login -> {
 
@@ -1104,21 +1048,7 @@ fun AppNavigation(
 
         }
 
-            }
-
         }
-
-
-
-        PullRefreshIndicator(
-
-            refreshing = isRefreshing,
-
-            state = pullRefreshState,
-
-            modifier = Modifier.align(Alignment.TopCenter)
-
-        )
 
     }
 
