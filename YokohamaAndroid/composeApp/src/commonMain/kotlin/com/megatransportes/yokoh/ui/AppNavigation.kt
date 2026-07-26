@@ -131,11 +131,16 @@ fun AppNavigation(
 
     val screen by remember { derivedStateOf { navigator.currentScreen } }
 
-    val scope = rememberCoroutineScope()
-
     var isRefreshing by remember { mutableStateOf(false) }
 
     var refreshTick by remember { mutableStateOf(0) }
+
+    LaunchedEffect(refreshTick) {
+        if (refreshTick > 0) {
+            delay(800)
+            isRefreshing = false
+        }
+    }
 
     val pullRefreshState = rememberPullRefreshState(
 
@@ -146,14 +151,6 @@ fun AppNavigation(
             isRefreshing = true
 
             refreshTick += 1
-
-            scope.launch {
-
-                delay(600)
-
-                isRefreshing = false
-
-            }
 
         }
 
