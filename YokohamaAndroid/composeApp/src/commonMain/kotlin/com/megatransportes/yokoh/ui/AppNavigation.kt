@@ -38,10 +38,6 @@ import androidx.compose.ui.unit.dp
 
 import kotlinx.coroutines.delay
 
-private const val PULL_THRESHOLD = 180f
-
-
-
 import com.megatransportes.yokoh.data.models.Flota
 
 import com.megatransportes.yokoh.data.models.Vehiculo
@@ -122,7 +118,7 @@ import com.megatransportes.yokoh.ui.screens.parametros.EditParametroScreen
 
 
 
-
+private const val PULL_THRESHOLD = 180f
 
 @Composable
 
