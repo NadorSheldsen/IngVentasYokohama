@@ -10,13 +10,17 @@ import androidx.compose.foundation.layout.imePadding
 
 import androidx.compose.foundation.layout.navigationBarsPadding
 
-import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.foundation.layout.padding
 
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.foundation.layout.size
 
-import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.icons.Icons
 
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material.icons.filled.Refresh
+
+import androidx.compose.material3.FloatingActionButton
+
+import androidx.compose.material3.Icon
 
 import androidx.compose.runtime.*
 
@@ -24,7 +28,7 @@ import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.Modifier
 
-import kotlinx.coroutines.delay
+import androidx.compose.ui.unit.dp
 
 
 
@@ -110,7 +114,6 @@ import com.megatransportes.yokoh.ui.screens.parametros.EditParametroScreen
 
 
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 
 fun AppNavigation(
@@ -129,30 +132,7 @@ fun AppNavigation(
 
     val screen by remember { derivedStateOf { navigator.currentScreen } }
 
-    var isRefreshing by remember { mutableStateOf(false) }
-
     var refreshTick by remember { mutableStateOf(0) }
-
-    LaunchedEffect(refreshTick) {
-        if (refreshTick > 0) {
-            delay(1500)
-            isRefreshing = false
-        }
-    }
-
-    val pullRefreshState = rememberPullRefreshState(
-
-        refreshing = isRefreshing,
-
-        onRefresh = {
-
-            isRefreshing = true
-
-            refreshTick += 1
-
-        }
-
-    )
 
     Box(
 
@@ -163,8 +143,6 @@ fun AppNavigation(
             .navigationBarsPadding()
 
             .imePadding()
-
-            .pullRefresh(pullRefreshState)
 
     ) {
         key(screen) {
@@ -1104,18 +1082,14 @@ fun AppNavigation(
 
         }
 
-        Box(Modifier.fillMaxSize()) {
-
-            PullRefreshIndicator(
-
-                refreshing = isRefreshing,
-
-                state = pullRefreshState,
-
-                modifier = Modifier.align(Alignment.TopCenter)
-
-            )
-
+        FloatingActionButton(
+            onClick = { refreshTick += 1 },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+                .size(40.dp, 40.dp)
+        ) {
+            Icon(Icons.Default.Refresh, contentDescription = "Recargar")
         }
 
     }
