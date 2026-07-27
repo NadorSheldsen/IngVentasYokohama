@@ -8,6 +8,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.delay
 import platform.Foundation.NSSelectorFromString
 import platform.UIKit.UIApplication
 import platform.UIKit.UIControlEventValueChanged
@@ -17,7 +18,7 @@ import platform.UIKit.UIView
 import platform.darwin.NSObject
 
 private class RefreshTarget(private val onRefresh: () -> Unit) : NSObject() {
-    fun handleRefresh() {
+    fun handleRefresh(sender: Any?) {
         onRefresh()
     }
 }
@@ -51,7 +52,8 @@ actual fun PlatformPullRefresh(
         content()
     }
 
-    DisposableEffect(Unit) {
+    LaunchedEffect(Unit) {
+        delay(200)
         val window = UIApplication.sharedApplication.keyWindow
         if (window != null) {
             val found = findUIScrollViews(window)
@@ -63,14 +65,16 @@ actual fun PlatformPullRefresh(
         }
         refreshControl.addTarget(
             target,
-            action = NSSelectorFromString("handleRefresh"),
+            action = NSSelectorFromString("handleRefresh:"),
             forControlEvents = UIControlEventValueChanged
         )
+    }
 
+    DisposableEffect(Unit) {
         onDispose {
             refreshControl.removeTarget(
                 target,
-                action = NSSelectorFromString("handleRefresh"),
+                action = NSSelectorFromString("handleRefresh:"),
                 forControlEvents = UIControlEventValueChanged
             )
             scrollViews.forEach { sv ->
