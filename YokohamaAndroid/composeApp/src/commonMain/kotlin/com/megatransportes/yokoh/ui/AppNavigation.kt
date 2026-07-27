@@ -1118,6 +1118,10 @@ fun AppNavigation(
 
         }
 
+        }
+
+        }
+
         val progress = pullState.progress
         if (progress > 0f || isRefreshing) {
             Box(
