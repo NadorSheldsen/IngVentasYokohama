@@ -131,6 +131,8 @@ fun AppNavigation(
 
     val screen by remember { derivedStateOf { navigator.currentScreen } }
 
+    val scope = rememberCoroutineScope()
+
     var isRefreshing by remember { mutableStateOf(false) }
 
     var refreshTick by remember { mutableStateOf(0) }
@@ -141,20 +143,21 @@ fun AppNavigation(
 
         onRefresh = {
 
-            isRefreshing = true
+            scope.launch {
 
-            refreshTick += 1
+                isRefreshing = true
+
+                refreshTick += 1
+
+                delay(1000)
+
+                isRefreshing = false
+
+            }
 
         }
 
     )
-
-    LaunchedEffect(refreshTick) {
-        if (refreshTick > 0) {
-            delay(500)
-            isRefreshing = false
-        }
-    }
 
     Box(
 
@@ -167,7 +170,6 @@ fun AppNavigation(
             .imePadding()
 
     ) {
-        key(refreshTick) {
             Box(
 
                 modifier = Modifier
@@ -177,7 +179,7 @@ fun AppNavigation(
                     .pullRefresh(pullState)
 
             ) {
-                key(screen) {
+                key(screen to refreshTick) {
                 val s = screen
                 when (s) {
 
@@ -1104,8 +1106,6 @@ fun AppNavigation(
                 onBack = back
 
             )
-
-        }
 
         }
 
