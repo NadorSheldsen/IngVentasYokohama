@@ -52,7 +52,11 @@ fun PlatformPullRefresh(
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
                 if (source == NestedScrollSource.UserInput && available.y > deadZonePx) {
                     pullDistance += available.y
+                    println("[DEBUG PTR] onPostScroll available.y=${available.y} pullDistance=$pullDistance consumed.y=${consumed.y}")
                     return Offset(0f, available.y)
+                }
+                if (source == NestedScrollSource.UserInput && available.y <= deadZonePx && available.y > 0f) {
+                    println("[DEBUG PTR] onPostScroll BLOCKED by deadZone: available.y=${available.y} deadZone=$deadZonePx")
                 }
                 return Offset.Zero
             }
@@ -61,6 +65,7 @@ fun PlatformPullRefresh(
                 if (source == NestedScrollSource.UserInput && pullDistance > 0f && available.y < 0f) {
                     val consumed = maxOf(available.y, -pullDistance)
                     pullDistance += consumed
+                    println("[DEBUG PTR] onPreScroll available.y=${available.y} consumed=$consumed pullDistance=$pullDistance")
                     return Offset(0f, consumed)
                 }
                 return Offset.Zero
@@ -71,6 +76,7 @@ fun PlatformPullRefresh(
     LaunchedEffect(isRefreshing) {
         if (!isRefreshing) {
             delay(100)
+            if (pullDistance > 0f) println("[DEBUG PTR] reset pullDistance $pullDistance -> 0 (isRefreshing=false)")
             pullDistance = 0f
         }
     }
@@ -126,10 +132,14 @@ fun PlatformPullRefresh(
             delay(50)
             if (pullDistance > 0f && pullDistance == lastPull && !currentIsRefreshing) {
                 if (pullDistance >= thresholdPx) {
+                    println("[DEBUG PTR] TRIGGER REFRESH (pullDistance=$pullDistance)")
                     currentOnRefresh()
                 } else {
+                    println("[DEBUG PTR] reset pullDistance $pullDistance -> 0 (drag ended, below threshold)")
                     pullDistance = 0f
                 }
+            } else if (pullDistance != lastPull) {
+                println("[DEBUG PTR] poll: pullDistance=$pullDistance lastPull=$lastPull (still pulling)")
             }
             lastPull = pullDistance
         }
