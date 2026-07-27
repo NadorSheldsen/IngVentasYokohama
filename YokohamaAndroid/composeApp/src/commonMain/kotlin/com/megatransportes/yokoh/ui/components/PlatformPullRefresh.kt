@@ -22,7 +22,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -48,15 +47,6 @@ fun PlatformPullRefresh(
 
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (source == NestedScrollSource.UserInput && pullDistance > 0f && available.y < 0f) {
-                    val consumed = maxOf(available.y, -pullDistance)
-                    pullDistance += consumed
-                    return Offset(0f, consumed)
-                }
-                return Offset.Zero
-            }
-
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
                 if (source == NestedScrollSource.UserInput && available.y > 0f) {
                     pullDistance += available.y
@@ -65,17 +55,13 @@ fun PlatformPullRefresh(
                 return Offset.Zero
             }
 
-            override suspend fun onPreFling(available: Velocity): Velocity {
-                return Velocity.Zero
-            }
-
-            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                if (pullDistance >= thresholdPx && !currentIsRefreshing) {
-                    currentOnRefresh()
-                } else {
-                    pullDistance = 0f
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (source == NestedScrollSource.UserInput && pullDistance > 0f && available.y < 0f) {
+                    val consumed = maxOf(available.y, -pullDistance)
+                    pullDistance += consumed
+                    return Offset(0f, consumed)
                 }
-                return Velocity.Zero
+                return Offset.Zero
             }
         }
     }
@@ -100,20 +86,6 @@ fun PlatformPullRefresh(
             .fillMaxSize()
             .clipToBounds()
             .nestedScroll(nestedScrollConnection)
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent(PointerEventPass.Initial)
-                        if (event.changes.any { it.changedToUp() } && pullDistance > 0f) {
-                            if (pullDistance >= thresholdPx && !currentIsRefreshing) {
-                                currentOnRefresh()
-                            } else {
-                                pullDistance = 0f
-                            }
-                        }
-                    }
-                }
-            }
     ) {
         Box(
             modifier = Modifier
@@ -143,6 +115,21 @@ fun PlatformPullRefresh(
                     )
                 }
             }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        var lastPull = 0f
+        while (true) {
+            delay(50)
+            if (pullDistance > 0f && pullDistance == lastPull && !currentIsRefreshing) {
+                if (pullDistance >= thresholdPx) {
+                    currentOnRefresh()
+                } else {
+                    pullDistance = 0f
+                }
+            }
+            lastPull = pullDistance
         }
     }
 }
