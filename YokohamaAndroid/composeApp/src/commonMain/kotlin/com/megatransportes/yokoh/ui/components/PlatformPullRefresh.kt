@@ -45,10 +45,12 @@ fun PlatformPullRefresh(
     val currentIsRefreshing by rememberUpdatedState(isRefreshing)
     val currentOnRefresh by rememberUpdatedState(onRefresh)
 
+    val deadZonePx = with(density) { 3.dp.toPx() }
+
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                if (source == NestedScrollSource.UserInput && available.y > 0f) {
+                if (source == NestedScrollSource.UserInput && available.y > deadZonePx) {
                     pullDistance += available.y
                     return Offset(0f, available.y)
                 }

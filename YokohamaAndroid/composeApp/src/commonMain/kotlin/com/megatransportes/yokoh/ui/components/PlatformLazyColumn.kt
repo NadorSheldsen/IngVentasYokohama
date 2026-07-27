@@ -20,11 +20,13 @@ import kotlin.math.abs
 
 class PlatformFlingBehavior : FlingBehavior {
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
+        if (abs(initialVelocity) < 400f) return initialVelocity
+
         var velocity = initialVelocity
 
         while (abs(velocity) > 50f) {
             withFrameNanos { }
-            velocity *= 0.88f
+            velocity *= 0.90f
             val scrollDelta = velocity * 0.016f
             if (abs(scrollDelta) < 1f) break
             val consumed = scrollBy(scrollDelta)
