@@ -134,25 +134,25 @@ fun AppNavigation(
 
     val scope = rememberCoroutineScope()
 
-    var isRefreshing by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
 
     var refreshTick by remember { mutableStateOf(0) }
 
     val pullState = rememberPullRefreshState(
 
-        refreshing = isRefreshing,
+        refreshing = false,
 
         onRefresh = {
 
             scope.launch {
 
-                isRefreshing = true
+                isLoading = true
 
                 refreshTick += 1
 
                 delay(1000)
 
-                isRefreshing = false
+                isLoading = false
 
             }
 
@@ -171,8 +171,6 @@ fun AppNavigation(
             .imePadding()
 
     ) {
-        key(screen to refreshTick) {
-            key(isRefreshing) {
             Box(
 
                 modifier = Modifier
@@ -182,7 +180,7 @@ fun AppNavigation(
                     .pullRefresh(pullState)
 
             ) {
-                key(screen) {
+                key(screen to refreshTick) {
                 val s = screen
                 when (s) {
 
@@ -1118,12 +1116,8 @@ fun AppNavigation(
 
         }
 
-        }
-
-        }
-
         val progress = pullState.progress
-        if (progress > 0f || isRefreshing) {
+        if (progress > 0f || isLoading) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1131,7 +1125,7 @@ fun AppNavigation(
                     .padding(top = 80.dp),
                 contentAlignment = Alignment.Center
             ) {
-                if (isRefreshing) {
+                if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
                         strokeWidth = 2.dp
