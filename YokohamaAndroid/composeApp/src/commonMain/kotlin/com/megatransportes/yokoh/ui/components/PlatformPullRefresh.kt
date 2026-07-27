@@ -58,7 +58,7 @@ fun PlatformPullRefresh(
             }
 
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                if (source == NestedScrollSource.UserInput && available.y > 0f && consumed.y <= 0f) {
+                if (source == NestedScrollSource.UserInput && available.y > 0f) {
                     pullDistance += available.y
                     return Offset(0f, available.y)
                 }
@@ -66,7 +66,7 @@ fun PlatformPullRefresh(
             }
 
             override suspend fun onPreFling(available: Velocity): Velocity {
-                return if (pullDistance > 5f) available else Velocity.Zero
+                return Velocity.Zero
             }
 
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
@@ -75,7 +75,7 @@ fun PlatformPullRefresh(
                 } else {
                     pullDistance = 0f
                 }
-                return consumed
+                return Velocity.Zero
             }
         }
     }
