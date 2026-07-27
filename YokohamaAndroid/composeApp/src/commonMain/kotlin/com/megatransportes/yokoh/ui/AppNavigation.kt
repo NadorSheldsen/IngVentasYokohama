@@ -2,8 +2,6 @@ package com.megatransportes.yokoh.ui
 
 
 
-import androidx.compose.foundation.clickable
-
 import androidx.compose.foundation.layout.Box
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +15,12 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 
 import androidx.compose.foundation.layout.size
+
+import androidx.compose.material.ExperimentalMaterialApi
+
+import androidx.compose.material.pullrefresh.pullRefresh
+
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 
 import androidx.compose.material3.CircularProgressIndicator
 
@@ -110,6 +114,7 @@ import com.megatransportes.yokoh.ui.screens.parametros.EditParametroScreen
 
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 
 fun AppNavigation(
@@ -130,9 +135,23 @@ fun AppNavigation(
 
     var refreshTick by remember { mutableStateOf(0) }
 
+    val pullState = rememberPullRefreshState(
+
+        refreshing = isRefreshing,
+
+        onRefresh = {
+
+            isRefreshing = true
+
+            refreshTick += 1
+
+        }
+
+    )
+
     LaunchedEffect(refreshTick) {
         if (refreshTick > 0) {
-            delay(1500)
+            delay(500)
             isRefreshing = false
         }
     }
@@ -148,10 +167,19 @@ fun AppNavigation(
             .imePadding()
 
     ) {
-        key(screen) {
-            key(refreshTick) {
-            val s = screen
-            when (s) {
+        key(refreshTick) {
+            Box(
+
+                modifier = Modifier
+
+                    .fillMaxSize()
+
+                    .pullRefresh(pullState)
+
+            ) {
+                key(screen) {
+                val s = screen
+                when (s) {
 
         is Screen.Login -> {
 
@@ -1085,31 +1113,29 @@ fun AppNavigation(
 
         }
 
-        // Área de recarga al tocar en la parte superior
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.TopCenter)
-                .clickable {
-                    if (!isRefreshing) {
-                        isRefreshing = true
-                        refreshTick += 1
-                    }
-                }
-        )
+        }
 
-        if (isRefreshing) {
+        val progress = pullState.progress
+        if (progress > 0f || isRefreshing) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.TopCenter)
-                    .padding(top = 100.dp),
+                    .padding(top = 80.dp),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    strokeWidth = 2.dp
-                )
+                if (isRefreshing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    CircularProgressIndicator(
+                        progress = { progress.coerceIn(0f, 1f) },
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                }
             }
         }
 
