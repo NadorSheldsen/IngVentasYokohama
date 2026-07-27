@@ -134,6 +134,7 @@ fun PlatformPullRefresh(
                 if (pullDistance >= thresholdPx) {
                     println("[DEBUG PTR] TRIGGER REFRESH (pullDistance=$pullDistance)")
                     currentOnRefresh()
+                    pullDistance = 0f
                 } else {
                     println("[DEBUG PTR] reset pullDistance $pullDistance -> 0 (drag ended, below threshold)")
                     pullDistance = 0f
