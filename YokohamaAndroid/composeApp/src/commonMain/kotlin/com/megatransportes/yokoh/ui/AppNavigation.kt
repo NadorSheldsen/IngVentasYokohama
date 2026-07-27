@@ -171,6 +171,8 @@ fun AppNavigation(
             .imePadding()
 
     ) {
+        key(screen to refreshTick) {
+            key(isRefreshing) {
             Box(
 
                 modifier = Modifier
@@ -180,7 +182,7 @@ fun AppNavigation(
                     .pullRefresh(pullState)
 
             ) {
-                key(screen to refreshTick) {
+                key(screen) {
                 val s = screen
                 when (s) {
 
