@@ -66,7 +66,7 @@ fun PlatformPullRefresh(
             }
 
             override suspend fun onPreFling(available: Velocity): Velocity {
-                return if (pullDistance > 5f) Velocity.Zero else available
+                return if (pullDistance > 5f) available else Velocity.Zero
             }
 
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
