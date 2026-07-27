@@ -58,7 +58,7 @@ fun PlatformPullRefresh(
             }
 
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                if (source == NestedScrollSource.UserInput && available.y > 0f) {
+                if (source == NestedScrollSource.UserInput && available.y > 0f && consumed.y <= 0f) {
                     pullDistance += available.y
                     return Offset(0f, available.y)
                 }
