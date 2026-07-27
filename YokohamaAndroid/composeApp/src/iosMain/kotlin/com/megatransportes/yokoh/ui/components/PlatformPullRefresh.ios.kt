@@ -8,7 +8,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlin.native.ObjCAction
 import platform.Foundation.NSSelectorFromString
 import platform.UIKit.UIApplication
 import platform.UIKit.UIControlEventValueChanged
@@ -18,7 +17,6 @@ import platform.UIKit.UIView
 import platform.darwin.NSObject
 
 private class RefreshTarget(private val onRefresh: () -> Unit) : NSObject() {
-    @ObjCAction
     fun handleRefresh() {
         onRefresh()
     }
@@ -46,8 +44,8 @@ actual fun PlatformPullRefresh(
     content: @Composable () -> Unit
 ) {
     val scrollViews = remember { mutableListOf<UIScrollView>() }
-    val target = remember { RefreshTarget(onRefresh) }
     val refreshControl = remember { UIRefreshControl() }
+    val target = remember { RefreshTarget(onRefresh) }
 
     Box(modifier = modifier.fillMaxSize()) {
         content()
@@ -62,12 +60,12 @@ actual fun PlatformPullRefresh(
                 sv.refreshControl = refreshControl
                 sv.alwaysBounceVertical = true
             }
-            refreshControl.addTarget(
-                target,
-                action = NSSelectorFromString("handleRefresh"),
-                forControlEvents = UIControlEventValueChanged
-            )
         }
+        refreshControl.addTarget(
+            target,
+            action = NSSelectorFromString("handleRefresh"),
+            forControlEvents = UIControlEventValueChanged
+        )
 
         onDispose {
             refreshControl.removeTarget(
