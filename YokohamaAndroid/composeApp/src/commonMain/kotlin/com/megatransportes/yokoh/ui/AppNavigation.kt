@@ -6,36 +6,18 @@ import androidx.compose.foundation.layout.Box
 
 import androidx.compose.foundation.layout.fillMaxSize
 
-import androidx.compose.foundation.layout.fillMaxWidth
-
 import androidx.compose.foundation.layout.imePadding
 
 import androidx.compose.foundation.layout.navigationBarsPadding
 
-import androidx.compose.foundation.layout.padding
-
-import androidx.compose.foundation.layout.size
-
-import androidx.compose.material.ExperimentalMaterialApi
-
-import androidx.compose.material.pullrefresh.pullRefresh
-
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
-
-import androidx.compose.material3.CircularProgressIndicator
-
 import androidx.compose.runtime.*
 
-import androidx.compose.ui.Alignment
-
 import androidx.compose.ui.Modifier
-
-import androidx.compose.ui.unit.dp
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-import com.megatransportes.yokoh.data.models.Flota
+import com.megatransportes.yokoh.ui.components.PlatformPullRefresh
 
 import com.megatransportes.yokoh.data.models.Vehiculo
 
@@ -115,7 +97,6 @@ import com.megatransportes.yokoh.ui.screens.parametros.EditParametroScreen
 
 
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 
 fun AppNavigation(
@@ -138,9 +119,9 @@ fun AppNavigation(
 
     var refreshTick by remember { mutableStateOf(0) }
 
-    val pullState = rememberPullRefreshState(
+    PlatformPullRefresh(
 
-        refreshing = false,
+        isRefreshing = isLoading,
 
         onRefresh = {
 
@@ -156,11 +137,7 @@ fun AppNavigation(
 
             }
 
-        }
-
-    )
-
-    Box(
+        },
 
         modifier = Modifier
 
@@ -171,15 +148,6 @@ fun AppNavigation(
             .imePadding()
 
     ) {
-            Box(
-
-                modifier = Modifier
-
-                    .fillMaxSize()
-
-                    .pullRefresh(pullState)
-
-            ) {
                 key(screen to refreshTick) {
                 val s = screen
                 when (s) {
@@ -1112,32 +1080,6 @@ fun AppNavigation(
 
         }
 
-        }
-
-        }
-
-        val progress = pullState.progress
-        if (progress > 0f || isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.TopCenter)
-                    .padding(top = 80.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    CircularProgressIndicator(
-                        progress = { progress.coerceIn(0f, 1f) },
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp
-                    )
-                }
-            }
         }
 
     }
