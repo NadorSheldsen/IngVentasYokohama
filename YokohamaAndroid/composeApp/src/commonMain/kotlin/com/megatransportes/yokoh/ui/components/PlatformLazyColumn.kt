@@ -19,17 +19,20 @@ import com.megatransportes.yokoh.getPlatformName
 import kotlin.math.abs
 
 class PlatformFlingBehavior(
-    private val decayFactor: Float = 0.97f
+    private val decayFactor: Float = 0.94f
 ) : FlingBehavior {
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
+        if (abs(initialVelocity) < 200f) return initialVelocity
+
         var velocity = initialVelocity
 
-        while (abs(velocity) > 1f) {
+        while (abs(velocity) > 20f) {
             withFrameNanos { }
             velocity *= decayFactor
             val scrollDelta = velocity * 0.016f
-            if (abs(scrollDelta) < 0.5f) break
-            scrollBy(scrollDelta)
+            if (abs(scrollDelta) < 1f) break
+            val consumed = scrollBy(scrollDelta)
+            if (abs(consumed) < abs(scrollDelta)) break
         }
         return velocity
     }
