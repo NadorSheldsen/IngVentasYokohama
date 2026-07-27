@@ -1,7 +1,7 @@
 package com.megatransportes.yokoh.ui.screens.usuarios
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -501,7 +501,7 @@ private fun FlotaAssignmentDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
                 
-                LazyColumn(
+                PlatformLazyColumn(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {

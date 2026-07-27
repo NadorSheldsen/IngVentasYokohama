@@ -2,7 +2,7 @@ package com.megatransportes.yokoh.ui.screens.desecho
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.border
-import androidx.compose.foundation.lazy.LazyColumn
+import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -209,7 +209,7 @@ fun NuevaLlantaDesechoScreen(
 
         // Draw screen content and host-level Popup overlay
         Box(modifier = Modifier.fillMaxSize()) {
-            LazyColumn(
+            PlatformLazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)

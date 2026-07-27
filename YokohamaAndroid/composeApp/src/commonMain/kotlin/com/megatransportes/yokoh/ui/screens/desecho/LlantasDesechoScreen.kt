@@ -4,7 +4,7 @@ package com.megatransportes.yokoh.ui.screens.desecho
 
 import androidx.compose.foundation.layout.*
 
-import androidx.compose.foundation.lazy.LazyColumn
+import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
 
 import androidx.compose.foundation.lazy.items
 
@@ -254,7 +254,7 @@ fun LlantasDesechoScreen(
 
                 else -> {
 
-                    LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+                    PlatformLazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
 
                         items(llantasDesecho, key = { it.idLlantasDesecho }) { llanta ->
 

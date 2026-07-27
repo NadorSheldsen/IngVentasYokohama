@@ -1,7 +1,7 @@
 package com.megatransportes.yokoh.ui.screens.semaforo
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack

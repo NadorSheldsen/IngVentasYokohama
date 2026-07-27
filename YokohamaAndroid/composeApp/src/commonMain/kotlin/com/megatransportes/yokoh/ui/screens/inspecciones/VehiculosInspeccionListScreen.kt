@@ -4,7 +4,7 @@ package com.megatransportes.yokoh.ui.screens.inspecciones
 
 import androidx.compose.foundation.layout.*
 
-import androidx.compose.foundation.lazy.LazyColumn
+import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
 
 import androidx.compose.foundation.lazy.items
 
@@ -270,7 +270,7 @@ fun VehiculosInspeccionListScreen(
 
                 else -> {
 
-                    LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    PlatformLazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
 
                         items(vehiculos, key = { it.idVehiculoInspeccion }) { veh ->
 

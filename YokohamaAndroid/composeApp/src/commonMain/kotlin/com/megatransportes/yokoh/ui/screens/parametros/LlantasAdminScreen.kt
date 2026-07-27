@@ -6,7 +6,7 @@ import androidx.compose.foundation.clickable
 
 import androidx.compose.foundation.layout.*
 
-import androidx.compose.foundation.lazy.LazyColumn
+import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
 
 import androidx.compose.foundation.lazy.items
 
@@ -266,7 +266,7 @@ fun LlantasAdminScreen(
 
             } else {
 
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                PlatformLazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 
                     items(llantas, key = { it.idLlantas }) { llanta ->
 

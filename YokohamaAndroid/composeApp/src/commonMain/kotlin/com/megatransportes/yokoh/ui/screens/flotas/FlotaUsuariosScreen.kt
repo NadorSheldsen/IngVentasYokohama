@@ -1,7 +1,7 @@
 package com.megatransportes.yokoh.ui.screens.flotas
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -97,7 +97,7 @@ fun FlotaUsuariosScreen(
                     modifier = Modifier.align(Alignment.Center).padding(16.dp)
                 )
                 else -> {
-                    LazyColumn(
+                    PlatformLazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -158,7 +158,7 @@ fun FlotaUsuariosScreen(
                             style = MaterialTheme.typography.bodyMedium
                         )
                     } else {
-                        LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        PlatformLazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             items(filteredUsuarios, key = { it.idUsuarios }) { usuario ->
                                 UsuarioDisponibleItem(
                                     usuario = usuario,

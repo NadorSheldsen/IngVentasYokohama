@@ -6,7 +6,7 @@ import androidx.compose.foundation.clickable
 
 import androidx.compose.foundation.layout.*
 
-import androidx.compose.foundation.lazy.LazyColumn
+import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
 
 import androidx.compose.foundation.lazy.items
 
@@ -388,7 +388,7 @@ fun ParametrosListScreen(
 
                             displayed.isEmpty() && suggestedLlantas.isEmpty() -> Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { Text(text = "No hay parámetros registrados.", color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(16.dp)) }
 
-                            else -> LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            else -> PlatformLazyColumn(modifier = Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
                                 // Mostrar llantas sugeridas primero
 
@@ -1126,7 +1126,7 @@ private fun LlantaSearchDialog(
 
                 } else {
 
-                    LazyColumn(
+                    PlatformLazyColumn(
 
                         modifier = Modifier.weight(1f).fillMaxWidth(),
 

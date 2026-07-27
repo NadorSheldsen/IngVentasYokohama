@@ -1,7 +1,7 @@
 package com.megatransportes.yokoh.ui.screens.parametros
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -117,7 +117,7 @@ fun TipoVehiculosAdminScreen(
                     t.TipoVehiculosNombre.lowercase().contains(q) || t.TipoVehiculosCantLlantas.toString().contains(q)
                 }
 
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                PlatformLazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(displayed, key = { it.idTipoVehiculos }) { tipo ->
                                 Card(modifier = Modifier
                                     .fillMaxWidth()

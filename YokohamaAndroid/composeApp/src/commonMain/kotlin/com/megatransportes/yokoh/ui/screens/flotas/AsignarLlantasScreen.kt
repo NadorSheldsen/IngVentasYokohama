@@ -2,7 +2,7 @@ package com.megatransportes.yokoh.ui.screens.flotas
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -95,7 +95,7 @@ fun AsignarLlantasScreen(
                         (if (showOnlyAssociated) assoc else true) && matches
                     }
 
-                    LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(8.dp)) {
+                    PlatformLazyColumn(modifier = Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(8.dp)) {
                         items(filtered, key = { it.idLlantas }) { llanta ->
                             Card(
                                 modifier = Modifier

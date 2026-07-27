@@ -1,7 +1,7 @@
 package com.megatransportes.yokoh.ui.screens.usuarios
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -113,7 +113,7 @@ fun PerfilesUsuarioListScreen(
                 }
                 
                 else -> {
-                    LazyColumn(
+                    PlatformLazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)

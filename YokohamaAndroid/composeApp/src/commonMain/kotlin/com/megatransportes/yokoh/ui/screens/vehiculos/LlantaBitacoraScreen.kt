@@ -3,7 +3,7 @@ package com.megatransportes.yokoh.ui.screens.vehiculos
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -137,7 +137,7 @@ fun LlantaBitacoraScreen(
                             )
                         }
 
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        PlatformLazyColumn(modifier = Modifier.fillMaxSize()) {
                             item {
                                 TimelineItem(
                                         date = formatDateOnly(llantaVehiculo.LlantasVehiculosFechaInicio),

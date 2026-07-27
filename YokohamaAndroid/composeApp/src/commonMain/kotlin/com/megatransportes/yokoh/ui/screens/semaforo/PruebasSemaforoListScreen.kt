@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.*
 
 import androidx.compose.foundation.clickable
 
-import androidx.compose.foundation.lazy.LazyColumn
+import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
 
 import androidx.compose.foundation.lazy.items
 
@@ -472,7 +472,7 @@ fun PruebasSemaforoListScreen(
 
                 else -> {
 
-                    LazyColumn(
+                    PlatformLazyColumn(
 
                         modifier = Modifier.fillMaxSize(),
 
