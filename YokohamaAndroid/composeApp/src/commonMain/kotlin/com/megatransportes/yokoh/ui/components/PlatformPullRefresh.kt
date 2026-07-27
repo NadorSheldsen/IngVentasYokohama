@@ -23,7 +23,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -50,9 +49,9 @@ fun PlatformPullRefresh(
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (source == NestedScrollSource.UserInput && available.y > 0f && pullDistance > 0f) {
-                    val consumed = minOf(available.y, pullDistance)
-                    pullDistance -= consumed
+                if (source == NestedScrollSource.UserInput && pullDistance > 0f && available.y < 0f) {
+                    val consumed = maxOf(available.y, -pullDistance)
+                    pullDistance += consumed
                     return Offset(0f, consumed)
                 }
                 return Offset.Zero
