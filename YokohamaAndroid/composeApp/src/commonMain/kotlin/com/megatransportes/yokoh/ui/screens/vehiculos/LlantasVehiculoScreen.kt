@@ -107,14 +107,8 @@ fun LlantasVehiculoScreen(
                 .onGloballyPositioned { containerHeightPx = it.size.height.toFloat() },
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = CardDefaults.shape,
-                border = androidx.compose.foundation.BorderStroke(1.dp, androidx.compose.ui.graphics.Color.Black),
-                colors = CardDefaults.cardColors(
-                    // Fixed darker gray to ensure contrast in light theme
-                    containerColor = androidx.compose.ui.graphics.Color(0xFFD9DDE0)
-                )
+            Column(
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp)
