@@ -110,8 +110,6 @@ private fun VehicleThumbnail(
 
     base64Image: String?,
 
-    hasTerminada: Boolean
-
 ) {
 
     val imageBitmap by produceState<ImageBitmap?>(initialValue = null, key1 = base64Image) {
@@ -150,7 +148,7 @@ private fun VehicleThumbnail(
 
 
 
-    Card(modifier = Modifier.size(64.dp).alpha(if (hasTerminada) 0.5f else 1f)) {
+    Card(modifier = Modifier.size(64.dp)) {
 
         Box(
 
@@ -710,8 +708,6 @@ fun VehiculosScreen(
 
                                         kmRecorrido = vehiculo.kmRecorridoLatest,
 
-                                        hasTerminada = (vehiculo.VehiculosPTerminada == 1),
-
                                         onClick = {
 
                                             coroutineScope.launch {
@@ -890,8 +886,6 @@ fun VehiculoItem(
 
     kmRecorrido: Float? = null,
 
-    hasTerminada: Boolean = false,
-
     onClick: () -> Unit,
 
     onDownloadPdf: () -> Unit,
@@ -936,7 +930,7 @@ fun VehiculoItem(
 
             // Título en su propia fila que ocupa todo el ancho; delete en esquina superior derecha
 
-            val titleColor = if (hasTerminada) MaterialTheme.colorScheme.primary.copy(alpha = 0.98f) else MaterialTheme.colorScheme.primary
+            val titleColor = MaterialTheme.colorScheme.primary
 
             Box(modifier = Modifier.fillMaxWidth()) {
 
@@ -1040,7 +1034,7 @@ fun VehiculoItem(
 
                     // Make body text clearer for terminated vehicles as requested
 
-                    val bodyColor = if (hasTerminada) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.50f) else MaterialTheme.colorScheme.onSurface
+                    val bodyColor = MaterialTheme.colorScheme.onSurface
 
                     Text(
 
@@ -1094,33 +1088,11 @@ fun VehiculoItem(
 
 
 
-                // Thumbnail area: always reserve the thumbnail column on the right so we can
-
-                // show the 'Terminada' label above the photo even when there is no image.
+                // Thumbnail area: always reserve the thumbnail column on the right.
 
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(start = 8.dp)) {
-
-                    // Show the 'Terminada' label above the thumbnail (as requested), even if there is no photo
-
-                    if (hasTerminada) {
-
-                        Text(
-
-                            text = "Terminada",
-
-                            style = MaterialTheme.typography.bodySmall,
-
-                            color = Color.Red,
-
-                            maxLines = 1
-
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                    }
 
 
 
@@ -1129,8 +1101,6 @@ fun VehiculoItem(
                     VehicleThumbnail(
 
                         base64Image = vehiculo.VehiculosImagen,
-
-                        hasTerminada = hasTerminada
 
                     )
 
