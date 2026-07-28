@@ -717,7 +717,7 @@ fun PruebaRendimientoScreen(
                     } else {
                         val currentData = llantasData.getOrNull(index) ?: LlantaRendimientoFormData(llantaVehiculoId = llanta.idLlantasVehiculos)
                         val last = lastRendimientoMap[llanta.idLlantasVehiculos]
-                        if (currentData.pTerminada) {
+                        if (currentData.pTerminada || last?.LlantasRendimientoPTerminada == 1) {
                             // Llanta marcada como terminada: mostrar slot colapsado para reemplazo
                             NewLlantaSlotForm(
                                 slotLabel = llantasData.getOrNull(index)?.piso?.takeIf { it.isNotBlank() }
