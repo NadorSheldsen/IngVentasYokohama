@@ -232,10 +232,6 @@ fun VehiculosScreen(
 
     // Use the persisted VehiculosPTerminada flag on the vehicle entity (returned by the backend)
 
-    // Filter: by default do not show vehicles with Terminada=true
-
-    var showTerminadas by remember { mutableStateOf(false) }
-
     var sortByRecent by remember { mutableStateOf(false) }
 
     var showSortMenu by remember { mutableStateOf(false) }
@@ -308,9 +304,9 @@ fun VehiculosScreen(
 
 
 
-    // Filter vehicles based on search query, sort order, and 'showTerminadas' toggle
+    // Filter vehicles based on search query and sort order
 
-    val filteredVehiculos = remember(vehiculos, searchQuery, sortByRecent, showTerminadas) {
+    val filteredVehiculos = remember(vehiculos, searchQuery, sortByRecent) {
 
         val base = if (searchQuery.isBlank()) {
 
@@ -330,9 +326,7 @@ fun VehiculosScreen(
 
         }
 
-        val filtered = if (showTerminadas) base else base.filter { v -> !(v.VehiculosPTerminada == 1) }
-
-        if (sortByRecent) filtered.sortedByDescending { it.idVehiculos } else filtered.sortedBy { it.VehiculosNumero }
+        if (sortByRecent) base.sortedByDescending { it.idVehiculos } else base.sortedBy { it.VehiculosNumero }
 
     }
 
