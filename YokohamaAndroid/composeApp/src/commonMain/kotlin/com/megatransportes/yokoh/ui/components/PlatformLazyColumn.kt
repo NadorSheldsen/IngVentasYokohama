@@ -40,8 +40,8 @@ class PlatformFlingBehavior : FlingBehavior {
             val consumed = scrollBy(scrollDelta)
             println("[DEBUG FLING] frame $frame: v=$velocity delta=$scrollDelta consumed=$consumed")
             if (abs(consumed) < abs(scrollDelta)) {
-                println("[DEBUG FLING] frame $frame: hit boundary, stopping")
-                break
+                println("[DEBUG FLING] frame $frame: hit boundary, returning 0 to prevent bounce")
+                return 0f
             }
             frame++
         }
