@@ -677,8 +677,7 @@ fun PruebaRendimientoScreen(
                     if (llanta == null) {
                         // Slot para montar nueva llanta en esta posición
                         NewLlantaSlotForm(
-                            slotLabel = llantasData.getOrNull(index)?.piso?.takeIf { it.isNotBlank() }
-                                ?: "Pos ${index + 1}",
+                            slotLabel = "Pos ${index + 1}",
                             vehiculoId = vehiculo.idVehiculos,
                             flota = flota,
                             repository = repository,
@@ -707,8 +706,7 @@ fun PruebaRendimientoScreen(
                         if (currentData.pTerminada || last?.LlantasRendimientoPTerminada == 1) {
                             // Llanta marcada como terminada: mostrar slot colapsado para reemplazo
                             NewLlantaSlotForm(
-                                slotLabel = llantasData.getOrNull(index)?.piso?.takeIf { it.isNotBlank() }
-                                    ?: "Pos ${index + 1}",
+                                slotLabel = "Pos ${index + 1}",
                                 vehiculoId = vehiculo.idVehiculos,
                                 flota = flota,
                                 repository = repository,
@@ -1798,6 +1796,13 @@ private fun NewLlantaSlotForm(
     var isLoading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
+    val posPrefix = remember(slotLabel) {
+        Regex("""Pos\s*\d+""", RegexOption.IGNORE_CASE).find(slotLabel)
+            ?.value
+            ?.let { "$it " }
+            ?: ""
+    }
+
     val coroutineScope = rememberCoroutineScope()
 
     // Cargar catálogo de llantas y parámetros al montar
@@ -2003,15 +2008,15 @@ private fun NewLlantaSlotForm(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
-                            selected = data.piso == "Original",
-                            onClick = { data = data.copy(piso = "Original") }
+                            selected = data.piso == "${posPrefix}Original",
+                            onClick = { data = data.copy(piso = "${posPrefix}Original") }
                         )
                         Text("Original")
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
-                            selected = data.piso == "Vitalizado",
-                            onClick = { data = data.copy(piso = "Vitalizado") }
+                            selected = data.piso == "${posPrefix}Vitalizado",
+                            onClick = { data = data.copy(piso = "${posPrefix}Vitalizado") }
                         )
                         Text("Vitalizado")
                     }
