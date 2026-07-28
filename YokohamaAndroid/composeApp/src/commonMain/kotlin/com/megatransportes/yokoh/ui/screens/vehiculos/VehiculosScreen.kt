@@ -22,6 +22,10 @@ import androidx.compose.material.icons.filled.Clear
 
 import androidx.compose.material.icons.filled.Search
 
+import androidx.compose.material.icons.filled.FilterList
+
+import androidx.compose.material.icons.filled.Check
+
 import androidx.compose.material.icons.filled.Home
 
 import androidx.compose.material.icons.outlined.PhotoCamera
@@ -232,6 +236,10 @@ fun VehiculosScreen(
 
     var showTerminadas by remember { mutableStateOf(false) }
 
+    var sortByRecent by remember { mutableStateOf(false) }
+
+    var showSortMenu by remember { mutableStateOf(false) }
+
     // Keep a map of the original registered odometer per vehicle so we can compute
 
     // "kilómetros recorridos" = lastPruebaOdometro - registeredOdometer
@@ -300,9 +308,9 @@ fun VehiculosScreen(
 
 
 
-    // Filter vehicles based on search query and the 'showTerminadas' toggle
+    // Filter vehicles based on search query, sort order, and 'showTerminadas' toggle
 
-    val filteredVehiculos = remember(vehiculos, searchQuery, showTerminadas) {
+    val filteredVehiculos = remember(vehiculos, searchQuery, sortByRecent, showTerminadas) {
 
         val base = if (searchQuery.isBlank()) {
 
@@ -322,7 +330,9 @@ fun VehiculosScreen(
 
         }
 
-        if (showTerminadas) base else base.filter { v -> !(v.VehiculosPTerminada == 1) }
+        val filtered = if (showTerminadas) base else base.filter { v -> !(v.VehiculosPTerminada == 1) }
+
+        if (sortByRecent) filtered.sortedByDescending { it.idVehiculos } else filtered.sortedBy { it.VehiculosNumero }
 
     }
 
@@ -510,19 +520,25 @@ fun VehiculosScreen(
 
             ) {
 
-                // Search Bar + filter toggle
+                // Barra de búsqueda con filtros
 
-                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Card(
+
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+
+                    colors = CardDefaults.cardColors(
+
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+
+                    )
+
+                ) {
 
                     OutlinedTextField(
 
                         value = searchQuery,
 
                         onValueChange = { searchQuery = it },
-
-                        modifier = Modifier
-
-                            .weight(1f),
 
                         placeholder = { Text("Buscar vehículos...") },
 
@@ -540,17 +556,67 @@ fun VehiculosScreen(
 
                         trailingIcon = {
 
-                            if (searchQuery.isNotEmpty()) {
+                            Row {
 
-                                IconButton(onClick = { searchQuery = "" }) {
+                                Box {
 
-                                    Icon(
+                                    IconButton(onClick = { showSortMenu = true }) {
 
-                                        imageVector = Icons.Default.Clear,
+                                        Icon(
 
-                                        contentDescription = "Limpiar búsqueda"
+                                            imageVector = Icons.Default.FilterList,
 
-                                    )
+                                            contentDescription = if (sortByRecent) "Orden: Más reciente" else "Orden: A-Z"
+
+                                        )
+
+                                    }
+
+                                    DropdownMenu(
+
+                                        expanded = showSortMenu,
+
+                                        onDismissRequest = { showSortMenu = false }
+
+                                    ) {
+
+                                        DropdownMenuItem(
+
+                                            text = { Text("A-Z") },
+
+                                            onClick = { sortByRecent = false; showSortMenu = false },
+
+                                            leadingIcon = if (!sortByRecent) {{ Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }} else null
+
+                                        )
+
+                                        DropdownMenuItem(
+
+                                            text = { Text("Más reciente") },
+
+                                            onClick = { sortByRecent = true; showSortMenu = false },
+
+                                            leadingIcon = if (sortByRecent) {{ Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }} else null
+
+                                        )
+
+                                    }
+
+                                }
+
+                                if (searchQuery.isNotEmpty()) {
+
+                                    IconButton(onClick = { searchQuery = "" }) {
+
+                                        Icon(
+
+                                            imageVector = Icons.Default.Clear,
+
+                                            contentDescription = "Limpiar búsqueda"
+
+                                        )
+
+                                    }
 
                                 }
 
@@ -558,23 +624,11 @@ fun VehiculosScreen(
 
                         },
 
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+
                         singleLine = true
 
                     )
-
-
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-
-
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-                        Text("Mostrar terminadas", style = MaterialTheme.typography.bodySmall)
-
-                        Switch(checked = showTerminadas, onCheckedChange = { showTerminadas = it })
-
-                    }
 
                 }
 
