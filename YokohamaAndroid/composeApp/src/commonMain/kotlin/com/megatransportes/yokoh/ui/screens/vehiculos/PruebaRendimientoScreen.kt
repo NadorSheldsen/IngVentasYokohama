@@ -998,7 +998,7 @@ fun PruebaRendimientoScreen(
                             showCausaRetiroDialog = false
                             llantaIdPendienteTerminar = null
                         }, modifier = Modifier.weight(1f)) {
-                            Text("Confirmar retiro")
+                            Text("Confirmar")
                         }
                     }
                 }
@@ -1839,6 +1839,8 @@ private fun NewLlantaSlotForm(
         }
     }
 
+    var collapsed by remember { mutableStateOf(true) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
@@ -1848,12 +1850,26 @@ private fun NewLlantaSlotForm(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = "$slotLabel - Espacio disponible",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "$slotLabel - Espacio disponible",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                IconButton(onClick = { collapsed = !collapsed }) {
+                    Text(
+                        text = if (collapsed) "+" else "-",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
 
+            if (!collapsed) {
             // Campo de búsqueda de llanta
             Column {
                 Row(
@@ -2147,6 +2163,7 @@ private fun NewLlantaSlotForm(
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
+            }
             }
         }
     }
