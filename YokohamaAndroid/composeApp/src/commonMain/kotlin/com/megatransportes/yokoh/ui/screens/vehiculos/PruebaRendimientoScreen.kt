@@ -190,6 +190,7 @@ fun PruebaRendimientoScreen(
 
     var showCausaRetiroDialog by remember { mutableStateOf(false) }
     var causaRetiroText by remember { mutableStateOf("") }
+    var showCausaRetiroDropdown by remember { mutableStateOf(false) }
 
     // Helper: determina si alguna llanta cambió en mm o presión comparada con el último registro conocido
     fun hasMeasurementsChanged(): Boolean {
@@ -910,13 +911,40 @@ fun PruebaRendimientoScreen(
             Card(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Causa de Retiro", style = MaterialTheme.typography.titleLarge)
-                    OutlinedTextField(
-                        value = causaRetiroText,
-                        onValueChange = { causaRetiroText = it },
-                        label = { Text("Describe la causa de retiro") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = false
-                    )
+                    ExposedDropdownMenuBox(
+                        expanded = showCausaRetiroDropdown,
+                        onExpandedChange = { showCausaRetiroDropdown = it }
+                    ) {
+                        OutlinedTextField(
+                            value = causaRetiroText,
+                            onValueChange = {},
+                            label = { Text("Causa de retiro") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showCausaRetiroDropdown) },
+                            modifier = Modifier.fillMaxWidth().menuAnchor(),
+                            readOnly = true
+                        )
+                        ExposedDropdownMenu(
+                            expanded = showCausaRetiroDropdown,
+                            onDismissRequest = { showCausaRetiroDropdown = false }
+                        ) {
+                            listOf(
+                                "Impacto",
+                                "Desgaste irregular excesivo",
+                                "Presión de inflado insuficiente y/o sobrecarga",
+                                "Rodada baja",
+                                "Falla de la llanta",
+                                "Otro"
+                            ).forEach { opcion ->
+                                DropdownMenuItem(
+                                    text = { Text(opcion) },
+                                    onClick = {
+                                        causaRetiroText = opcion
+                                        showCausaRetiroDropdown = false
+                                    }
+                                )
+                            }
+                        }
+                    }
 
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                         OutlinedButton(onClick = { showCausaRetiroDialog = false }, modifier = Modifier.weight(1f)) {
