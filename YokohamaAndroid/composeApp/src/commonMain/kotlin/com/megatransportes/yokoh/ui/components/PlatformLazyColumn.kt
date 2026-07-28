@@ -18,35 +18,39 @@ import androidx.compose.ui.unit.dp
 import com.megatransportes.yokoh.getPlatformName
 import kotlin.math.abs
 
-class PlatformFlingBehavior : FlingBehavior {
+class PlatformFlingBehavior(
+    private val maxInitialVelocity: Float = 3000f,
+) : FlingBehavior {
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
-        println("[DEBUG FLING] called with v=$initialVelocity")
-        if (abs(initialVelocity) < 400f) {
+        val velocity = initialVelocity.coerceIn(-maxInitialVelocity, maxInitialVelocity)
+        println("[DEBUG FLING] called with v=$initialVelocity clamped=$velocity")
+
+        if (abs(velocity) < 400f) {
             println("[DEBUG FLING] ignored (below threshold)")
-            return initialVelocity
+            return velocity
         }
 
-        var velocity = initialVelocity
+        var v = velocity
         var frame = 0
 
-        while (abs(velocity) > 50f) {
+        while (abs(v) > 50f) {
             withFrameNanos { }
-            velocity *= 0.90f
-            val scrollDelta = velocity * 0.016f
+            v *= 0.88f
+            val scrollDelta = v * 0.016f
             if (abs(scrollDelta) < 1f) {
-                println("[DEBUG FLING] frame $frame: v=$velocity delta=$scrollDelta -> break (too small)")
+                println("[DEBUG FLING] frame $frame: v=$v delta=$scrollDelta -> break (too small)")
                 break
             }
             val consumed = scrollBy(scrollDelta)
-            println("[DEBUG FLING] frame $frame: v=$velocity delta=$scrollDelta consumed=$consumed")
+            println("[DEBUG FLING] frame $frame: v=$v delta=$scrollDelta consumed=$consumed")
             if (abs(consumed) < abs(scrollDelta)) {
-                println("[DEBUG FLING] frame $frame: hit boundary, returning 0 to prevent bounce")
+                println("[DEBUG FLING] frame $frame: hit boundary, returning 0")
                 return 0f
             }
             frame++
         }
-        println("[DEBUG FLING] done, remaining v=$velocity frames=$frame")
-        return velocity
+        println("[DEBUG FLING] done, remaining v=$v frames=$frame")
+        return v
     }
 }
 
