@@ -717,6 +717,45 @@ fun PruebaRendimientoScreen(
                     } else {
                         val currentData = llantasData.getOrNull(index) ?: LlantaRendimientoFormData(llantaVehiculoId = llanta.idLlantasVehiculos)
                         val last = lastRendimientoMap[llanta.idLlantasVehiculos]
+                        if (currentData.pTerminada) {
+                            // Llanta marcada como terminada: mostrar slot colapsado para reemplazo
+                            NewLlantaSlotForm(
+                                slotLabel = llantasData.getOrNull(index)?.piso?.takeIf { it.isNotBlank() }
+                                    ?: "Pos ${index + 1}",
+                                vehiculoId = vehiculo.idVehiculos,
+                                flota = flota,
+                                repository = repository,
+                                initialFormData = LlantaRendimientoFormData(
+                                    llantaVehiculoId = 0,
+                                    piso = llanta.LlantasVehiculosPiso,
+                                    replacedLlantaVehiculoId = llanta.idLlantasVehiculos
+                                ),
+                                onLlantaCreated = { created ->
+                                    displayedLlantas = displayedLlantas.toMutableList().apply { this[index] = created }
+                                    llantasData = llantasData.toMutableList().apply {
+                                        while (size <= index) add(LlantaRendimientoFormData())
+                                        this[index] = LlantaRendimientoFormData(
+                                            llantaVehiculoId = created.idLlantasVehiculos,
+                                            mm1 = created.LlantasVehiculosMM1.toString(),
+                                            mm2 = created.LlantasVehiculosMM2.toString(),
+                                            mm3 = created.LlantasVehiculosMM3.toString(),
+                                            mm4 = created.LlantasVehiculosMM4.toString(),
+                                            presion = created.LlantasVehiculosPresion.toString(),
+                                            piso = created.LlantasVehiculosPiso
+                                        )
+                                    }
+                                    // Retirar la llanta anterior del servidor
+                                    coroutineScope.launch {
+                                        repository.retirarLlantaVehiculo(
+                                            llanta.idLlantasVehiculos,
+                                            currentData.causaRetiro,
+                                            currentUser?.idUsuarios,
+                                            created.idLlantasVehiculos
+                                        )
+                                    }
+                                }
+                            )
+                        } else {
                         LlantaRendimientoForm(
                             index = index + 1,
                             llanta = llanta,
@@ -738,6 +777,7 @@ fun PruebaRendimientoScreen(
                                 }
                             }
                         )
+                        }
                     }
 
                     if (index < displayedLlantas.size - 1) {
@@ -951,46 +991,14 @@ fun PruebaRendimientoScreen(
                             Text("Cancelar")
                         }
                         Button(onClick = {
-                            // Aplicar la terminación en UI y crear espacio para nueva llanta
+                            // Marcar la llanta como terminada localmente (se conserva en displayedLlantas
+                            // para que otros usuarios también puedan verla como disponible).
+                            // El retiro del servidor ocurre SOLO cuando se crea una llanta de reemplazo.
                             val id = llantaIdPendienteTerminar!!
                             val idx = llantasData.indexOfFirst { it.llantaVehiculoId == id }
                             if (idx != -1) {
                                 llantasData = llantasData.toMutableList().apply {
                                     this[idx] = this[idx].copy(pTerminada = true, causaRetiro = causaRetiroText.ifBlank { null })
-                                }
-                            }
-                            // Reemplazar la llanta en la lista mostrada por un slot vacío (null)
-                            val pos = displayedLlantas.indexOfFirst { it?.idLlantasVehiculos == id }
-                            val originalLlanta = if (pos != -1) displayedLlantas[pos] else null
-                            if (pos != -1) {
-                                displayedLlantas = displayedLlantas.toMutableList().apply { this[pos] = null }
-                                llantasData = llantasData.toMutableList().apply {
-                                    while (size <= pos) add(LlantaRendimientoFormData())
-                                    this[pos] = LlantaRendimientoFormData(
-                                        llantaVehiculoId = 0,
-                                        piso = "Pos ${pos + 1}",
-                                        replacedLlantaVehiculoId = originalLlanta?.idLlantasVehiculos
-                                    )
-                                }
-                            }
-
-                            // Persistir la eliminación en backend para que al recargar la llanta no vuelva a aparecer
-                            coroutineScope.launch {
-                                isLoading = true
-                                val usuarioId = currentUser?.idUsuarios
-                                val retireRes = repository.retirarLlantaVehiculo(id, causaRetiroText.ifBlank { null }, usuarioId, null)
-                                isLoading = false
-                                if (retireRes.isFailure) {
-                                    // Revertir UI si falla
-                                    errorMessage = retireRes.exceptionOrNull()?.message ?: "No se pudo retirar la llanta del vehículo en el servidor"
-                                    if (pos != -1 && originalLlanta != null) {
-                                        displayedLlantas = displayedLlantas.toMutableList().apply { this[pos] = originalLlanta }
-                                        // revertir pTerminada en llantasData
-                                        val idx2 = llantasData.indexOfFirst { it.llantaVehiculoId == id }
-                                        if (idx2 != -1) {
-                                            llantasData = llantasData.toMutableList().apply { this[idx2] = this[idx2].copy(pTerminada = false, causaRetiro = null) }
-                                        }
-                                    }
                                 }
                             }
 
