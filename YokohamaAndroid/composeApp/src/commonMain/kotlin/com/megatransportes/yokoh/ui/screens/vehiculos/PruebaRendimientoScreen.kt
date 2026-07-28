@@ -284,20 +284,7 @@ fun PruebaRendimientoScreen(
                     return@launch
                 }
 
-                val hasTerminadaInForm = llantasData.any { it.pTerminada }
-                if (hasTerminadaInForm) {
-                    try {
-                        repository.updateVehiculoTerminada(vehiculo.idVehiculos, true)
-                    } catch (e: Exception) {
-                        println("Warning: updateVehiculoTerminada(true) failed: ${e.message}")
-                    }
-                } else {
-                    try {
-                        repository.updateVehiculoTerminada(vehiculo.idVehiculos, false)
-                    } catch (e: Exception) {
-                        println("Warning: updateVehiculoTerminada(false) failed: ${e.message}")
-                    }
-                }
+                // Ya no se marca el vehículo como terminado aunque una llanta esté terminada.
 
                 // Solo crear rendimientos para llantas que siguen instaladas.
                 // Si una llanta fue retirada y eliminada de llantasvehiculos,
