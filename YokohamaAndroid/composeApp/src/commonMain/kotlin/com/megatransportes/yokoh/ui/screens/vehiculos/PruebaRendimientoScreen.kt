@@ -158,6 +158,12 @@ fun PruebaRendimientoScreen(
             val maxPos = (positions.maxOrNull() ?: llantasVehiculo.size).coerceAtLeast(llantasVehiculo.size)
             val slots = MutableList<LlantaVehiculo?>(maxPos) { null }
 
+            // Preserve existing positions for tires without "Pos N" in their piso
+            val prevPositions = mutableMapOf<Int, Int>()
+            displayedLlantas.forEachIndexed { idx, lv ->
+                if (lv != null) prevPositions[lv.idLlantasVehiculos] = idx
+            }
+
             // First place those with explicit Pos N
             llantasVehiculo.forEach { lv ->
                 val piso = lv.LlantasVehiculosPiso
@@ -170,11 +176,16 @@ fun PruebaRendimientoScreen(
                 }
             }
 
-            // Then place remaining items into first empty slots (or append)
+            // Then place remaining items: prefer previous position, then first empty slot
             llantasVehiculo.forEach { lv ->
                 if (!slots.contains(lv)) {
-                    val emptyIdx = slots.indexOfFirst { it == null }
-                    if (emptyIdx >= 0) slots[emptyIdx] = lv else slots.add(lv)
+                    val prevIdx = prevPositions[lv.idLlantasVehiculos]
+                    if (prevIdx != null && prevIdx in slots.indices && slots[prevIdx] == null) {
+                        slots[prevIdx] = lv
+                    } else {
+                        val emptyIdx = slots.indexOfFirst { it == null }
+                        if (emptyIdx >= 0) slots[emptyIdx] = lv else slots.add(lv)
+                    }
                 }
             }
 
@@ -1796,13 +1807,6 @@ private fun NewLlantaSlotForm(
     var isLoading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    val posPrefix = remember(slotLabel) {
-        Regex("""Pos\s*\d+""", RegexOption.IGNORE_CASE).find(slotLabel)
-            ?.value
-            ?.let { "$it " }
-            ?: ""
-    }
-
     val coroutineScope = rememberCoroutineScope()
 
     // Cargar catálogo de llantas y parámetros al montar
@@ -2008,15 +2012,15 @@ private fun NewLlantaSlotForm(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
-                            selected = data.piso == "${posPrefix}Original",
-                            onClick = { data = data.copy(piso = "${posPrefix}Original") }
+                            selected = data.piso == "Original",
+                            onClick = { data = data.copy(piso = "Original") }
                         )
                         Text("Original")
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
-                            selected = data.piso == "${posPrefix}Vitalizado",
-                            onClick = { data = data.copy(piso = "${posPrefix}Vitalizado") }
+                            selected = data.piso == "Vitalizado",
+                            onClick = { data = data.copy(piso = "Vitalizado") }
                         )
                         Text("Vitalizado")
                     }
