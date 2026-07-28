@@ -3,6 +3,8 @@ package com.megatransportes.yokoh.ui.screens.vehiculos
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -54,7 +56,11 @@ fun LlantasVehiculoScreen(
     var showEditParametroDialog by remember { mutableStateOf(false) }
     var selectedLlantaIdForParametro by remember { mutableStateOf<Int?>(null) }
     var showLlantasAdmin by remember { mutableStateOf(false) }
-    var collapsedForms by remember(cantidadLlantas) { mutableStateOf(List(cantidadLlantas) { false }) }
+    var collapsedForms by remember(cantidadLlantas) { mutableStateOf(List(cantidadLlantas) { true }) }
+
+    val formPositions = remember { mutableStateMapOf<Int, Float>() }
+
+    var containerHeightPx by remember { mutableFloatStateOf(0f) }
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
@@ -97,7 +103,8 @@ fun LlantasVehiculoScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
-                .verticalScroll(scrollState),
+                .verticalScroll(scrollState)
+                .onGloballyPositioned { containerHeightPx = it.size.height.toFloat() },
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Card(
@@ -159,6 +166,9 @@ fun LlantasVehiculoScreen(
                                 this[index] = !this[index]
                             }
                         },
+                        onFormPositioned = { idx, y, h ->
+                            formPositions[idx] = y
+                        },
                         onDataChange = { newData ->
                             val oldData = llantasData[index]
                             llantasData = llantasData.toMutableList().apply {
@@ -194,6 +204,17 @@ fun LlantasVehiculoScreen(
                             }
                         }
                     )
+
+                    LaunchedEffect(collapsedForms[index]) {
+                        if (!collapsedForms[index]) {
+                            val formY = formPositions[index] ?: return@LaunchedEffect
+                            val targetVisibleY = (containerHeightPx / 2f).toInt()
+                            val currentScroll = scrollState.value
+                            val absoluteFormY = (formY + currentScroll).toInt()
+                            val targetScroll = (absoluteFormY - targetVisibleY).coerceAtLeast(0)
+                            scrollState.animateScrollTo(targetScroll)
+                        }
+                    }
                 }
 
                 if (errorMessage != null) {
@@ -429,6 +450,7 @@ private fun LlantaVehiculoForm(
     showValidationErrors: Boolean = false,
     collapsed: Boolean = false,
     onToggleCollapsed: () -> Unit = {},
+    onFormPositioned: (Int, Float, Int) -> Unit = { _, _, _ -> },
     onDataChange: (LlantaVehiculoFormData) -> Unit
 ) {
     var searchText by remember { mutableStateOf("") }
@@ -458,7 +480,11 @@ private fun LlantaVehiculoForm(
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .onGloballyPositioned { coords ->
+                onFormPositioned(index, coords.positionInRoot().y, coords.size.height)
+            },
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         border = androidx.compose.foundation.BorderStroke(2.dp, formBorderColor)
     ) {
