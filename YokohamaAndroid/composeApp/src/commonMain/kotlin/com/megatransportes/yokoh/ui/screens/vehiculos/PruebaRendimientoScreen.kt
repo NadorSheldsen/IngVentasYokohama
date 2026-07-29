@@ -135,6 +135,7 @@ fun PruebaRendimientoScreen(
     // Estado para los datos de cada llanta
     // Start empty — we'll fetch authoritative values from llantasrendimiento in batch
     var llantasData by remember { mutableStateOf<List<LlantaRendimientoFormData>>(emptyList()) }
+    var pendingTerminadas by remember { mutableStateOf<List<LlantaRendimientoFormData>>(emptyList()) }
     var readyToRender by remember { mutableStateOf(false) }
 
     // Último registro conocido por llantaVehiculoId
@@ -303,7 +304,10 @@ fun PruebaRendimientoScreen(
                 val installedIds = displayedLlantas.mapNotNull { it?.idLlantasVehiculos }.toSet()
                 val toCreate = llantasData.filter {
                     it.llantaVehiculoId != 0 && it.llantaVehiculoId in installedIds
-                }
+                } + pendingTerminadas
+
+                // Limpiar pendientes al registrar
+                pendingTerminadas = emptyList()
 
                 if (toCreate.isNotEmpty()) {
                     val llantasRequests = toCreate.map { data ->
@@ -727,6 +731,21 @@ fun PruebaRendimientoScreen(
                                     replacedLlantaVehiculoId = llanta.idLlantasVehiculos
                                 ),
                                 onLlantaCreated = { created ->
+                                    // Retirar la llanta anterior del servidor (síncrono)
+                                    val retireFailed = try {
+                                        val result = repository.retirarLlantaVehiculo(
+                                            llanta.idLlantasVehiculos,
+                                            currentData.causaRetiro,
+                                            currentUser?.idUsuarios,
+                                            created.idLlantasVehiculos
+                                        )
+                                        result.isFailure
+                                    } catch (e: Exception) {
+                                        true
+                                    }
+                                    if (retireFailed && currentData.pTerminada) {
+                                        pendingTerminadas = pendingTerminadas + currentData
+                                    }
                                     displayedLlantas = displayedLlantas.toMutableList().apply { this[index] = created }
                                     llantasData = llantasData.toMutableList().apply {
                                         while (size <= index) add(LlantaRendimientoFormData())
@@ -738,15 +757,6 @@ fun PruebaRendimientoScreen(
                                             mm4 = created.LlantasVehiculosMM4.toString(),
                                             presion = created.LlantasVehiculosPresion.toString(),
                                             piso = created.LlantasVehiculosPiso
-                                        )
-                                    }
-                                    // Retirar la llanta anterior del servidor
-                                    coroutineScope.launch {
-                                        repository.retirarLlantaVehiculo(
-                                            llanta.idLlantasVehiculos,
-                                            currentData.causaRetiro,
-                                            currentUser?.idUsuarios,
-                                            created.idLlantasVehiculos
                                         )
                                     }
                                 }
@@ -1796,7 +1806,7 @@ private fun NewLlantaSlotForm(
     flota: Flota,
     repository: YokohamaRepository,
     initialFormData: LlantaRendimientoFormData = LlantaRendimientoFormData(),
-    onLlantaCreated: (LlantaVehiculo) -> Unit
+    onLlantaCreated: suspend (LlantaVehiculo) -> Unit
 ) {
     var data by remember { mutableStateOf(LlantaVehiculoFormData(piso = slotLabel)) }
     var searchText by remember { mutableStateOf("") }
