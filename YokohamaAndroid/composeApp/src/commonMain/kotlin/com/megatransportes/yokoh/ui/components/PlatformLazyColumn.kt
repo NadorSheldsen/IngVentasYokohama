@@ -1,8 +1,11 @@
 package com.megatransportes.yokoh.ui.components
 
 import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.ScrollableDefaults
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,14 +14,10 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.megatransportes.yokoh.getPlatformName
 import kotlin.math.abs
@@ -26,15 +25,8 @@ import kotlin.math.exp
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 
-/**
- * Fling behavior para iOS siguiendo el estándar de UIKit:
- * - Decaimiento exponencial: v *= exp(-k * dt)
- * - Umbral de velocidad: para cuando |v| < 20
- * - Delta mínimo: ignora movimientos < 0.5px
- * - Cancela inmediatamente al tocar (vía coroutine cancellation)
- */
 class PlatformFlingBehavior : FlingBehavior {
-    private val k = 0.36f // equivale a UIScrollView.decelerationRate.fast (0.99)
+    private val k = 0.36f
 
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
         val clamped = initialVelocity.coerceIn(-5000f, 5000f)
@@ -44,15 +36,12 @@ class PlatformFlingBehavior : FlingBehavior {
         var lastFrameTimeNs = 0L
 
         while (abs(v) > 20f) {
-            // Verificar cancelación (nuevo touch cancela el fling inmediatamente)
             currentCoroutineContext().ensureActive()
 
             val frameTimeNs = withFrameNanos { it }
             if (lastFrameTimeNs == 0L) {
                 lastFrameTimeNs = frameTimeNs
-                // Primer frame: aplicar decaimiento sin mover (evita salto inicial)
-                val dt = 0.016f
-                v *= exp(-k * dt)
+                v *= exp(-k * 0.016f)
                 continue
             }
 
@@ -60,17 +49,12 @@ class PlatformFlingBehavior : FlingBehavior {
             lastFrameTimeNs = frameTimeNs
             val dtClamped = dt.coerceIn(0.008f, 0.033f)
 
-            // Decaimiento exponencial basado en tiempo real
             v *= exp(-k * dtClamped)
 
             val scrollDelta = v * dtClamped * 60f
-
-            // Ignorar deltas sub-pixel (solo generan vibración)
             if (abs(scrollDelta) < 0.5f) break
 
             val consumed = scrollBy(scrollDelta)
-
-            // Si chocó con un límite, parar
             if (abs(consumed) < abs(scrollDelta) * 0.5f) return 0f
         }
 
@@ -96,23 +80,19 @@ fun PlatformLazyColumn(
         ScrollableDefaults.flingBehavior()
     }
 
-    var finalModifier = modifier
-    if (isIos) {
-        val density = LocalDensity.current
-        val noiseFloorPx = with(density) { 2.dp.toPx() }
-        val connection = remember {
-            object : NestedScrollConnection {
-                override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                    // Absorber micro-movimientos por frame (evita vibración en tap
-                    // sin crear zona muerta al cambiar de dirección)
-                    if (source == NestedScrollSource.UserInput && abs(available.y) <= noiseFloorPx) {
-                        return Offset(0f, available.y)
-                    }
-                    return Offset.Zero
-                }
-            }
+    val currentState = rememberUpdatedState(state)
+
+    val finalModifier = if (isIos) {
+        val scrollableState = rememberScrollableState { delta ->
+            currentState.value.dispatchRawDelta(delta)
         }
-        finalModifier = finalModifier.nestedScroll(connection)
+        modifier.scrollable(
+            state = scrollableState,
+            orientation = Orientation.Vertical,
+            flingBehavior = flingBehavior,
+        )
+    } else {
+        modifier
     }
 
     LazyColumn(
@@ -123,7 +103,7 @@ fun PlatformLazyColumn(
         verticalArrangement = verticalArrangement,
         horizontalAlignment = horizontalAlignment,
         flingBehavior = flingBehavior,
-        userScrollEnabled = userScrollEnabled,
+        userScrollEnabled = if (isIos) false else userScrollEnabled,
         content = content,
     )
 }

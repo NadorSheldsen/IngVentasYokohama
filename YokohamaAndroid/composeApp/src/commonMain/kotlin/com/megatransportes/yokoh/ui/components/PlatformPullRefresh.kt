@@ -50,19 +50,17 @@ fun PlatformPullRefresh(
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                if (source == NestedScrollSource.UserInput && available.y > deadZonePx) {
+                if ((source == NestedScrollSource.UserInput || source == NestedScrollSource.SideEffect) && available.y > deadZonePx) {
                     pullDistance += available.y
-                    println("[DEBUG PTR] onPostScroll available.y=${available.y} pullDistance=$pullDistance consumed.y=${consumed.y}")
                     return Offset(0f, available.y)
                 }
-                if (source == NestedScrollSource.UserInput && available.y <= deadZonePx && available.y > 0f) {
-                    println("[DEBUG PTR] onPostScroll BLOCKED by deadZone: available.y=${available.y} deadZone=$deadZonePx")
+                if ((source == NestedScrollSource.UserInput || source == NestedScrollSource.SideEffect) && available.y <= deadZonePx && available.y > 0f) {
                 }
                 return Offset.Zero
             }
 
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (source == NestedScrollSource.UserInput && pullDistance > 0f && available.y < 0f) {
+                if ((source == NestedScrollSource.UserInput || source == NestedScrollSource.SideEffect) && pullDistance > 0f && available.y < 0f) {
                     val consumed = maxOf(available.y, -pullDistance)
                     pullDistance += consumed
                     println("[DEBUG PTR] onPreScroll available.y=${available.y} consumed=$consumed pullDistance=$pullDistance")
