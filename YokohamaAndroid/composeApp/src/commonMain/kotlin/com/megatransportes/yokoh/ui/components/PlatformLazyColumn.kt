@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -24,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import com.megatransportes.yokoh.getPlatformName
 import kotlin.math.abs
 import kotlin.math.exp
-import kotlin.math.sign
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 
@@ -36,7 +34,7 @@ import kotlinx.coroutines.ensureActive
  * - Cancela inmediatamente al tocar (vía coroutine cancellation)
  */
 class PlatformFlingBehavior : FlingBehavior {
-    private val k = 3.0f // constante de decaimiento (mayor = para más rápido)
+    private val k = 0.36f // equivale a UIScrollView.decelerationRate.fast (0.99)
 
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
         val clamped = initialVelocity.coerceIn(-5000f, 5000f)
@@ -101,29 +99,15 @@ fun PlatformLazyColumn(
     var finalModifier = modifier
     if (isIos) {
         val density = LocalDensity.current
-        val touchSlopPx = with(density) { 8.dp.toPx() }
-        // Acumula movimiento total; solo deja pasar al LazyColumn
-        // cuando se supera el umbral de 8dp (tap vs drag)
-        val accumulatedDrag = remember { mutableStateOf(0f) }
+        val noiseFloorPx = with(density) { 2.dp.toPx() }
         val connection = remember {
             object : NestedScrollConnection {
                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                    // Si el origen NO es el usuario (fling, side-effect), reseteamos el acumulador
-                    // y dejamos pasar sin absorber
-                    if (source != NestedScrollSource.UserInput) {
-                        accumulatedDrag.value = 0f
-                        return Offset.Zero
-                    }
-
-                    val newAcc = accumulatedDrag.value + available.y
-                    if (abs(newAcc) <= touchSlopPx) {
-                        // Aún no supera el umbral → absorber todo
-                        accumulatedDrag.value = newAcc
+                    // Absorber micro-movimientos por frame (evita vibración en tap
+                    // sin crear zona muerta al cambiar de dirección)
+                    if (source == NestedScrollSource.UserInput && abs(available.y) <= noiseFloorPx) {
                         return Offset(0f, available.y)
                     }
-                    // Superó el umbral: dejar pasar este delta sin modificar
-                    // y capar el acumulador para no re‑absorber en el futuro
-                    accumulatedDrag.value = touchSlopPx * newAcc.sign
                     return Offset.Zero
                 }
             }
