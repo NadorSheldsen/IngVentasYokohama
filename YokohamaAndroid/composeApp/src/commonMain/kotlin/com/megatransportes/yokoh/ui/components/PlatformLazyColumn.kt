@@ -18,6 +18,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.megatransportes.yokoh.getPlatformName
@@ -27,11 +29,22 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 
 /**
- * Fling behavior para iOS con decaimiento exponencial y cancelación inmediata al tocar.
- * k=0.36 equivale a UIScrollView.decelerationRate.fast (0.99).
- * ensureActive() + umbrales evitan micro-scrolls residuales.
+ * Flag compartido entre el gesture detector y el fling.
+ * Se activa cuando el usuario toca la pantalla durante un fling.
+ * El fling loop lo lee para salir inmediatamente,
+ * y el NestedScrollConnection lo usa para absorber deltas residuales.
  */
-class PlatformFlingBehavior : FlingBehavior {
+class FlingCanceller {
+    var cancelled = false
+}
+
+/**
+ * Fling behavior para iOS con decaimiento exponencial.
+ * Cancela inmediatamente si FlingCanceller se activa (nuevo toque).
+ */
+class PlatformFlingBehavior(
+    private val flingCanceller: FlingCanceller,
+) : FlingBehavior {
     private val k = 0.36f
 
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
@@ -41,10 +54,13 @@ class PlatformFlingBehavior : FlingBehavior {
         var v = clamped
         var lastFrameTimeNs = 0L
 
-        while (abs(v) > 20f) {
+        while (abs(v) > 20f && !flingCanceller.cancelled) {
             currentCoroutineContext().ensureActive()
+            if (flingCanceller.cancelled) return 0f
 
             val frameTimeNs = withFrameNanos { it }
+            if (flingCanceller.cancelled) return 0f
+
             if (lastFrameTimeNs == 0L) {
                 lastFrameTimeNs = frameTimeNs
                 v *= exp(-k * 0.016f)
@@ -59,8 +75,10 @@ class PlatformFlingBehavior : FlingBehavior {
 
             val scrollDelta = v * dtClamped * 60f
             if (abs(scrollDelta) < 0.5f) break
+            if (flingCanceller.cancelled) return 0f
 
             val consumed = scrollBy(scrollDelta)
+            if (flingCanceller.cancelled) return 0f
             if (abs(consumed) < abs(scrollDelta) * 0.5f) return 0f
         }
 
@@ -80,8 +98,9 @@ fun PlatformLazyColumn(
     content: LazyListScope.() -> Unit,
 ) {
     val isIos = getPlatformName() == "iOS"
+    val flingCanceller = remember { FlingCanceller() }
     val flingBehavior: FlingBehavior = if (isIos) {
-        remember { PlatformFlingBehavior() }
+        remember { PlatformFlingBehavior(flingCanceller) }
     } else {
         ScrollableDefaults.flingBehavior()
     }
@@ -89,12 +108,17 @@ fun PlatformLazyColumn(
     var finalModifier = modifier
     if (isIos) {
         val density = LocalDensity.current
-        // Filtro de ruido por frame (2dp) — absorbe micro-movimientos
-        // durante un tap sin afectar el drag normal
         val noiseFloorPx = with(density) { 2.dp.toPx() }
         val connection = remember {
             object : NestedScrollConnection {
                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                    // Si el fling fue cancelado por un nuevo toque,
+                    // absorber cualquier delta residual que intente pasar
+                    if (flingCanceller.cancelled && source == NestedScrollSource.Fling) {
+                        flingCanceller.cancelled = false
+                        return Offset(0f, available.y)
+                    }
+                    // Ruido por frame (micro-movimientos en tap)
                     if (source == NestedScrollSource.UserInput && abs(available.y) <= noiseFloorPx) {
                         return Offset(0f, available.y)
                     }
@@ -102,7 +126,18 @@ fun PlatformLazyColumn(
                 }
             }
         }
-        finalModifier = finalModifier.nestedScroll(connection)
+        finalModifier = modifier
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        if (event.changes.any { it.pressed }) {
+                            flingCanceller.cancelled = true
+                        }
+                    }
+                }
+            }
+            .nestedScroll(connection)
     }
 
     LazyColumn(
