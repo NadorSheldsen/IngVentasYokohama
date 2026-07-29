@@ -14,43 +14,60 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.megatransportes.yokoh.getPlatformName
 import kotlin.math.abs
 
-class PlatformFlingBehavior(
-    private val maxInitialVelocity: Float = 3000f,
-) : FlingBehavior {
+/**
+ * Fling behavior for iOS that:
+ * - Maps swipe velocity smoothly to scroll distance
+ * - Allows gentle flings (low threshold)
+ * - Doesn't jerk on tiny movements
+ * - Decays naturally
+ */
+class PlatformFlingBehavior : FlingBehavior {
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
-        val velocity = initialVelocity.coerceIn(-maxInitialVelocity, maxInitialVelocity)
-        println("[DEBUG FLING] called with v=$initialVelocity clamped=$velocity")
+        val clamped = initialVelocity.coerceIn(-4000f, 4000f)
 
-        if (abs(velocity) < 400f) {
-            println("[DEBUG FLING] ignored (below threshold)")
-            return velocity
-        }
+        if (abs(clamped) < 80f) return clamped
 
-        var v = velocity
+        var v = clamped
         var frame = 0
 
-        while (abs(v) > 50f) {
+        while (abs(v) > 20f) {
             withFrameNanos { }
-            v *= 0.88f
+            val friction = if (abs(v) > 1000f) 0.92f else if (abs(v) > 200f) 0.94f else 0.96f
+            v *= friction
             val scrollDelta = v * 0.016f
-            if (abs(scrollDelta) < 1f) {
-                println("[DEBUG FLING] frame $frame: v=$v delta=$scrollDelta -> break (too small)")
-                break
-            }
+            if (abs(scrollDelta) < 0.5f) break
             val consumed = scrollBy(scrollDelta)
-            println("[DEBUG FLING] frame $frame: v=$v delta=$scrollDelta consumed=$consumed")
-            if (abs(consumed) < abs(scrollDelta)) {
-                println("[DEBUG FLING] frame $frame: hit boundary, returning 0")
-                return 0f
-            }
+            if (abs(consumed) < abs(scrollDelta)) return 0f
             frame++
         }
-        println("[DEBUG FLING] done, remaining v=$v frames=$frame")
         return v
+    }
+}
+
+/**
+ * Nested scroll connection that absorbs tiny pre-scroll deltas on iOS.
+ * The first [deadZoneDp] pixels of each scroll delta are consumed,
+ * preventing unintentional micro-scrolls when the user intends to tap.
+ */
+private fun scrollDeadZoneConnection(deadZonePx: Float): NestedScrollConnection {
+    return object : NestedScrollConnection {
+        override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+            if (source != NestedScrollSource.UserInput) return Offset.Zero
+            val absY = abs(available.y)
+            if (absY <= deadZonePx) {
+                return Offset(0f, available.y)
+            }
+            return Offset.Zero
+        }
     }
 }
 
@@ -65,13 +82,23 @@ fun PlatformLazyColumn(
     userScrollEnabled: Boolean = true,
     content: LazyListScope.() -> Unit,
 ) {
-    val flingBehavior: FlingBehavior = if (getPlatformName() == "iOS") {
+    val isIos = getPlatformName() == "iOS"
+    val flingBehavior: FlingBehavior = if (isIos) {
         remember { PlatformFlingBehavior() }
     } else {
         ScrollableDefaults.flingBehavior()
     }
+
+    var finalModifier = modifier
+    if (isIos) {
+        val density = LocalDensity.current
+        val deadZonePx = with(density) { 3.dp.toPx() }
+        val connection = remember { scrollDeadZoneConnection(deadZonePx) }
+        finalModifier = finalModifier.nestedScroll(connection)
+    }
+
     LazyColumn(
-        modifier = modifier,
+        modifier = finalModifier,
         state = state,
         contentPadding = contentPadding,
         reverseLayout = reverseLayout,
