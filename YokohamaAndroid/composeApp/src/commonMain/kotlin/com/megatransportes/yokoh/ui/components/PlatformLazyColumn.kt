@@ -37,13 +37,18 @@ class PlatformFlingBehavior(
     private val k = 0.36f
 
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
+        println("[FLING] START velocity=$initialVelocity")
         flingJobRef.job = currentCoroutineContext()[Job]
         try {
             val clamped = initialVelocity.coerceIn(-5000f, 5000f)
-            if (abs(clamped) < 50f) return clamped
+            if (abs(clamped) < 50f) {
+                println("[FLING] SKIP (velocity too low: $clamped)")
+                return clamped
+            }
 
             var v = clamped
             var lastFrameTimeNs = 0L
+            var frames = 0
 
             while (abs(v) > 20f) {
                 currentCoroutineContext().ensureActive()
@@ -62,15 +67,29 @@ class PlatformFlingBehavior(
                 v *= exp(-k * dtClamped)
 
                 val scrollDelta = v * dtClamped * 60f
-                if (abs(scrollDelta) < 0.5f) break
+                if (abs(scrollDelta) < 0.5f) {
+                    println("[FLING] STOP delta below threshold v=$v scrollDelta=$scrollDelta frames=$frames")
+                    break
+                }
 
                 val consumed = scrollBy(scrollDelta)
-                if (abs(consumed) < abs(scrollDelta) * 0.5f) return 0f
+                frames++
+                println("[FLING] FRAME v=$v delta=$scrollDelta consumed=$consumed frames=$frames")
+
+                if (abs(consumed) < abs(scrollDelta) * 0.5f) {
+                    println("[FLING] STOP at boundary v=$v consumed=$consumed delta=$scrollDelta frames=$frames")
+                    return 0f
+                }
             }
 
+            println("[FLING] END natural v=$v frames=$frames")
             return 0f
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            println("[FLING] CANCELLED by Job cancellation")
+            throw e
         } finally {
             flingJobRef.job = null
+            println("[FLING] CLEANUP job=null")
         }
     }
 }
@@ -99,26 +118,32 @@ fun PlatformLazyColumn(
         val density = LocalDensity.current
         val noiseFloorPx = with(density) { 2.dp.toPx() }
         val connection = remember {
-            // Rastrea si el último scroll vino del fling.
-            // Si es así, el PRIMER UserInput posterior es el micro‑scroll
-            // que UIScrollView genera al detener la deceleración → absorber.
             var lastWasFling = false
 
             object : NestedScrollConnection {
                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                    println("[NESTED] onPreScroll source=$source available.y=${available.y} lastWasFling=$lastWasFling")
+
                     if (source == NestedScrollSource.UserInput) {
                         if (lastWasFling) {
-                            // Primer UserInput justo después de un fling →
-                            // es el micro‑scroll de UIScrollView al detenerse
                             lastWasFling = false
+                            println("[NESTED] → ABSORB (post-fling micro-scroll) delta=${available.y}")
                             return Offset(0f, available.y)
                         }
-                        // Ruido por frame normal
                         if (abs(available.y) <= noiseFloorPx) {
+                            println("[NESTED] → ABSORB (noise floor) delta=${available.y}")
                             return Offset(0f, available.y)
                         }
                     } else if (source == NestedScrollSource.Fling) {
                         lastWasFling = true
+                    }
+                    println("[NESTED] → PASS delta=${available.y}")
+                    return Offset.Zero
+                }
+
+                override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                    if (source == NestedScrollSource.UserInput || source == NestedScrollSource.SideEffect || source == NestedScrollSource.Fling) {
+                        println("[NESTED] onPostScroll source=$source consumed.y=${consumed.y} available.y=${available.y}")
                     }
                     return Offset.Zero
                 }
