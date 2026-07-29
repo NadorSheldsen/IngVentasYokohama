@@ -19,7 +19,8 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import com.megatransportes.yokoh.getPlatformName
 import kotlin.math.abs
 import kotlin.math.exp
@@ -153,7 +154,21 @@ fun PlatformLazyColumn(
                 }
             }
         }
-        finalModifier = modifier.nestedScroll(connection)
+        finalModifier = modifier
+            .nestedScroll(connection)
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Main)
+                        event.changes.forEach { change ->
+                            if (change.pressed && !change.previousPressed) {
+                                flingJobRef.job?.cancel()
+                                println("[FLING] JOB CANCELLED by pointerInput touch-down")
+                            }
+                        }
+                    }
+                }
+            }
     }
 
     LazyColumn(
