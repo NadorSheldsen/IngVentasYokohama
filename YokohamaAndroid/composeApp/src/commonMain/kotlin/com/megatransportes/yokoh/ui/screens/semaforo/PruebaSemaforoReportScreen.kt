@@ -352,7 +352,7 @@ fun PruebaSemaforoReportScreen(
                                 "Bajo" to presionRed,
                                 "Alto" to presionYellow,
                                 "Sin dato" to presionNoData,
-                                "Vigía" to vigiaCount
+                                "Vigía/Inaccesible" to vigiaCount
                             )
                             val presColors = listOf(Color(0xFF2E7D32), Color(0xFFD32F2F), Color(0xFFFFA000), Color(0xFFBDBDBD), Color(0xFF7B1FA2))
                             pieColors = listOf(presColors[0], presColors[1], presColors[2], presColors[3], presColors[4])
@@ -655,7 +655,7 @@ fun PruebaSemaforoReportScreen(
                                                     Spacer(modifier = Modifier.width(8.dp))
 
                                                     Column(modifier = Modifier.weight(1f)) {
-                                                        val presText = if (ll.LlantasSemaforoVigia == 1) "Vigía" else ll.LlantasSemaforoPresion.toString()
+                                                        val presText = if (ll.LlantasSemaforoVigia == 1) "Vigía/Inaccesible" else ll.LlantasSemaforoPresion.toString()
                                                         Text("Presión: $presText", style = MaterialTheme.typography.bodyMedium)
                                                         Text("Observación: ${ll.LlantasSemaforoObserv ?: "Sin dato"}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                                     }

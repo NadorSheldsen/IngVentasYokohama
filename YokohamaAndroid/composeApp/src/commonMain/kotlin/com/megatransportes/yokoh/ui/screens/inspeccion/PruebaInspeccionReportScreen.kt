@@ -449,7 +449,7 @@ fun PruebaInspeccionReportScreen(
                                 "Bajo" to presionRed,
                                 "Alto" to presionYellow,
                                 "Sin dato" to presionNoData,
-                                "Vigía" to vigiaCount
+                                "Vigía/Inaccesible" to vigiaCount
                             )
                             val presColors = listOf(Color(0xFF2E7D32), Color(0xFFD32F2F), Color(0xFFFFA000), Color(0xFFBDBDBD), Color(0xFF7B1FA2))
                             pieColors = pieData.mapIndexed { i, _ -> presColors[i % presColors.size] }
@@ -686,7 +686,7 @@ fun PruebaInspeccionReportScreen(
                                             Card(modifier = Modifier.fillMaxWidth()) {
                                                 Row(modifier = Modifier.fillMaxWidth().padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
                                                     Column(modifier = Modifier.weight(1f)) {
-                                                        val presText = if (ll.LlantasInspeccionVigia == 1) "Vigía" else ll.LlantasInspeccionPresion.toString()
+                                                        val presText = if (ll.LlantasInspeccionVigia == 1) "Vigía/Inaccesible" else ll.LlantasInspeccionPresion.toString()
                                                         Text("Presión: $presText", style = MaterialTheme.typography.bodyMedium)
                                                         val mmText = listOfNotNull(ll.LlantasInspeccionMm1, ll.LlantasInspeccionMm2, ll.LlantasInspeccionMm3, ll.LlantasInspeccionMm4).joinToString(" / ")
                                                         if (mmText.isNotBlank()) Text("Milimetraje: $mmText", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
