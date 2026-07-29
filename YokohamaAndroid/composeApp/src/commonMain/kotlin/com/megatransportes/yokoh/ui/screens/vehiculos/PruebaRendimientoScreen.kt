@@ -639,7 +639,8 @@ fun PruebaRendimientoScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
-                .verticalScroll(scrollState),
+                .verticalScroll(scrollState)
+                .imePadding(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Card(

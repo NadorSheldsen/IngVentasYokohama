@@ -280,22 +280,10 @@ fun ParametrosDialog(
     var parametrosProfMax by remember { mutableStateOf("") }
     var isSaving by remember { mutableStateOf(false) }
     var formError by remember { mutableStateOf<String?>(null) }
-    var savedCount by remember { mutableStateOf(0) }
-    var savedRcs by remember { mutableStateOf<List<String>>(emptyList()) }
 
     val scope = rememberCoroutineScope()
 
-    fun resetFields() {
-        parametrosRC = "A"
-        parametrosPMin = ""
-        parametrosPSug = ""
-        parametrosPMax = ""
-        parametrosProfMin = ""
-        parametrosProfMax = ""
-        formError = null
-    }
-
-    fun saveParametro(onDone: () -> Unit) {
+    fun validateAndSave() {
         if (parametrosPMin.isEmpty() || parametrosPSug.isEmpty() || parametrosPMax.isEmpty() || parametrosProfMin.isEmpty() || parametrosProfMax.isEmpty()) {
             formError = "Todos los campos son obligatorios"
             return
@@ -332,12 +320,7 @@ fun ParametrosDialog(
                     ParametrosProfMax = profMax
                 )
             ).fold(
-                onSuccess = {
-                    isSaving = false
-                    savedCount++
-                    savedRcs = savedRcs + parametrosRC
-                    onDone()
-                },
+                onSuccess = { isSaving = false; onSaved() },
                 onFailure = { error ->
                     formError = ErrorUtils.userMessage(error, "Error al guardar los parámetros")
                     isSaving = false
@@ -350,14 +333,6 @@ fun ParametrosDialog(
         Card(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(text = "Agregar parámetros", style = MaterialTheme.typography.titleLarge)
-
-                if (savedCount > 0) {
-                    Text(
-                        text = "Parámetros guardados: ${savedRcs.joinToString(", ")}",
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
 
                 Text(text = "RC (Reencauche)", style = MaterialTheme.typography.bodyMedium)
 
@@ -438,30 +413,13 @@ fun ParametrosDialog(
 
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                     Button(
-                        onClick = { saveParametro { resetFields() } },
+                        onClick = { validateAndSave() },
                         enabled = !isSaving
                     ) {
                         if (isSaving) {
                             CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                         } else {
-                            Text("Guardar y agregar otro RC")
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        onClick = {
-                            if (savedCount > 0) {
-                                onSaved()
-                            } else {
-                                saveParametro { onSaved() }
-                            }
-                        },
-                        enabled = !isSaving
-                    ) {
-                        if (isSaving) {
-                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                        } else {
-                            Text(if (savedCount > 0) "Finalizar" else "Guardar y finalizar")
+                            Text("Guardar")
                         }
                     }
                 }

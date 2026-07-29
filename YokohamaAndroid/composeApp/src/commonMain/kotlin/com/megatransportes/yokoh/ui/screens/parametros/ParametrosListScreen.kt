@@ -434,13 +434,9 @@ fun ParametrosListScreen(
 
             if (showSearchDialog && selectedTab == 0) {
 
-                val excludedLlantaIds = parametros.mapNotNull { it.Llantas_idLlantas }
-
                 LlantaSearchDialog(
 
                     repository = repository,
-
-                    excludedLlantaIds = excludedLlantaIds,
 
                     suggestedLlantaIds = suggestedLlantaIds,
 
@@ -886,8 +882,6 @@ private fun LlantaSearchDialog(
 
     repository: YokohamaRepository,
 
-    excludedLlantaIds: List<Int> = emptyList(),
-
     suggestedLlantaIds: List<Int> = emptyList(),
 
     onLlantaSelected: (Llanta) -> Unit,
@@ -924,7 +918,7 @@ private fun LlantaSearchDialog(
 
             }
 
-            searchResults = loaded.filter { !excludedLlantaIds.contains(it.idLlantas) }
+            searchResults = loaded
 
             isSearching = false
 
@@ -1014,13 +1008,7 @@ private fun LlantaSearchDialog(
 
                                     onSuccess = { results ->
 
-                                        // Excluir llantas que ya tienen un parámetro en esta flota
-
-                                        searchResults = results.filter { llanta ->
-
-                                            !excludedLlantaIds.contains(llanta.idLlantas)
-
-                                        }
+                                        searchResults = results
 
                                         isSearching = false
 
