@@ -48,6 +48,9 @@ class PlatformFlingBehavior(
     private val k = 0.36f
 
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
+        // Resetear el flag para este nuevo fling
+        flingCanceller.cancelled = false
+
         val clamped = initialVelocity.coerceIn(-5000f, 5000f)
         if (abs(clamped) < 50f) return clamped
 
@@ -131,7 +134,7 @@ fun PlatformLazyColumn(
                 awaitPointerEventScope {
                     while (true) {
                         val event = awaitPointerEvent(PointerEventPass.Initial)
-                        if (event.changes.any { it.pressed }) {
+                        if (event.changes.any { it.changedToDown() }) {
                             flingCanceller.cancelled = true
                         }
                     }
