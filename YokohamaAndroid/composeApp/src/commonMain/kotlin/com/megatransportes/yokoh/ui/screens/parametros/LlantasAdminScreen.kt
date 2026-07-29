@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -48,7 +50,7 @@ fun LlantasAdminScreen(
     var editingLlanta by remember { mutableStateOf<Llanta?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    var newLlantaId by remember { mutableStateOf<Int?>(null) }
+    var pendingCreateReq by remember { mutableStateOf<LlantaCreateRequest?>(null) }
 
     val scope = rememberCoroutineScope()
 
@@ -164,33 +166,34 @@ fun LlantasAdminScreen(
 
         if (internalShowDialog.value) {
             LlantaEditDialog(editing = editingLlanta, onDismiss = { internalShowDialog.value = false }, onSave = { createReq, updateId ->
-                scope.launch {
-                    if (updateId == null) {
-                        repository.createLlanta(createReq).fold(onSuccess = { created ->
-                            errorMessage = null
-                            loadAll()
-                            internalShowDialog.value = false
-                            if (flotaId != null) {
-                                newLlantaId = created.idLlantas
-                            }
-                        }, onFailure = { errorMessage = ErrorUtils.userMessage(it, "No se pudo crear la llanta") })
-                    } else {
-                        repository.updateLlanta(updateId, LlantaUpdateRequest(createReq.LlantasMarca, createReq.LlantasModelo, createReq.LlantasPrecio, createReq.LlantasMedida, createReq.LlantasMm)).fold(onSuccess = { errorMessage = null; loadAll(); internalShowDialog.value = false }, onFailure = { errorMessage = ErrorUtils.userMessage(it, "No se pudo actualizar la llanta") })
+                if (updateId == null && flotaId != null) {
+                    // Nueva llanta con flota: guardar request pendiente y abrir parámetros
+                    pendingCreateReq = createReq
+                    internalShowDialog.value = false
+                } else {
+                    // Editar o sin flota: guardar directamente
+                    scope.launch {
+                        if (updateId == null) {
+                            repository.createLlanta(createReq).fold(onSuccess = { errorMessage = null; loadAll(); internalShowDialog.value = false }, onFailure = { errorMessage = ErrorUtils.userMessage(it, "No se pudo crear la llanta") })
+                        } else {
+                            repository.updateLlanta(updateId, LlantaUpdateRequest(createReq.LlantasMarca, createReq.LlantasModelo, createReq.LlantasPrecio, createReq.LlantasMedida, createReq.LlantasMm)).fold(onSuccess = { errorMessage = null; loadAll(); internalShowDialog.value = false }, onFailure = { errorMessage = ErrorUtils.userMessage(it, "No se pudo actualizar la llanta") })
+                        }
                     }
                 }
             })
         }
 
-        if (newLlantaId != null && flotaId != null) {
+        if (pendingCreateReq != null && flotaId != null) {
             ParametrosDialog(
                 flotaId = flotaId,
-                llantaId = newLlantaId!!,
+                createReq = pendingCreateReq!!,
                 repository = repository,
                 onDismiss = {
-                    newLlantaId = null
+                    pendingCreateReq = null
                 },
                 onSaved = {
-                    newLlantaId = null
+                    pendingCreateReq = null
+                    loadAll()
                 }
             )
         }
@@ -206,11 +209,19 @@ fun LlantaEditDialog(editing: Llanta?, onDismiss: () -> Unit, onSave: (LlantaCre
     var mm by remember { mutableStateOf((editing?.LlantasMm ?: 0).toString()) }
     var precio by remember { mutableStateOf(editing?.LlantasPrecio?.toString() ?: "") }
 
+    val scrollState = rememberScrollState()
+
     Dialog(onDismissRequest = onDismiss) {
 
         Card(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
 
-            Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .verticalScroll(scrollState)
+                    .imePadding()
+            ) {
 
                 Text(text = if (editing == null) "Agregar llanta" else "Editar llanta", style = MaterialTheme.typography.titleLarge)
 
@@ -266,7 +277,7 @@ fun LlantaEditDialog(editing: Llanta?, onDismiss: () -> Unit, onSave: (LlantaCre
 @Composable
 fun ParametrosDialog(
     flotaId: Int,
-    llantaId: Int,
+    createReq: LlantaCreateRequest,
     repository: YokohamaRepository,
     onDismiss: () -> Unit,
     onSaved: () -> Unit
@@ -281,6 +292,7 @@ fun ParametrosDialog(
     var isSaving by remember { mutableStateOf(false) }
     var formError by remember { mutableStateOf<String?>(null) }
 
+    val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
 
     fun validateAndSave() {
@@ -308,21 +320,31 @@ fun ParametrosDialog(
         scope.launch {
             isSaving = true
             formError = null
-            repository.createParametro(
-                ParametroCreateRequest(
-                    Flotas_idFlotas = flotaId,
-                    Llantas_idLlantas = llantaId,
-                    ParametrosRC = parametrosRC,
-                    ParametrosPMin = pMin,
-                    ParametrosPSug = pSug,
-                    ParametrosPMax = pMax,
-                    ParametrosProfMin = profMin,
-                    ParametrosProfMax = profMax
-                )
-            ).fold(
-                onSuccess = { isSaving = false; onSaved() },
+            // Primero crear la llanta
+            repository.createLlanta(createReq).fold(
+                onSuccess = { created ->
+                    // Luego crear el parámetro con el id de la llanta nueva
+                    repository.createParametro(
+                        ParametroCreateRequest(
+                            Flotas_idFlotas = flotaId,
+                            Llantas_idLlantas = created.idLlantas,
+                            ParametrosRC = parametrosRC,
+                            ParametrosPMin = pMin,
+                            ParametrosPSug = pSug,
+                            ParametrosPMax = pMax,
+                            ParametrosProfMin = profMin,
+                            ParametrosProfMax = profMax
+                        )
+                    ).fold(
+                        onSuccess = { isSaving = false; onSaved() },
+                        onFailure = { error ->
+                            formError = ErrorUtils.userMessage(error, "Error al guardar los parámetros")
+                            isSaving = false
+                        }
+                    )
+                },
                 onFailure = { error ->
-                    formError = ErrorUtils.userMessage(error, "Error al guardar los parámetros")
+                    formError = ErrorUtils.userMessage(error, "Error al crear la llanta")
                     isSaving = false
                 }
             )
@@ -331,7 +353,14 @@ fun ParametrosDialog(
 
     Dialog(onDismissRequest = onDismiss) {
         Card(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-            Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .verticalScroll(scrollState)
+                    .imePadding(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 Text(text = "Agregar parámetros", style = MaterialTheme.typography.titleLarge)
 
                 Text(text = "RC (Reencauche)", style = MaterialTheme.typography.bodyMedium)
