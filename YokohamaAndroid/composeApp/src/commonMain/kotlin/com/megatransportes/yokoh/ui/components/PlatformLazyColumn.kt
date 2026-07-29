@@ -134,7 +134,7 @@ fun PlatformLazyColumn(
                 awaitPointerEventScope {
                     while (true) {
                         val event = awaitPointerEvent(PointerEventPass.Initial)
-                        if (event.changes.any { it.changedToDown() }) {
+                        if (event.changes.any { it.pressed && !it.previousPressed }) {
                             flingCanceller.cancelled = true
                         }
                     }
