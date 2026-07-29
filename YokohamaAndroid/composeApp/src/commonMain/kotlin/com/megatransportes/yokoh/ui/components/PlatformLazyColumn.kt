@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.megatransportes.yokoh.getPlatformName
 import kotlin.math.abs
 import kotlin.math.exp
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 
 /**
@@ -45,7 +46,7 @@ class PlatformFlingBehavior : FlingBehavior {
 
         while (abs(v) > 20f) {
             // Verificar cancelación (nuevo touch cancela el fling inmediatamente)
-            coroutineContext.ensureActive()
+            currentCoroutineContext().ensureActive()
 
             val frameTimeNs = withFrameNanos { it }
             if (lastFrameTimeNs == 0L) {
@@ -102,7 +103,7 @@ fun PlatformLazyColumn(
         val touchSlopPx = with(density) { 8.dp.toPx() }
         // Acumula movimiento total; solo deja pasar al LazyColumn
         // cuando se supera el umbral de 8dp (tap vs drag)
-        var accumulatedDrag by remember { mutableFloatStateOf(0f) }
+        var accumulatedDrag by remember { mutableStateOf(0f) }
         val connection = remember {
             object : NestedScrollConnection {
                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
