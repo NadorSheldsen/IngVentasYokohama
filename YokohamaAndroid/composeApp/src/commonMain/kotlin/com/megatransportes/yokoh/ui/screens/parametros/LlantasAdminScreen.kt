@@ -280,13 +280,85 @@ fun ParametrosDialog(
     var parametrosProfMax by remember { mutableStateOf("") }
     var isSaving by remember { mutableStateOf(false) }
     var formError by remember { mutableStateOf<String?>(null) }
+    var savedCount by remember { mutableStateOf(0) }
+    var savedRcs by remember { mutableStateOf<List<String>>(emptyList()) }
 
     val scope = rememberCoroutineScope()
+
+    fun resetFields() {
+        parametrosRC = "A"
+        parametrosPMin = ""
+        parametrosPSug = ""
+        parametrosPMax = ""
+        parametrosProfMin = ""
+        parametrosProfMax = ""
+        formError = null
+    }
+
+    fun saveParametro(onDone: () -> Unit) {
+        if (parametrosPMin.isEmpty() || parametrosPSug.isEmpty() || parametrosPMax.isEmpty() || parametrosProfMin.isEmpty() || parametrosProfMax.isEmpty()) {
+            formError = "Todos los campos son obligatorios"
+            return
+        }
+        val pMin = parametrosPMin.toFloatOrNull()
+        val pSug = parametrosPSug.toFloatOrNull()
+        val pMax = parametrosPMax.toFloatOrNull()
+        val profMin = parametrosProfMin.toIntOrNull()
+        val profMax = parametrosProfMax.toIntOrNull()
+        if (pMin == null || pSug == null || pMax == null || profMin == null || profMax == null) {
+            formError = "Valores numéricos inválidos"
+            return
+        }
+        if (pMin > pSug || pSug > pMax) {
+            formError = "Presión mínima ≤ sugerida ≤ máxima"
+            return
+        }
+        if (profMin > profMax) {
+            formError = "Profundidad mínima debe ser ≤ máxima"
+            return
+        }
+        scope.launch {
+            isSaving = true
+            formError = null
+            repository.createParametro(
+                ParametroCreateRequest(
+                    Flotas_idFlotas = flotaId,
+                    Llantas_idLlantas = llantaId,
+                    ParametrosRC = parametrosRC,
+                    ParametrosPMin = pMin,
+                    ParametrosPSug = pSug,
+                    ParametrosPMax = pMax,
+                    ParametrosProfMin = profMin,
+                    ParametrosProfMax = profMax
+                )
+            ).fold(
+                onSuccess = {
+                    isSaving = false
+                    savedCount++
+                    savedRcs = savedRcs + parametrosRC
+                    onDone()
+                },
+                onFailure = { error ->
+                    formError = ErrorUtils.userMessage(error, "Error al guardar los parámetros")
+                    isSaving = false
+                }
+            )
+        }
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(text = "Agregar parámetros", style = MaterialTheme.typography.titleLarge)
+
+                if (savedCount > 0) {
+                    Text(
+                        text = "Parámetros guardados: ${savedRcs.joinToString(", ")}",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
                 Text(text = "RC (Reencauche)", style = MaterialTheme.typography.bodyMedium)
 
                 ExposedDropdownMenuBox(
@@ -365,52 +437,23 @@ fun ParametrosDialog(
                 }
 
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                    TextButton(onClick = onDismiss) { Text("Omitir") }
+                    Button(
+                        onClick = { saveParametro { resetFields() } },
+                        enabled = !isSaving
+                    ) {
+                        if (isSaving) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        } else {
+                            Text("Guardar y agregar otro RC")
+                        }
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            if (parametrosPMin.isEmpty() || parametrosPSug.isEmpty() || parametrosPMax.isEmpty() || parametrosProfMin.isEmpty() || parametrosProfMax.isEmpty()) {
-                                formError = "Todos los campos son obligatorios"
-                                return@Button
-                            }
-                            val pMin = parametrosPMin.toFloatOrNull()
-                            val pSug = parametrosPSug.toFloatOrNull()
-                            val pMax = parametrosPMax.toFloatOrNull()
-                            val profMin = parametrosProfMin.toIntOrNull()
-                            val profMax = parametrosProfMax.toIntOrNull()
-                            if (pMin == null || pSug == null || pMax == null || profMin == null || profMax == null) {
-                                formError = "Valores numéricos inválidos"
-                                return@Button
-                            }
-                            if (pMin > pSug || pSug > pMax) {
-                                formError = "Presión mínima ≤ sugerida ≤ máxima"
-                                return@Button
-                            }
-                            if (profMin > profMax) {
-                                formError = "Profundidad mínima debe ser ≤ máxima"
-                                return@Button
-                            }
-                            scope.launch {
-                                isSaving = true
-                                formError = null
-                                repository.createParametro(
-                                    ParametroCreateRequest(
-                                        Flotas_idFlotas = flotaId,
-                                        Llantas_idLlantas = llantaId,
-                                        ParametrosRC = parametrosRC,
-                                        ParametrosPMin = pMin,
-                                        ParametrosPSug = pSug,
-                                        ParametrosPMax = pMax,
-                                        ParametrosProfMin = profMin,
-                                        ParametrosProfMax = profMax
-                                    )
-                                ).fold(
-                                    onSuccess = { isSaving = false; onSaved() },
-                                    onFailure = { error ->
-                                        formError = ErrorUtils.userMessage(error, "Error al guardar los parámetros")
-                                        isSaving = false
-                                    }
-                                )
+                            if (savedCount > 0) {
+                                onSaved()
+                            } else {
+                                saveParametro { onSaved() }
                             }
                         },
                         enabled = !isSaving
@@ -418,7 +461,7 @@ fun ParametrosDialog(
                         if (isSaving) {
                             CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                         } else {
-                            Text("Guardar")
+                            Text(if (savedCount > 0) "Finalizar" else "Guardar y finalizar")
                         }
                     }
                 }
