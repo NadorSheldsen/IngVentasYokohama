@@ -18,8 +18,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.megatransportes.yokoh.getPlatformName
@@ -29,11 +27,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 
-/**
- * Referencia compartida al Job de la corrutina del fling.
- * El gesture detector cancela este Job cuando el usuario toca,
- * lo que deregistra el frame callback de withFrameNanos al instante.
- */
 class FlingJobRef {
     var job: Job? = null
 }
@@ -54,10 +47,7 @@ class PlatformFlingBehavior(
 
             while (abs(v) > 20f) {
                 currentCoroutineContext().ensureActive()
-
                 val frameTimeNs = withFrameNanos { it }
-                // Si el Job fue cancelado, withFrameNanos lanza CancellationException
-                // y nunca llegamos aquí
 
                 if (lastFrameTimeNs == 0L) {
                     lastFrameTimeNs = frameTimeNs
@@ -109,27 +99,32 @@ fun PlatformLazyColumn(
         val density = LocalDensity.current
         val noiseFloorPx = with(density) { 2.dp.toPx() }
         val connection = remember {
+            // Rastrea si el último scroll vino del fling.
+            // Si es así, el PRIMER UserInput posterior es el micro‑scroll
+            // que UIScrollView genera al detener la deceleración → absorber.
+            var lastWasFling = false
+
             object : NestedScrollConnection {
                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                    if (source == NestedScrollSource.UserInput && abs(available.y) <= noiseFloorPx) {
-                        return Offset(0f, available.y)
+                    if (source == NestedScrollSource.UserInput) {
+                        if (lastWasFling) {
+                            // Primer UserInput justo después de un fling →
+                            // es el micro‑scroll de UIScrollView al detenerse
+                            lastWasFling = false
+                            return Offset(0f, available.y)
+                        }
+                        // Ruido por frame normal
+                        if (abs(available.y) <= noiseFloorPx) {
+                            return Offset(0f, available.y)
+                        }
+                    } else if (source == NestedScrollSource.Fling) {
+                        lastWasFling = true
                     }
                     return Offset.Zero
                 }
             }
         }
-        finalModifier = modifier
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent(PointerEventPass.Initial)
-                        if (event.changes.any { it.pressed && !it.previousPressed }) {
-                            flingJobRef.job?.cancel()
-                        }
-                    }
-                }
-            }
-            .nestedScroll(connection)
+        finalModifier = modifier.nestedScroll(connection)
     }
 
     LazyColumn(
