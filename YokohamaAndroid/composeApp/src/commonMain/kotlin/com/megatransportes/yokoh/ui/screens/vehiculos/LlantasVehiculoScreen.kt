@@ -51,11 +51,14 @@ fun LlantasVehiculoScreen(
     var isLoadingLlantas by remember { mutableStateOf(true) }
     var validationAttempted by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var catalogRefreshKey by remember { mutableStateOf(0) }
     var showParametrosDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(showParametrosDialog) { if (!showParametrosDialog) catalogRefreshKey++ }
     var suggestedLlantaIdsForParametros by remember { mutableStateOf<List<Int>>(emptyList()) }
     var showEditParametroDialog by remember { mutableStateOf(false) }
     var selectedLlantaIdForParametro by remember { mutableStateOf<Int?>(null) }
     var showLlantasAdmin by remember { mutableStateOf(false) }
+    LaunchedEffect(showLlantasAdmin) { if (!showLlantasAdmin) catalogRefreshKey++ }
     var collapsedForms by remember(cantidadLlantas) { mutableStateOf(List(cantidadLlantas) { true }) }
 
     val formPositions = remember { mutableStateMapOf<Int, Float>() }
@@ -65,7 +68,7 @@ fun LlantasVehiculoScreen(
     val scrollState = rememberScrollState()
 
     // Cargar todas las llantas para la búsqueda
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = catalogRefreshKey) {
         coroutineScope.launch {
             repository.getLlantasByFlota(vehiculo.Flotas_idFlotas)
                 .onSuccess { result ->

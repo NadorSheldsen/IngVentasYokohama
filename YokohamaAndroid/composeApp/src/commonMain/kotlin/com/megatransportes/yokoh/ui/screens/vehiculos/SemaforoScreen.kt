@@ -96,8 +96,12 @@ fun SemaforoScreen(
     val scrollState = rememberScrollState()
     val isEditing = editingVehiculoId != null
     var showLlantasAdmin by remember { mutableStateOf(false) }
+    var catalogRefreshKey by remember { mutableStateOf(0) }
+    LaunchedEffect(showLlantasAdmin) { if (!showLlantasAdmin) catalogRefreshKey++ }
     var showTipoVehiculosAdmin by remember { mutableStateOf(false) }
+    LaunchedEffect(showTipoVehiculosAdmin) { if (!showTipoVehiculosAdmin) catalogRefreshKey++ }
     var showParametrosDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(showParametrosDialog) { if (!showParametrosDialog) catalogRefreshKey++ }
     var suggestedLlantaIdsForParametros by remember { mutableStateOf<List<Int>>(emptyList()) }
     var showEditParametroDialog by remember { mutableStateOf(false) }
     var selectedLlantaIdForParametro by remember { mutableStateOf<Int?>(null) }
@@ -112,7 +116,7 @@ fun SemaforoScreen(
     }
 
     // Cargar tipos de vehículos y llantas
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = catalogRefreshKey) {
         coroutineScope.launch {
             repository.getTiposVehiculos()
                 .onSuccess { result -> tipoVehiculos = result }

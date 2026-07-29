@@ -121,7 +121,11 @@ fun PruebaRendimientoScreen(
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     var showLlantasAdmin by remember { mutableStateOf(false) }
+    var catalogRefreshKey by remember { mutableStateOf(0) }
+    // Incrementar key cuando se cierra LlantasAdmin o ParametrosDialog para refrescar catálogos
+    LaunchedEffect(showLlantasAdmin) { if (!showLlantasAdmin) catalogRefreshKey++ }
     var showParametrosDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(showParametrosDialog) { if (!showParametrosDialog) catalogRefreshKey++ }
     var suggestedLlantaIdsForParametros by remember { mutableStateOf<List<Int>>(emptyList()) }
     var showEditParametroDialog by remember { mutableStateOf(false) }
     var selectedLlantaIdForParametro by remember { mutableStateOf<Int?>(null) }
@@ -715,7 +719,8 @@ fun PruebaRendimientoScreen(
                                         piso = created.LlantasVehiculosPiso
                                     )
                                 }
-                            }
+                            },
+                            catalogRefreshKey = catalogRefreshKey
                         )
                     } else {
                         val currentData = llantasData.getOrNull(index) ?: LlantaRendimientoFormData(llantaVehiculoId = llanta.idLlantasVehiculos)
@@ -765,7 +770,8 @@ fun PruebaRendimientoScreen(
                                             piso = created.LlantasVehiculosPiso
                                         )
                                     }
-                                }
+                                },
+                                catalogRefreshKey = catalogRefreshKey
                             )
                         } else {
                         LlantaRendimientoForm(
@@ -1828,7 +1834,8 @@ private fun NewLlantaSlotForm(
     flota: Flota,
     repository: YokohamaRepository,
     initialFormData: LlantaRendimientoFormData = LlantaRendimientoFormData(),
-    onLlantaCreated: suspend (LlantaVehiculo) -> Unit
+    onLlantaCreated: suspend (LlantaVehiculo) -> Unit,
+    catalogRefreshKey: Int = 0
 ) {
     var data by remember { mutableStateOf(LlantaVehiculoFormData(piso = slotLabel)) }
     var searchText by remember { mutableStateOf("") }
@@ -1842,7 +1849,7 @@ private fun NewLlantaSlotForm(
     val coroutineScope = rememberCoroutineScope()
 
     // Cargar catálogo de llantas y parámetros al montar
-    LaunchedEffect(Unit) {
+    LaunchedEffect(catalogRefreshKey) {
         coroutineScope.launch {
             try {
                 val res = repository.getLlantasByFlota(flota.idFlotas)
