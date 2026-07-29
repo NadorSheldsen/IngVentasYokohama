@@ -644,7 +644,8 @@ fun SemaforoScreen(
             ) {
                 LlantasAdminScreen(
                     repository = repository,
-                    onBack = { showLlantasAdmin = false }
+                    onBack = { showLlantasAdmin = false },
+                    flotaId = flota.idFlotas
                 )
             }
         }

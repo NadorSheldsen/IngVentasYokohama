@@ -1,372 +1,210 @@
 package com.megatransportes.yokoh.ui.screens.parametros
 
-
-
 import androidx.compose.foundation.clickable
-
 import androidx.compose.foundation.layout.*
-
 import com.megatransportes.yokoh.ui.components.PlatformLazyColumn
-
 import androidx.compose.foundation.lazy.items
-
 import androidx.compose.foundation.text.KeyboardOptions
-
 import androidx.compose.material.icons.Icons
-
-// navigationIcon removed per request
-
 import androidx.compose.material.icons.filled.Add
-
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-
 import androidx.compose.material.icons.filled.Delete
-
 import androidx.compose.material.icons.filled.Edit
-
 import androidx.compose.material.icons.filled.Search
-
 import androidx.compose.material3.*
-
 import androidx.compose.runtime.*
-
 import androidx.compose.ui.Alignment
-
 import androidx.compose.ui.Modifier
-
 import androidx.compose.ui.text.input.KeyboardType
-
 import androidx.compose.ui.unit.dp
-
-import androidx.compose.foundation.background
-
-import androidx.compose.foundation.BorderStroke
-
-import androidx.compose.foundation.border
-
-import androidx.compose.foundation.shape.RoundedCornerShape
-
-import androidx.compose.foundation.layout.PaddingValues
-
-import androidx.compose.ui.graphics.Color
-
 import androidx.compose.ui.window.Dialog
-
-import com.megatransportes.yokoh.data.models.Llanta
-
-import com.megatransportes.yokoh.data.models.LlantaCreateRequest
-
-import com.megatransportes.yokoh.data.models.LlantaUpdateRequest
-
+import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
+import com.megatransportes.yokoh.data.models.*
 import com.megatransportes.yokoh.data.repository.YokohamaRepository
-
 import kotlinx.coroutines.launch
-
 import com.megatransportes.yokoh.utils.ErrorUtils
-
 import com.megatransportes.yokoh.ui.components.BluetoothCaliperButton
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
-
 @Composable
-
 fun LlantasAdminScreen(
-
     repository: YokohamaRepository,
-
     onBack: () -> Unit,
-
     showDialogState: MutableState<Boolean>? = null,
-
-    addRequestState: MutableState<Boolean>? = null
-
+    addRequestState: MutableState<Boolean>? = null,
+    flotaId: Int? = null
 ) {
 
-    // allLlantas keeps the full list from the server; llantas is the filtered view shown in the UI
-
     var allLlantas by remember { mutableStateOf<List<Llanta>>(emptyList()) }
-
     var llantas by remember { mutableStateOf<List<Llanta>>(emptyList()) }
-
     var query by remember { mutableStateOf("") }
-
     var isLoading by remember { mutableStateOf(true) }
-
     val internalShowDialog = showDialogState ?: remember { mutableStateOf(false) }
-
     val internalAddRequest = addRequestState ?: remember { mutableStateOf(false) }
-
     var editingLlanta by remember { mutableStateOf<Llanta?>(null) }
-
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-
+    var newLlantaId by remember { mutableStateOf<Int?>(null) }
 
     val scope = rememberCoroutineScope()
 
-
-
     fun loadAll() {
-
         scope.launch {
-
             isLoading = true
-
             repository.getAllLlantas().fold(onSuccess = { list -> allLlantas = list; llantas = list; isLoading = false }, onFailure = { e -> errorMessage = ErrorUtils.userMessage(e, "Error cargando llantas"); isLoading = false })
-
         }
-
     }
-
-
 
     LaunchedEffect(Unit) { loadAll() }
 
-
-
-    // If parent requested an "add", open dialog and reset the request flag
-
     LaunchedEffect(internalAddRequest.value) {
-
         if (internalAddRequest.value) {
-
             editingLlanta = null
-
             internalShowDialog.value = true
-
             internalAddRequest.value = false
-
         }
-
     }
 
-
-
     Scaffold(
-
         containerColor = MaterialTheme.colorScheme.background,
-
         topBar = {
-
             TopAppBar(
-
                 title = { Text("Llantas") },
-
                 navigationIcon = {
-
                     IconButton(onClick = onBack) {
-
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
-
                     }
-
                 }
-
             )
-
         },
-
         floatingActionButton = {
-
             FloatingActionButton(
-
-                onClick = { 
-
+                onClick = {
                     editingLlanta = null
-
-                    internalShowDialog.value = true 
-
+                    internalShowDialog.value = true
                 },
-
                 containerColor = MaterialTheme.colorScheme.primary
-
             ) {
-
                 Icon(Icons.Default.Add, contentDescription = "Agregar llanta")
-
             }
-
         }
-
     ) { padding ->
-
         Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(padding).padding(16.dp)) {
 
             OutlinedTextField(
-
                 value = query,
-
                 onValueChange = { q ->
-
                     query = q
-
                     if (q.isEmpty()) {
-
-                        // restore full list
-
                         llantas = allLlantas
-
                     } else {
-
-                        // Filter locally by medida, marca or modelo (case-insensitive)
-
                         val lower = q.trim().lowercase()
-
                         llantas = allLlantas.filter { l ->
-
                             val medida = l.LlantasMedida
-
                             val marca = l.LlantasMarca
-
                             val modelo = l.LlantasModelo
-
                             medida.lowercase().contains(lower) || marca.lowercase().contains(lower) || modelo.lowercase().contains(lower)
-
                         }
-
-                        // If we don't have the full list yet (rare), fallback to server search by medida
-
                         if (allLlantas.isEmpty()) {
-
                             scope.launch {
-
                                 repository.searchLlantasByMedida(q).fold(onSuccess = { llantas = it }, onFailure = { llantas = emptyList() })
-
                             }
-
                         }
-
                     }
-
                 },
-
                 label = { Text("Buscar llantas") },
-
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-
                 modifier = Modifier.fillMaxWidth()
-
             )
-
-
 
             Spacer(modifier = Modifier.height(12.dp))
 
-
-
             if (isLoading) {
-
                 Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-
             } else if (llantas.isEmpty()) {
-
                 Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) { Text("No hay llantas") }
-
             } else {
-
                 PlatformLazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-
                     items(llantas, key = { it.idLlantas }) { llanta ->
-
                         Card(modifier = Modifier
-
                                     .fillMaxWidth()
-
                                     .border(BorderStroke(2.dp, Color.Red), shape = RoundedCornerShape(8.dp))) {
-
                                     Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
 
                                 Column(modifier = Modifier.weight(1f)) {
-
                                     Text(text = llanta.LlantasMedida)
-
                                     Text(text = "${llanta.LlantasMarca} ${llanta.LlantasModelo}")
-
                                 }
 
                                 Row {
-
                                     IconButton(onClick = { editingLlanta = llanta; internalShowDialog.value = true }) { Icon(Icons.Default.Edit, contentDescription = "Editar") }
-
                                     IconButton(onClick = {
-
                                         scope.launch {
-
                                             repository.deleteLlanta(llanta.idLlantas).fold(onSuccess = { errorMessage = null; loadAll() }, onFailure = { errorMessage = ErrorUtils.userMessage(it, "No se pudo eliminar la llanta") })
-
                                         }
-
                                     }) { Icon(Icons.Default.Delete, contentDescription = "Eliminar") }
-
                                 }
 
                             }
 
                         }
-
                     }
-
                 }
-
             }
-
-
 
             if (errorMessage != null) {
-
                 Text(text = errorMessage ?: "", color = MaterialTheme.colorScheme.error)
-
             }
 
         }
 
-
-
         if (internalShowDialog.value) {
-
             LlantaEditDialog(editing = editingLlanta, onDismiss = { internalShowDialog.value = false }, onSave = { createReq, updateId ->
-
                 scope.launch {
-
                     if (updateId == null) {
-
-                        repository.createLlanta(createReq).fold(onSuccess = { errorMessage = null; loadAll(); internalShowDialog.value = false }, onFailure = { errorMessage = ErrorUtils.userMessage(it, "No se pudo crear la llanta") })
-
+                        repository.createLlanta(createReq).fold(onSuccess = { created ->
+                            errorMessage = null
+                            loadAll()
+                            internalShowDialog.value = false
+                            if (flotaId != null) {
+                                newLlantaId = created.idLlantas
+                            }
+                        }, onFailure = { errorMessage = ErrorUtils.userMessage(it, "No se pudo crear la llanta") })
                     } else {
-
                         repository.updateLlanta(updateId, LlantaUpdateRequest(createReq.LlantasMarca, createReq.LlantasModelo, createReq.LlantasPrecio, createReq.LlantasMedida, createReq.LlantasMm)).fold(onSuccess = { errorMessage = null; loadAll(); internalShowDialog.value = false }, onFailure = { errorMessage = ErrorUtils.userMessage(it, "No se pudo actualizar la llanta") })
-
                     }
-
                 }
-
             })
-
         }
 
+        if (newLlantaId != null && flotaId != null) {
+            ParametrosDialog(
+                flotaId = flotaId,
+                llantaId = newLlantaId!!,
+                repository = repository,
+                onDismiss = {
+                    newLlantaId = null
+                },
+                onSaved = {
+                    newLlantaId = null
+                }
+            )
+        }
     }
-
 }
 
-
-
 @Composable
-
 fun LlantaEditDialog(editing: Llanta?, onDismiss: () -> Unit, onSave: (LlantaCreateRequest, Int?) -> Unit) {
 
     var marca by remember { mutableStateOf(editing?.LlantasMarca ?: "") }
-
     var modelo by remember { mutableStateOf(editing?.LlantasModelo ?: "") }
-
     var medida by remember { mutableStateOf(editing?.LlantasMedida ?: "") }
-
     var mm by remember { mutableStateOf((editing?.LlantasMm ?: 0).toString()) }
-
     var precio by remember { mutableStateOf(editing?.LlantasPrecio?.toString() ?: "") }
-
-
 
     Dialog(onDismissRequest = onDismiss) {
 
@@ -384,83 +222,207 @@ fun LlantaEditDialog(editing: Llanta?, onDismiss: () -> Unit, onSave: (LlantaCre
 
                 OutlinedTextField(value = medida, onValueChange = { medida = it }, label = { Text("Medida") }, modifier = Modifier.fillMaxWidth())
 
-                
-
                 // MM field with Bluetooth caliper button
-
                 Row(
-
                     modifier = Modifier.fillMaxWidth(),
-
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-
                     verticalAlignment = Alignment.CenterVertically
-
                 ) {
-
                     OutlinedTextField(
-
                         value = mm,
-
                         onValueChange = { mm = it },
-
                         label = { Text("Mm") },
-
                         modifier = Modifier.weight(1f),
-
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-
                     )
-
                     BluetoothCaliperButton(
-
                         onMeasurementReceived = { value ->
-
                             mm = value.toString()
-
                         },
-
                         modifier = Modifier.size(44.dp)
-
                     )
-
                 }
-
-                
 
                 OutlinedTextField(value = precio, onValueChange = { precio = it }, label = { Text("Precio") }, modifier = Modifier.fillMaxWidth())
 
-
-
                 Spacer(modifier = Modifier.height(12.dp))
 
-
-
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-
                     TextButton(onClick = onDismiss) { Text("Cancelar") }
-
                     Spacer(modifier = Modifier.width(8.dp))
-
                     Button(onClick = {
-
                         val p = precio.toFloatOrNull()
-
                         val mmFloat = mm.toFloatOrNull() ?: 0f
-
                         val req = LlantaCreateRequest(LlantasMarca = marca, LlantasModelo = modelo, LlantasPrecio = p, LlantasMedida = medida, LlantasMm = mmFloat)
-
                         onSave(req, editing?.idLlantas)
-
                     }) { Text("Guardar") }
-
                 }
-
             }
-
         }
-
     }
-
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ParametrosDialog(
+    flotaId: Int,
+    llantaId: Int,
+    repository: YokohamaRepository,
+    onDismiss: () -> Unit,
+    onSaved: () -> Unit
+) {
+    var parametrosRC by remember { mutableStateOf("A") }
+    var expandedRC by remember { mutableStateOf(false) }
+    var parametrosPMin by remember { mutableStateOf("") }
+    var parametrosPSug by remember { mutableStateOf("") }
+    var parametrosPMax by remember { mutableStateOf("") }
+    var parametrosProfMin by remember { mutableStateOf("") }
+    var parametrosProfMax by remember { mutableStateOf("") }
+    var isSaving by remember { mutableStateOf(false) }
+    var formError by remember { mutableStateOf<String?>(null) }
+
+    val scope = rememberCoroutineScope()
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(text = "Agregar parámetros", style = MaterialTheme.typography.titleLarge)
+                Text(text = "RC (Reencauche)", style = MaterialTheme.typography.bodyMedium)
+
+                ExposedDropdownMenuBox(
+                    expanded = expandedRC,
+                    onExpandedChange = { expandedRC = !expandedRC }
+                ) {
+                    OutlinedTextField(
+                        value = parametrosRC,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Selecciona RC") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedRC) },
+                        modifier = Modifier.fillMaxWidth().menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedRC,
+                        onDismissRequest = { expandedRC = false }
+                    ) {
+                        listOf("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M").forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    parametrosRC = option
+                                    expandedRC = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                HorizontalDivider()
+
+                Text(text = "Presión (PSI)", style = MaterialTheme.typography.bodyMedium)
+                OutlinedTextField(
+                    value = parametrosPMin,
+                    onValueChange = { parametrosPMin = it },
+                    label = { Text("Presión Mínima") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = parametrosPSug,
+                    onValueChange = { parametrosPSug = it },
+                    label = { Text("Presión Sugerida") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = parametrosPMax,
+                    onValueChange = { parametrosPMax = it },
+                    label = { Text("Presión Máxima") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                HorizontalDivider()
+
+                Text(text = "Profundidad (mm)", style = MaterialTheme.typography.bodyMedium)
+                OutlinedTextField(
+                    value = parametrosProfMin,
+                    onValueChange = { parametrosProfMin = it },
+                    label = { Text("Profundidad Mínima") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = parametrosProfMax,
+                    onValueChange = { parametrosProfMax = it },
+                    label = { Text("Profundidad Media") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (formError != null) {
+                    Text(text = formError ?: "", color = MaterialTheme.colorScheme.error)
+                }
+
+                Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                    TextButton(onClick = onDismiss) { Text("Omitir") }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            if (parametrosPMin.isEmpty() || parametrosPSug.isEmpty() || parametrosPMax.isEmpty() || parametrosProfMin.isEmpty() || parametrosProfMax.isEmpty()) {
+                                formError = "Todos los campos son obligatorios"
+                                return@Button
+                            }
+                            val pMin = parametrosPMin.toFloatOrNull()
+                            val pSug = parametrosPSug.toFloatOrNull()
+                            val pMax = parametrosPMax.toFloatOrNull()
+                            val profMin = parametrosProfMin.toIntOrNull()
+                            val profMax = parametrosProfMax.toIntOrNull()
+                            if (pMin == null || pSug == null || pMax == null || profMin == null || profMax == null) {
+                                formError = "Valores numéricos inválidos"
+                                return@Button
+                            }
+                            if (pMin > pSug || pSug > pMax) {
+                                formError = "Presión mínima ≤ sugerida ≤ máxima"
+                                return@Button
+                            }
+                            if (profMin > profMax) {
+                                formError = "Profundidad mínima debe ser ≤ máxima"
+                                return@Button
+                            }
+                            scope.launch {
+                                isSaving = true
+                                formError = null
+                                repository.createParametro(
+                                    ParametroCreateRequest(
+                                        Flotas_idFlotas = flotaId,
+                                        Llantas_idLlantas = llantaId,
+                                        ParametrosRC = parametrosRC,
+                                        ParametrosPMin = pMin,
+                                        ParametrosPSug = pSug,
+                                        ParametrosPMax = pMax,
+                                        ParametrosProfMin = profMin,
+                                        ParametrosProfMax = profMax
+                                    )
+                                ).fold(
+                                    onSuccess = { isSaving = false; onSaved() },
+                                    onFailure = { error ->
+                                        formError = ErrorUtils.userMessage(error, "Error al guardar los parámetros")
+                                        isSaving = false
+                                    }
+                                )
+                            }
+                        },
+                        enabled = !isSaving
+                    ) {
+                        if (isSaving) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        } else {
+                            Text("Guardar")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

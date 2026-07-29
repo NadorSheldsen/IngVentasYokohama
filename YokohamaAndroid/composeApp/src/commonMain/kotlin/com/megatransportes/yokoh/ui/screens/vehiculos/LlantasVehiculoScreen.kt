@@ -426,7 +426,8 @@ fun LlantasVehiculoScreen(
                     repository = repository,
                     onBack = { showLlantasAdmin = false },
                     showDialogState = childDialogState,
-                    addRequestState = childAddRequest
+                    addRequestState = childAddRequest,
+                    flotaId = flota.idFlotas
                 )
             }
         }

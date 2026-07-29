@@ -418,7 +418,7 @@ fun ParametrosListScreen(
 
                 1 -> {
 
-                    LlantasAdminScreen(repository = repository, onBack = onBack, showDialogState = childDialogState, addRequestState = childAddRequest)
+                    LlantasAdminScreen(repository = repository, onBack = onBack, showDialogState = childDialogState, addRequestState = childAddRequest, flotaId = flota.idFlotas)
 
                 }
 
