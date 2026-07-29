@@ -103,26 +103,26 @@ fun PlatformLazyColumn(
         val touchSlopPx = with(density) { 8.dp.toPx() }
         // Acumula movimiento total; solo deja pasar al LazyColumn
         // cuando se supera el umbral de 8dp (tap vs drag)
-        var accumulatedDrag by remember { mutableStateOf(0f) }
+        val accumulatedDrag = remember { mutableStateOf(0f) }
         val connection = remember {
             object : NestedScrollConnection {
                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                     // Si el origen NO es el usuario (fling, side-effect), reseteamos el acumulador
                     // y dejamos pasar sin absorber
                     if (source != NestedScrollSource.UserInput) {
-                        accumulatedDrag = 0f
+                        accumulatedDrag.value = 0f
                         return Offset.Zero
                     }
 
-                    val newAcc = accumulatedDrag + available.y
+                    val newAcc = accumulatedDrag.value + available.y
                     if (abs(newAcc) <= touchSlopPx) {
                         // Aún no supera el umbral → absorber todo
-                        accumulatedDrag = newAcc
+                        accumulatedDrag.value = newAcc
                         return Offset(0f, available.y)
                     }
                     // Superó el umbral: dejar pasar este delta sin modificar
                     // y capar el acumulador para no re‑absorber en el futuro
-                    accumulatedDrag = touchSlopPx * newAcc.sign
+                    accumulatedDrag.value = touchSlopPx * newAcc.sign
                     return Offset.Zero
                 }
             }
