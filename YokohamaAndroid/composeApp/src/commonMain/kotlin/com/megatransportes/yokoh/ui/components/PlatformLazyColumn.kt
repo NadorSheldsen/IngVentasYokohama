@@ -25,67 +25,63 @@ import androidx.compose.ui.unit.dp
 import com.megatransportes.yokoh.getPlatformName
 import kotlin.math.abs
 import kotlin.math.exp
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 
 /**
- * Flag compartido entre el gesture detector y el fling.
- * Se activa cuando el usuario toca la pantalla durante un fling.
- * El fling loop lo lee para salir inmediatamente,
- * y el NestedScrollConnection lo usa para absorber deltas residuales.
+ * Referencia compartida al Job de la corrutina del fling.
+ * El gesture detector cancela este Job cuando el usuario toca,
+ * lo que deregistra el frame callback de withFrameNanos al instante.
  */
-class FlingCanceller {
-    var cancelled = false
+class FlingJobRef {
+    var job: Job? = null
 }
 
-/**
- * Fling behavior para iOS con decaimiento exponencial.
- * Cancela inmediatamente si FlingCanceller se activa (nuevo toque).
- */
 class PlatformFlingBehavior(
-    private val flingCanceller: FlingCanceller,
+    private val flingJobRef: FlingJobRef,
 ) : FlingBehavior {
     private val k = 0.36f
 
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
-        // Resetear el flag para este nuevo fling
-        flingCanceller.cancelled = false
+        flingJobRef.job = currentCoroutineContext()[Job]
+        try {
+            val clamped = initialVelocity.coerceIn(-5000f, 5000f)
+            if (abs(clamped) < 50f) return clamped
 
-        val clamped = initialVelocity.coerceIn(-5000f, 5000f)
-        if (abs(clamped) < 50f) return clamped
+            var v = clamped
+            var lastFrameTimeNs = 0L
 
-        var v = clamped
-        var lastFrameTimeNs = 0L
+            while (abs(v) > 20f) {
+                currentCoroutineContext().ensureActive()
 
-        while (abs(v) > 20f && !flingCanceller.cancelled) {
-            currentCoroutineContext().ensureActive()
-            if (flingCanceller.cancelled) return 0f
+                val frameTimeNs = withFrameNanos { it }
+                // Si el Job fue cancelado, withFrameNanos lanza CancellationException
+                // y nunca llegamos aquí
 
-            val frameTimeNs = withFrameNanos { it }
-            if (flingCanceller.cancelled) return 0f
+                if (lastFrameTimeNs == 0L) {
+                    lastFrameTimeNs = frameTimeNs
+                    v *= exp(-k * 0.016f)
+                    continue
+                }
 
-            if (lastFrameTimeNs == 0L) {
+                val dt = (frameTimeNs - lastFrameTimeNs) / 1_000_000_000f
                 lastFrameTimeNs = frameTimeNs
-                v *= exp(-k * 0.016f)
-                continue
+                val dtClamped = dt.coerceIn(0.008f, 0.033f)
+
+                v *= exp(-k * dtClamped)
+
+                val scrollDelta = v * dtClamped * 60f
+                if (abs(scrollDelta) < 0.5f) break
+
+                val consumed = scrollBy(scrollDelta)
+                if (abs(consumed) < abs(scrollDelta) * 0.5f) return 0f
             }
 
-            val dt = (frameTimeNs - lastFrameTimeNs) / 1_000_000_000f
-            lastFrameTimeNs = frameTimeNs
-            val dtClamped = dt.coerceIn(0.008f, 0.033f)
-
-            v *= exp(-k * dtClamped)
-
-            val scrollDelta = v * dtClamped * 60f
-            if (abs(scrollDelta) < 0.5f) break
-            if (flingCanceller.cancelled) return 0f
-
-            val consumed = scrollBy(scrollDelta)
-            if (flingCanceller.cancelled) return 0f
-            if (abs(consumed) < abs(scrollDelta) * 0.5f) return 0f
+            return 0f
+        } finally {
+            flingJobRef.job = null
         }
-
-        return 0f
     }
 }
 
@@ -101,9 +97,9 @@ fun PlatformLazyColumn(
     content: LazyListScope.() -> Unit,
 ) {
     val isIos = getPlatformName() == "iOS"
-    val flingCanceller = remember { FlingCanceller() }
+    val flingJobRef = remember { FlingJobRef() }
     val flingBehavior: FlingBehavior = if (isIos) {
-        remember { PlatformFlingBehavior(flingCanceller) }
+        remember { PlatformFlingBehavior(flingJobRef) }
     } else {
         ScrollableDefaults.flingBehavior()
     }
@@ -115,13 +111,6 @@ fun PlatformLazyColumn(
         val connection = remember {
             object : NestedScrollConnection {
                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                    // Si el fling fue cancelado por un nuevo toque,
-                    // absorber cualquier delta residual que intente pasar
-                    if (flingCanceller.cancelled && source == NestedScrollSource.Fling) {
-                        flingCanceller.cancelled = false
-                        return Offset(0f, available.y)
-                    }
-                    // Ruido por frame (micro-movimientos en tap)
                     if (source == NestedScrollSource.UserInput && abs(available.y) <= noiseFloorPx) {
                         return Offset(0f, available.y)
                     }
@@ -135,7 +124,7 @@ fun PlatformLazyColumn(
                     while (true) {
                         val event = awaitPointerEvent(PointerEventPass.Initial)
                         if (event.changes.any { it.pressed && !it.previousPressed }) {
-                            flingCanceller.cancelled = true
+                            flingJobRef.job?.cancel()
                         }
                     }
                 }
