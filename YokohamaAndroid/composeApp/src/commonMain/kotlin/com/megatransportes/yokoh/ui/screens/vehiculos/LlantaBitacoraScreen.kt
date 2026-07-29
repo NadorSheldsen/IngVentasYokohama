@@ -288,18 +288,21 @@ fun TimelineItem(
 
             Spacer(Modifier.height(8.dp))
 
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Column {
-                    Text("KM", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-                    Text(NumberFormatter.formatWithComma(km.toDouble()))
-                }
-                Column {
-                    Text("MM", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-                    Text(NumberFormatter.formatWithComma(mm, 1))
-                }
-                Column {
-                    Text("PSI", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-                    Text(NumberFormatter.formatWithComma(psi, 1))
+            Column(Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Kilómetros recorridos: ${NumberFormatter.formatWithComma(km.toDouble())} km",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(Modifier.height(4.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column {
+                        Text("MM", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                        Text(NumberFormatter.formatWithComma(mm, 1))
+                    }
+                    Column {
+                        Text("PSI", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                        Text(NumberFormatter.formatWithComma(psi, 1))
+                    }
                 }
             }
         }
