@@ -126,6 +126,8 @@ fun PlatformLazyColumn(
 
                     if (source == NestedScrollSource.UserInput) {
                         if (lastWasFling) {
+                            // Primer UserInput justo después de un fling →
+                            // es el micro‑scroll de UIScrollView al detenerse
                             lastWasFling = false
                             println("[NESTED] → ABSORB (post-fling micro-scroll) delta=${available.y}")
                             return Offset(0f, available.y)
@@ -134,8 +136,10 @@ fun PlatformLazyColumn(
                             println("[NESTED] → ABSORB (noise floor) delta=${available.y}")
                             return Offset(0f, available.y)
                         }
-                    } else if (source == NestedScrollSource.Fling) {
+                    } else if (source == NestedScrollSource.Fling || source == NestedScrollSource.SideEffect) {
+                        // El fling en CMP iOS usa SideEffect, no Fling
                         lastWasFling = true
+                        println("[NESTED] → MARK lastWasFling=true (source=$source)")
                     }
                     println("[NESTED] → PASS delta=${available.y}")
                     return Offset.Zero
