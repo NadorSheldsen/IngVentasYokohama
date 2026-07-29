@@ -1099,7 +1099,7 @@ private fun LlantaSemaforoForm(
 
                 // Vigía
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "Vigía/Inaccesible", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = "Vigía/Inac", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Checkbox(
                         checked = data.vigia,
                         onCheckedChange = { checked -> onDataChange(data.copy(vigia = checked, presion = if (checked) "0" else data.presion)) }

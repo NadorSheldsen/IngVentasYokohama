@@ -320,6 +320,7 @@ fun PruebaRendimientoScreen(
                             LlantasRendimientoMm4 = data.mm4.toFloatOrNull() ?: 0f,
                             LlantasRendimientoPresion = data.presion.toIntOrNull() ?: 0,
                             LlantasRendimientoCondPel = data.condPel,
+                            LlantasRendimientoVigia = if (data.vigia) 1 else 0,
                             LlantasRendimientoFoto = data.foto,
                             LlantasRendimientoPTerminada = if (data.pTerminada) 1 else 0,
                             LlantasRendimientoComent = data.comentarios.ifBlank { "Ninguno" },
@@ -1353,12 +1354,12 @@ private fun LlantaRendimientoForm(
                             onValueChange = {
                                 val newTextRaw = it.text
                                 presionState = TextFieldValue(newTextRaw, selection = TextRange(newTextRaw.length))
-                                onDataChange(data.copy(presion = newTextRaw))
+                                onDataChange(data.copy(presion = newTextRaw, vigia = false))
                             },
                             label = "Presión",
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                            modifier = Modifier.width(120.dp).height(56.dp).onFocusChanged { presionFocused = it.isFocused },
+                            modifier = Modifier.width(80.dp).height(56.dp).onFocusChanged { presionFocused = it.isFocused },
                             singleLine = true,
                             enabled = !data.pTerminada,
                             isError = showValidationErrors && (
@@ -1368,6 +1369,21 @@ private fun LlantaRendimientoForm(
                                     data.presion.isBlank() || data.presion.toIntOrNull() == null || (data.presion.toIntOrNull() ?: 0) > 160
                                 }
                             )
+                        )
+                    }
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "Vigía/Inac", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Checkbox(
+                            checked = data.vigia,
+                            onCheckedChange = { checked ->
+                                onDataChange(data.copy(vigia = checked, presion = if (checked) "0" else data.presion))
+                                if (checked) {
+                                    presionState = TextFieldValue("0", selection = TextRange(1))
+                                }
+                            },
+                            enabled = !data.pTerminada,
+                            modifier = Modifier.size(28.dp)
                         )
                     }
 

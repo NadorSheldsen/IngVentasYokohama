@@ -260,6 +260,7 @@ data class LlantaRendimientoCreateRequest(
     val LlantasRendimientoMm4: Float,
     val LlantasRendimientoPresion: Int,
     val LlantasRendimientoCondPel: Boolean,
+    val LlantasRendimientoVigia: Int = 0,
     val LlantasRendimientoFoto: String? = null,
     // pass 0 or 1 depending on whether the wheel was marked as "Terminada"
     val LlantasRendimientoPTerminada: Int = 0
@@ -691,6 +692,7 @@ data class LlantaRendimientoFormData(
     val mm4: String = "",
     val presion: String = "",
     val condPel: Boolean = false,
+    val vigia: Boolean = false,
     val pTerminada: Boolean = false,
     val foto: String? = null,
     val fotoNombre: String? = null,
