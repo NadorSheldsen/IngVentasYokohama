@@ -136,6 +136,9 @@ fun PruebaRendimientoScreen(
     // Start empty — we'll fetch authoritative values from llantasrendimiento in batch
     var llantasData by remember { mutableStateOf<List<LlantaRendimientoFormData>>(emptyList()) }
     var pendingTerminadas by remember { mutableStateOf<List<LlantaRendimientoFormData>>(emptyList()) }
+    // Ids de llantas que fueron reemplazadas — el servidor elimina el registro
+    // al retirar, así que no deben incluirse en el batch de rendimientos.
+    var replacedIds by remember { mutableStateOf<Set<Int>>(emptySet()) }
     var readyToRender by remember { mutableStateOf(false) }
 
     // Último registro conocido por llantaVehiculoId
@@ -146,6 +149,9 @@ fun PruebaRendimientoScreen(
     // que en esa posición hay un espacio para montar una nueva llanta.
     var displayedLlantas by remember { mutableStateOf(mutableListOf<LlantaVehiculo?>().apply { addAll(llantasVehiculo) }) }
     LaunchedEffect(llantasVehiculo) {
+        // Clear transient state on data reload
+        replacedIds = emptySet()
+
         // Map incoming llantasVehiculo into positional slots when possible.
         try {
             // Find max position from piso values like "Pos N"
@@ -303,11 +309,12 @@ fun PruebaRendimientoScreen(
                 // no debe enviarse al batch porque rompe la FK.
                 val installedIds = displayedLlantas.mapNotNull { it?.idLlantasVehiculos }.toSet()
                 val toCreate = llantasData.filter {
-                    it.llantaVehiculoId != 0 && it.llantaVehiculoId in installedIds
+                    it.llantaVehiculoId != 0 && it.llantaVehiculoId in installedIds && it.llantaVehiculoId !in replacedIds
                 } + pendingTerminadas
 
-                // Limpiar pendientes al registrar
+                // Limpiar estados transitorios al registrar
                 pendingTerminadas = emptyList()
+                replacedIds = emptySet()
 
                 if (toCreate.isNotEmpty()) {
                     val llantasRequests = toCreate.map { data ->
@@ -732,6 +739,9 @@ fun PruebaRendimientoScreen(
                                 ),
                                 onLlantaCreated = { created ->
                                     // Retirar la llanta anterior del servidor (síncrono)
+                                    // El servidor elimina el registro con ON DELETE CASCADE,
+                                    // por lo que el nuevo id queda inválido para el batch.
+                                    replacedIds = replacedIds + created.idLlantasVehiculos
                                     val retireFailed = try {
                                         val result = repository.retirarLlantaVehiculo(
                                             llanta.idLlantasVehiculos,
