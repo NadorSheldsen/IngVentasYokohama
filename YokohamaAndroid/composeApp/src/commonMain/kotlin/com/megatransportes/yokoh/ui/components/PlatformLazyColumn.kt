@@ -13,6 +13,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollDispatcher
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.rememberNestedScrollDispatcher
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
@@ -41,6 +44,7 @@ fun PlatformLazyColumn(
     if (isIos) {
         val scope = rememberCoroutineScope()
         val k = 0.36f
+        val dispatcher = rememberNestedScrollDispatcher()
 
         LazyColumn(
             modifier = modifier.pointerInput(state) {
@@ -68,7 +72,21 @@ fun PlatformLazyColumn(
                                 change.consume()
                                 vt.addPosition(change.uptimeMillis, change.position)
                                 dragging = true
-                                state.dispatchRawDelta(-rawDelta)
+
+                                val preConsumed = dispatcher.dispatchPreScroll(
+                                    Offset(0f, rawDelta),
+                                    NestedScrollSource.UserInput
+                                )
+                                val ourDelta = -rawDelta + preConsumed.y
+                                val unconsumed = state.dispatchRawDelta(ourDelta)
+
+                                if (abs(unconsumed) > 0.5f) {
+                                    dispatcher.dispatchPostScroll(
+                                        consumed = Offset(0f, ourDelta - unconsumed),
+                                        available = Offset(0f, -unconsumed),
+                                        source = NestedScrollSource.UserInput
+                                    )
+                                }
                             }
                         } else if (change == null && dragging) {
                             dragging = false
