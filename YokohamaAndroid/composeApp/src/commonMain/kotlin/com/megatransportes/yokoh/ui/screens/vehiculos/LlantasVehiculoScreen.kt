@@ -204,7 +204,7 @@ fun LlantasVehiculoScreen(
 
                     LaunchedEffect(collapsedForms[index]) {
                         if (!collapsedForms[index]) {
-                            val formY = formPositions[index] ?: return@LaunchedEffect
+                            val formY = formPositions[index + 1] ?: return@LaunchedEffect
                             val targetVisibleY = (containerHeightPx / 2f).toInt()
                             val currentScroll = scrollState.value
                             val absoluteFormY = (formY + currentScroll).toInt()
