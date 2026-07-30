@@ -49,16 +49,18 @@ fun PlatformLazyColumn(
                 var dragging = false
                 var flingJob: Job? = null
 
+                var startedAtTop = false
+
                 awaitPointerEventScope {
                     while (true) {
                         val event = awaitPointerEvent(PointerEventPass.Main)
 
-                        // Nuevo touch → cancelar fling inmediatamente
                         val anyNewPress = event.changes.any { it.pressed && !it.previousPressed }
                         if (anyNewPress) {
                             flingJob?.cancel()
                             flingJob = null
                             vt = VelocityTracker()
+                            startedAtTop = state.firstVisibleItemIndex == 0 && state.firstVisibleItemScrollOffset == 0
                         }
 
                         val change = event.changes.firstOrNull { it.pressed }
@@ -71,9 +73,8 @@ fun PlatformLazyColumn(
                                 dragging = true
 
                                 val conn = pullRefreshConnection
-                                val atTop = state.firstVisibleItemIndex == 0 && state.firstVisibleItemScrollOffset == 0
 
-                                if (atTop && rawDelta > 0) {
+                                if (startedAtTop && rawDelta > 0) {
                                     conn?.onPostScroll(
                                         Offset.Zero, Offset(0f, rawDelta),
                                         NestedScrollSource.UserInput
@@ -83,14 +84,7 @@ fun PlatformLazyColumn(
                                         conn.onPreScroll(Offset(0f, rawDelta), NestedScrollSource.UserInput)
                                     } else Offset.Zero
                                     val ourDelta = -rawDelta + preConsumed.y
-                                    val unconsumed = state.dispatchRawDelta(ourDelta)
-                                    if (abs(unconsumed) > 0.5f && conn != null) {
-                                        conn.onPostScroll(
-                                            consumed = Offset(0f, ourDelta - unconsumed),
-                                            available = Offset(0f, -unconsumed),
-                                            source = NestedScrollSource.UserInput
-                                        )
-                                    }
+                                    state.dispatchRawDelta(ourDelta)
                                 }
                             }
                         } else if (change == null && dragging) {
