@@ -32,21 +32,21 @@ import kotlinx.coroutines.ensureActive
 class FlingJobRef {
     var job: Job? = null
     var cancelled = false
+    var bounceBackGuard = 0
 }
 
 class PlatformFlingBehavior(
     private val flingJobRef: FlingJobRef,
 ) : FlingBehavior {
     private val k = 0.36f
-    private var bounceBackGuard = 0
 
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
-        println("[FLING] START velocity=$initialVelocity guard=$bounceBackGuard")
+        println("[FLING] START velocity=$initialVelocity guard=${flingJobRef.bounceBackGuard}")
 
         // Rechazar flings justo después de llegar a un borde (bounce-back)
-        if (bounceBackGuard > 0) {
-            bounceBackGuard--
-            println("[FLING] REJECT (bounce-back guard=$bounceBackGuard)")
+        if (flingJobRef.bounceBackGuard > 0) {
+            flingJobRef.bounceBackGuard--
+            println("[FLING] REJECT (bounce-back guard=${flingJobRef.bounceBackGuard})")
             return 0f
         }
 
@@ -98,8 +98,8 @@ class PlatformFlingBehavior(
                 println("[FLING] FRAME v=$v delta=$scrollDelta consumed=$consumed frames=$frames")
 
                 if (abs(consumed) < abs(scrollDelta) * 0.5f) {
-                    bounceBackGuard = 5
-                    println("[FLING] STOP at boundary v=$v consumed=$consumed delta=$scrollDelta frames=$frames guard=$bounceBackGuard")
+                    flingJobRef.bounceBackGuard = 5
+                    println("[FLING] STOP at boundary v=$v consumed=$consumed delta=$scrollDelta frames=$frames guard=${flingJobRef.bounceBackGuard}")
                     return 0f
                 }
             }
@@ -166,7 +166,7 @@ fun PlatformLazyColumn(
                             return Offset(0f, available.y)
                         }
                         // El usuario realmente está haciendo scroll → reset guard
-                        bounceBackGuard = 0
+                        flingJobRef.bounceBackGuard = 0
                         println("[NESTED] → PASS (real scroll) delta=${available.y}")
                     } else if (source == NestedScrollSource.Fling || source == NestedScrollSource.SideEffect) {
                         flingCooldown = 10
