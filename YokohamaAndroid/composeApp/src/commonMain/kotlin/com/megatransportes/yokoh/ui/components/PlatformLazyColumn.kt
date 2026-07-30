@@ -153,7 +153,9 @@ fun PlatformScrollableColumn(
         val k = 0.36f
 
         Column(
-            modifier = modifier.pointerInput(state) {
+            modifier = modifier
+                .verticalScroll(state, enabled = false)
+                .pointerInput(state) {
                 var vt = VelocityTracker()
                 var dragging = false
                 var flingJob: Job? = null
