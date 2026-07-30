@@ -71,18 +71,26 @@ fun PlatformLazyColumn(
                                 dragging = true
 
                                 val conn = pullRefreshConnection
-                                val preConsumed = if (conn != null) {
-                                    conn.onPreScroll(Offset(0f, rawDelta), NestedScrollSource.UserInput)
-                                } else Offset.Zero
-                                val ourDelta = -rawDelta + preConsumed.y
-                                val unconsumed = state.dispatchRawDelta(ourDelta)
+                                val atTop = state.firstVisibleItemIndex == 0 && state.firstVisibleItemScrollOffset == 0
 
-                                if (abs(unconsumed) > 0.5f && conn != null) {
-                                    conn.onPostScroll(
-                                        consumed = Offset(0f, ourDelta - unconsumed),
-                                        available = Offset(0f, -unconsumed),
-                                        source = NestedScrollSource.UserInput
+                                if (atTop && rawDelta > 0) {
+                                    conn?.onPostScroll(
+                                        Offset.Zero, Offset(0f, rawDelta),
+                                        NestedScrollSource.UserInput
                                     )
+                                } else {
+                                    val preConsumed = if (conn != null) {
+                                        conn.onPreScroll(Offset(0f, rawDelta), NestedScrollSource.UserInput)
+                                    } else Offset.Zero
+                                    val ourDelta = -rawDelta + preConsumed.y
+                                    val unconsumed = state.dispatchRawDelta(ourDelta)
+                                    if (abs(unconsumed) > 0.5f && conn != null) {
+                                        conn.onPostScroll(
+                                            consumed = Offset(0f, ourDelta - unconsumed),
+                                            available = Offset(0f, -unconsumed),
+                                            source = NestedScrollSource.UserInput
+                                        )
+                                    }
                                 }
                             }
                         } else if (change == null && dragging) {
