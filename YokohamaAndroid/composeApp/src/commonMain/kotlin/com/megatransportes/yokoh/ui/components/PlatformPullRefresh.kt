@@ -31,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 
+internal var pullRefreshConnection: NestedScrollConnection? = null
+
 @Composable
 fun PlatformPullRefresh(
     isRefreshing: Boolean,
@@ -72,6 +74,7 @@ fun PlatformPullRefresh(
             }
         }
     }
+    pullRefreshConnection = nestedScrollConnection
 
     LaunchedEffect(isRefreshing) {
         if (!isRefreshing) {
