@@ -20,8 +20,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import com.megatransportes.yokoh.getPlatformName
 import kotlin.math.abs
 import kotlin.math.exp
@@ -31,6 +29,7 @@ import kotlinx.coroutines.ensureActive
 
 class FlingJobRef {
     var job: Job? = null
+    var cancelled = false
 }
 
 class PlatformFlingBehavior(
@@ -41,6 +40,7 @@ class PlatformFlingBehavior(
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
         println("[FLING] START velocity=$initialVelocity")
         flingJobRef.job = currentCoroutineContext()[Job]
+        flingJobRef.cancelled = false
         try {
             val clamped = initialVelocity.coerceIn(-5000f, 5000f)
             if (abs(clamped) < 50f) {
@@ -54,6 +54,10 @@ class PlatformFlingBehavior(
 
             while (abs(v) > 20f) {
                 currentCoroutineContext().ensureActive()
+                if (flingJobRef.cancelled) {
+                    println("[FLING] STOP by cancelled flag v=$v frames=$frames")
+                    return 0f
+                }
                 val frameTimeNs = withFrameNanos { it }
 
                 if (lastFrameTimeNs == 0L) {
@@ -91,7 +95,8 @@ class PlatformFlingBehavior(
             throw e
         } finally {
             flingJobRef.job = null
-            println("[FLING] CLEANUP job=null")
+            flingJobRef.cancelled = false
+            println("[FLING] CLEANUP job=null cancelled=false")
         }
     }
 }
@@ -120,28 +125,30 @@ fun PlatformLazyColumn(
         val density = LocalDensity.current
         val noiseFloorPx = with(density) { 2.dp.toPx() }
         val connection = remember {
-            var lastWasFling = false
+            var flingCooldown = 0
 
             object : NestedScrollConnection {
                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                    println("[NESTED] onPreScroll source=$source available.y=${available.y} lastWasFling=$lastWasFling")
+                    println("[NESTED] onPreScroll source=$source available.y=${available.y} cooldown=$flingCooldown")
 
                     if (source == NestedScrollSource.UserInput) {
-                        if (lastWasFling) {
-                            // Primer UserInput justo después de un fling →
-                            // es el micro‑scroll de UIScrollView al detenerse
-                            lastWasFling = false
-                            println("[NESTED] → ABSORB (post-fling micro-scroll) delta=${available.y}")
-                            return Offset(0f, available.y)
+                        if (flingCooldown > 0) {
+                            flingCooldown--
+                            if (abs(available.y) <= noiseFloorPx) {
+                                println("[NESTED] → ABSORB (fling cooldown) delta=${available.y}")
+                                flingJobRef.cancelled = true
+                                return Offset(0f, available.y)
+                            }
+                            println("[NESTED] → COOLDOWN cancelled by large delta=${available.y}")
+                            flingCooldown = 0
                         }
                         if (abs(available.y) <= noiseFloorPx) {
                             println("[NESTED] → ABSORB (noise floor) delta=${available.y}")
                             return Offset(0f, available.y)
                         }
                     } else if (source == NestedScrollSource.Fling || source == NestedScrollSource.SideEffect) {
-                        // El fling en CMP iOS usa SideEffect, no Fling
-                        lastWasFling = true
-                        println("[NESTED] → MARK lastWasFling=true (source=$source)")
+                        flingCooldown = 5
+                        println("[NESTED] → MARK fling (cooldown=5, source=$source)")
                     }
                     println("[NESTED] → PASS delta=${available.y}")
                     return Offset.Zero
@@ -155,21 +162,7 @@ fun PlatformLazyColumn(
                 }
             }
         }
-        finalModifier = modifier
-            .nestedScroll(connection)
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent(PointerEventPass.Main)
-                        event.changes.forEach { change ->
-                            if (change.pressed && !change.previousPressed) {
-                                flingJobRef.job?.cancel()
-                                println("[FLING] JOB CANCELLED by pointerInput touch-down")
-                            }
-                        }
-                    }
-                }
-            }
+        finalModifier = modifier.nestedScroll(connection)
     }
 
     LazyColumn(
