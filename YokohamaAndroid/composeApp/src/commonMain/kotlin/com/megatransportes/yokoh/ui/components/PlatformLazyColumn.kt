@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -19,7 +20,9 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import com.megatransportes.yokoh.disableIosScrollBounce
 import com.megatransportes.yokoh.getPlatformName
 import kotlin.math.abs
 import kotlin.math.exp
@@ -167,6 +170,12 @@ fun PlatformLazyColumn(
             }
         }
         finalModifier = modifier.nestedScroll(connection)
+
+        // Deshabilitar bounce nativo de UIScrollView en iOS
+        LaunchedEffect(Unit) {
+            withFrameNanos { }
+            disableIosScrollBounce(LocalView.current)
+        }
     }
 
     LazyColumn(

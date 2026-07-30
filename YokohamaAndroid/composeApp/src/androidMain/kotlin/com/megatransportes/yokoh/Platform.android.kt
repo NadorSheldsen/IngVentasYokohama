@@ -8,6 +8,10 @@ import com.russhwolf.settings.SharedPreferencesSettings
 
 actual fun getPlatformName(): String = "Android"
 
+actual fun disableIosScrollBounce(view: Any?) {
+    // No-op en Android
+}
+
 @Composable
 fun getSettings(): Settings {
     val context = LocalContext.current
