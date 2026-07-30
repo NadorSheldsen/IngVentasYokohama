@@ -25,6 +25,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.foundation.Image
 import com.megatransportes.yokoh.data.models.*
 import com.megatransportes.yokoh.data.repository.YokohamaRepository
+import com.megatransportes.yokoh.ui.components.PlatformScrollableColumn
 import com.megatransportes.yokoh.ui.screens.parametros.ParametrosListScreen
 import com.megatransportes.yokoh.ui.screens.parametros.EditParametroScreen
 import com.megatransportes.yokoh.ui.screens.parametros.LlantasAdminScreen
@@ -101,13 +102,13 @@ fun LlantasVehiculoScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        PlatformScrollableColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
-                .verticalScroll(scrollState)
                 .onGloballyPositioned { containerHeightPx = it.size.height.toFloat() },
+            state = scrollState,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Column(
@@ -202,7 +203,7 @@ fun LlantasVehiculoScreen(
                         }
                     )
 
-                    LaunchedEffect(collapsedForms[index]) {
+                    LaunchedEffect(collapsedForms[index], formPositions[index + 1]) {
                         if (!collapsedForms[index]) {
                             val formY = formPositions[index + 1] ?: return@LaunchedEffect
                             val targetVisibleY = (containerHeightPx / 2f).toInt()

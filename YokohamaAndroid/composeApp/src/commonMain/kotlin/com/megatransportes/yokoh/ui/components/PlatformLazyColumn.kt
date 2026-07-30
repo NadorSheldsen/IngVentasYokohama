@@ -1,12 +1,16 @@
 package com.megatransportes.yokoh.ui.components
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -129,5 +133,101 @@ fun PlatformLazyColumn(
             userScrollEnabled = userScrollEnabled,
             content = content,
         )
+    }
+}
+
+@Composable
+fun PlatformScrollableColumn(
+    modifier: Modifier = Modifier,
+    state: ScrollState = rememberScrollState(),
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    userScrollEnabled: Boolean = true,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val isIos = getPlatformName() == "iOS"
+
+    if (isIos) {
+        val scope = rememberCoroutineScope()
+        val k = 0.36f
+
+        Column(
+            modifier = modifier.pointerInput(state) {
+                var vt = VelocityTracker()
+                var dragging = false
+                var flingJob: Job? = null
+                var startedAtTop = false
+
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Main)
+
+                        val anyNewPress = event.changes.any { it.pressed && !it.previousPressed }
+                        if (anyNewPress) {
+                            flingJob?.cancel()
+                            flingJob = null
+                            vt = VelocityTracker()
+                            startedAtTop = state.value == 0
+                        }
+
+                        val change = event.changes.firstOrNull { it.pressed }
+
+                        if (change != null && change.previousPressed) {
+                            val rawDelta = change.position.y - change.previousPosition.y
+                            if (abs(rawDelta) > 0.5f) {
+                                change.consume()
+                                vt.addPosition(change.uptimeMillis, change.position)
+                                dragging = true
+
+                                val conn = pullRefreshConnection
+
+                                if (startedAtTop && rawDelta > 0) {
+                                    conn?.onPostScroll(
+                                        Offset.Zero, Offset(0f, rawDelta),
+                                        NestedScrollSource.UserInput
+                                    )
+                                } else {
+                                    val preConsumed = if (conn != null) {
+                                        conn.onPreScroll(Offset(0f, rawDelta), NestedScrollSource.UserInput)
+                                    } else Offset.Zero
+                                    val ourDelta = -rawDelta + preConsumed.y
+                                    state.dispatchRawDelta(ourDelta)
+                                }
+                            }
+                        } else if (change == null && dragging) {
+                            dragging = false
+                            val velocity = vt.calculateVelocity().y
+                            if (abs(velocity) > 50f) {
+                                flingJob = scope.launch {
+                                    var v = (-velocity).coerceIn(-5000f, 5000f)
+                                    while (abs(v) > 20f) {
+                                        delay(16L)
+                                        if (!isActive) break
+                                        val dt = 0.016f
+                                        v *= exp(-k * dt)
+                                        val scrollDelta = v * dt
+                                        if (abs(scrollDelta) < 0.5f) break
+                                        state.dispatchRawDelta(scrollDelta)
+                                    }
+                                }
+                            }
+                            vt = VelocityTracker()
+                        }
+                    }
+                }
+            },
+            verticalArrangement = verticalArrangement,
+            horizontalAlignment = horizontalAlignment,
+        ) {
+            content()
+        }
+    } else {
+        Column(
+            modifier = modifier.verticalScroll(state),
+            verticalArrangement = verticalArrangement,
+            horizontalAlignment = horizontalAlignment,
+        ) {
+            content()
+        }
     }
 }
