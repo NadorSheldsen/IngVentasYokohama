@@ -25,6 +25,7 @@ import com.megatransportes.yokoh.disableIosScrollBounce
 import com.megatransportes.yokoh.getPlatformName
 import kotlin.math.abs
 import kotlin.math.exp
+import kotlin.time.ExperimentalTime
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 import kotlinx.coroutines.Job
@@ -42,6 +43,7 @@ class PlatformFlingBehavior(
     private val k = 0.36f
     private var lastBoundaryHitMark: TimeMark? = null
 
+    @OptIn(ExperimentalTime::class)
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
         println("[FLING] START velocity=$initialVelocity")
         flingJobRef.job = currentCoroutineContext()[Job]
