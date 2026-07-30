@@ -78,6 +78,10 @@ class PlatformFlingBehavior(
                     break
                 }
 
+                if (flingJobRef.cancelled) {
+                    println("[FLING] STOP by cancelled flag (pre-scrollBy) v=$v frames=$frames")
+                    return 0f
+                }
                 val consumed = scrollBy(scrollDelta)
                 frames++
                 println("[FLING] FRAME v=$v delta=$scrollDelta consumed=$consumed frames=$frames")
@@ -124,40 +128,40 @@ fun PlatformLazyColumn(
     if (isIos) {
         val density = LocalDensity.current
         val noiseFloorPx = with(density) { 2.dp.toPx() }
-        val connection = remember {
+        val connection = remember(state) {
             var flingCooldown = 0
+            var lastLogOffset = -1
 
             object : NestedScrollConnection {
                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                    println("[NESTED] onPreScroll source=$source available.y=${available.y} cooldown=$flingCooldown")
+                    val scrollOffset = state.firstVisibleItemScrollOffset
+                    val firstItem = state.firstVisibleItemIndex
+                    if (scrollOffset != lastLogOffset) {
+                        println("[NESTED] offset=$scrollOffset firstItem=$firstItem cooldown=$flingCooldown")
+                        lastLogOffset = scrollOffset
+                    }
 
                     if (source == NestedScrollSource.UserInput) {
                         if (flingCooldown > 0) {
                             flingCooldown--
-                            if (abs(available.y) <= noiseFloorPx) {
-                                println("[NESTED] → ABSORB (fling cooldown) delta=${available.y}")
-                                flingJobRef.cancelled = true
-                                return Offset(0f, available.y)
-                            }
-                            println("[NESTED] → COOLDOWN cancelled by large delta=${available.y}")
-                            flingCooldown = 0
+                            flingJobRef.cancelled = true
+                            println("[NESTED] → ABSORB (fling cooldown left=$flingCooldown) delta=${available.y} offset=$scrollOffset")
+                            return Offset(0f, available.y)
                         }
                         if (abs(available.y) <= noiseFloorPx) {
-                            println("[NESTED] → ABSORB (noise floor) delta=${available.y}")
+                            println("[NESTED] → ABSORB (noise floor) delta=${available.y} offset=$scrollOffset")
                             return Offset(0f, available.y)
                         }
                     } else if (source == NestedScrollSource.Fling || source == NestedScrollSource.SideEffect) {
-                        flingCooldown = 5
-                        println("[NESTED] → MARK fling (cooldown=5, source=$source)")
+                        flingCooldown = 10
+                        println("[NESTED] → MARK fling (cooldown=10, source=$source) offset=$scrollOffset")
                     }
-                    println("[NESTED] → PASS delta=${available.y}")
                     return Offset.Zero
                 }
 
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                    if (source == NestedScrollSource.UserInput || source == NestedScrollSource.SideEffect || source == NestedScrollSource.Fling) {
-                        println("[NESTED] onPostScroll source=$source consumed.y=${consumed.y} available.y=${available.y}")
-                    }
+                    val scrollOffset = state.firstVisibleItemScrollOffset
+                    println("[NESTED] onPostScroll src=$source c.y=${consumed.y} a.y=${available.y} offset=$scrollOffset")
                     return Offset.Zero
                 }
             }
