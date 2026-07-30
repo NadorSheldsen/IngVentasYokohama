@@ -47,7 +47,7 @@ class PlatformFlingBehavior(
         if (bounceBackGuard > 0) {
             bounceBackGuard--
             println("[FLING] REJECT (bounce-back guard=$bounceBackGuard)")
-            return initialVelocity
+            return 0f
         }
 
         flingJobRef.job = currentCoroutineContext()[Job]
@@ -98,7 +98,7 @@ class PlatformFlingBehavior(
                 println("[FLING] FRAME v=$v delta=$scrollDelta consumed=$consumed frames=$frames")
 
                 if (abs(consumed) < abs(scrollDelta) * 0.5f) {
-                    bounceBackGuard = 3
+                    bounceBackGuard = 5
                     println("[FLING] STOP at boundary v=$v consumed=$consumed delta=$scrollDelta frames=$frames guard=$bounceBackGuard")
                     return 0f
                 }
@@ -162,8 +162,12 @@ fun PlatformLazyColumn(
                         }
                         if (abs(available.y) <= noiseFloorPx) {
                             println("[NESTED] → ABSORB (noise floor) delta=${available.y} offset=$scrollOffset")
+                            flingJobRef.cancelled = true
                             return Offset(0f, available.y)
                         }
+                        // El usuario realmente está haciendo scroll → reset guard
+                        bounceBackGuard = 0
+                        println("[NESTED] → PASS (real scroll) delta=${available.y}")
                     } else if (source == NestedScrollSource.Fling || source == NestedScrollSource.SideEffect) {
                         flingCooldown = 10
                         println("[NESTED] → MARK fling (cooldown=10, source=$source) offset=$scrollOffset")
