@@ -8,7 +8,7 @@ import com.russhwolf.settings.SharedPreferencesSettings
 
 actual fun getPlatformName(): String = "Android"
 
-actual fun disableIosScrollBounce(view: Any?) {
+actual fun disableIosScrollBounce() {
     // No-op en Android
 }
 

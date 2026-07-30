@@ -20,7 +20,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import com.megatransportes.yokoh.disableIosScrollBounce
 import com.megatransportes.yokoh.getPlatformName
@@ -174,7 +173,7 @@ fun PlatformLazyColumn(
         // Deshabilitar bounce nativo de UIScrollView en iOS
         LaunchedEffect(Unit) {
             withFrameNanos { }
-            disableIosScrollBounce(LocalView.current)
+            disableIosScrollBounce()
         }
     }
 
