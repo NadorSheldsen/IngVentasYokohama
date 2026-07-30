@@ -12,13 +12,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.unit.dp
 import com.megatransportes.yokoh.getPlatformName
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.exp
@@ -55,19 +57,17 @@ fun PlatformLazyColumn(
                         if (anyNewPress) {
                             flingJob?.cancel()
                             flingJob = null
-                            vt.reset()
-                            // El evento NO se consume → fluye hacia los hijos (botones)
+                            vt = VelocityTracker()
                         }
 
                         val change = event.changes.firstOrNull { it.pressed }
 
                         if (change != null && change.previousPressed) {
-                            val rawDelta = change.positionChange().y
+                            val rawDelta = change.position.y - change.previousPosition.y
                             if (abs(rawDelta) > 0.5f) {
                                 change.consume()
                                 vt.addPosition(change.uptimeMillis, change.position)
                                 dragging = true
-                                // Negar: finger arriba (−) → contenido abajo (+)
                                 state.dispatchRawDelta(-rawDelta)
                             }
                         } else if (change == null && dragging) {
@@ -87,7 +87,7 @@ fun PlatformLazyColumn(
                                     }
                                 }
                             }
-                            vt.reset()
+                            vt = VelocityTracker()
                         }
                     }
                 }
