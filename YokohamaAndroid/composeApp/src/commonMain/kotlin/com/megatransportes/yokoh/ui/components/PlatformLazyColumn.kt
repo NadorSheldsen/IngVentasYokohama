@@ -25,9 +25,6 @@ import com.megatransportes.yokoh.disableIosScrollBounce
 import com.megatransportes.yokoh.getPlatformName
 import kotlin.math.abs
 import kotlin.math.exp
-import kotlin.time.ExperimentalTime
-import kotlin.time.TimeMark
-import kotlin.time.TimeSource
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -41,24 +38,20 @@ class PlatformFlingBehavior(
     private val flingJobRef: FlingJobRef,
 ) : FlingBehavior {
     private val k = 0.36f
-    private var lastBoundaryHitMark: TimeMark? = null
+    private var bounceBackGuard = 0
 
-    @OptIn(ExperimentalTime::class)
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
-        println("[FLING] START velocity=$initialVelocity")
-        flingJobRef.job = currentCoroutineContext()[Job]
-        flingJobRef.cancelled = false
+        println("[FLING] START velocity=$initialVelocity guard=$bounceBackGuard")
 
         // Rechazar flings justo después de llegar a un borde (bounce-back)
-        val now = TimeSource.Monotonic.markNow()
-        if (lastBoundaryHitMark != null) {
-            val elapsed = now - lastBoundaryHitMark!!
-            if (elapsed.inWholeMilliseconds < 500L) {
-                println("[FLING] REJECT (bounce-back, ${elapsed.inWholeMilliseconds}ms after boundary)")
-                return initialVelocity
-            }
-            lastBoundaryHitMark = null
+        if (bounceBackGuard > 0) {
+            bounceBackGuard--
+            println("[FLING] REJECT (bounce-back guard=$bounceBackGuard)")
+            return initialVelocity
         }
+
+        flingJobRef.job = currentCoroutineContext()[Job]
+        flingJobRef.cancelled = false
         try {
             val clamped = initialVelocity.coerceIn(-5000f, 5000f)
             if (abs(clamped) < 50f) {
@@ -105,8 +98,8 @@ class PlatformFlingBehavior(
                 println("[FLING] FRAME v=$v delta=$scrollDelta consumed=$consumed frames=$frames")
 
                 if (abs(consumed) < abs(scrollDelta) * 0.5f) {
-                    lastBoundaryHitMark = TimeSource.Monotonic.markNow()
-                    println("[FLING] STOP at boundary v=$v consumed=$consumed delta=$scrollDelta frames=$frames")
+                    bounceBackGuard = 3
+                    println("[FLING] STOP at boundary v=$v consumed=$consumed delta=$scrollDelta frames=$frames guard=$bounceBackGuard")
                     return 0f
                 }
             }
