@@ -29,7 +29,7 @@ import com.megatransportes.yokoh.data.models.*
 import com.megatransportes.yokoh.data.repository.YokohamaRepository
 import kotlinx.coroutines.launch
 import com.megatransportes.yokoh.utils.ErrorUtils
-import com.megatransportes.yokoh.ui.components.BluetoothCaliperButton
+import com.megatransportes.yokoh.ui.components.BluetoothCaliperAutoListener
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -233,26 +233,19 @@ fun LlantaEditDialog(editing: Llanta?, onDismiss: () -> Unit, onSave: (LlantaCre
 
                 OutlinedTextField(value = medida, onValueChange = { medida = it }, label = { Text("Medida") }, modifier = Modifier.fillMaxWidth())
 
-                // MM field with Bluetooth caliper button
-                Row(
+                // MM field (el valor se llena automáticamente con el calibrador Bluetooth)
+                BluetoothCaliperAutoListener(
+                    onMeasurementReceived = { value ->
+                        mm = value.toString()
+                    }
+                )
+                OutlinedTextField(
+                    value = mm,
+                    onValueChange = { mm = it },
+                    label = { Text("Mm") },
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = mm,
-                        onValueChange = { mm = it },
-                        label = { Text("Mm") },
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-                    )
-                    BluetoothCaliperButton(
-                        onMeasurementReceived = { value ->
-                            mm = value.toString()
-                        },
-                        modifier = Modifier.size(44.dp)
-                    )
-                }
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                )
 
                 OutlinedTextField(value = precio, onValueChange = { precio = it }, label = { Text("Precio") }, modifier = Modifier.fillMaxWidth())
 

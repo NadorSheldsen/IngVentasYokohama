@@ -1,6 +1,7 @@
 package com.megatransportes.yokoh
 
 import android.os.Bundle
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.BackHandler
@@ -11,6 +12,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.russhwolf.settings.SharedPreferencesSettings
 import com.megatransportes.yokoh.utils.MicPlatformOverlay
+import com.megatransportes.yokoh.utils.BluetoothCaliperManager
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,5 +63,14 @@ class MainActivity : ComponentActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         com.megatransportes.yokoh.utils.SpeechRecognitionManager.onRequestPermissionsResult(requestCode, grantResults)
+    }
+
+    // Intercepta teclas del calibrador Bluetooth HID (dígitos + Enter) para
+    // evitar que escriban en el campo enfocado y salten entre campos.
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (BluetoothCaliperManager.processKeyEvent(event)) {
+            return true
+        }
+        return super.dispatchKeyEvent(event)
     }
 }

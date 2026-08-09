@@ -37,7 +37,7 @@ import com.megatransportes.yokoh.utils.ErrorUtils
 import com.megatransportes.yokoh.ui.components.MicButton
 import com.megatransportes.yokoh.ui.components.FieldDescriptor
 import com.megatransportes.yokoh.ui.components.FieldType
-import com.megatransportes.yokoh.ui.components.BluetoothCaliperButton
+import com.megatransportes.yokoh.ui.components.BluetoothCaliperAutoListener
 import com.megatransportes.yokoh.utils.getPlatformContext
 import com.megatransportes.yokoh.platform.getLastKnownLocation
 import com.megatransportes.yokoh.platform.Location as PlatformLocation
@@ -454,26 +454,19 @@ fun NuevaLlantaDesechoScreen(
             }
 
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = remanente,
-                        onValueChange = { remanente = it },
-                        label = { Text("Remanente (mm) *") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        isError = validationAttempted && remanente.toFloatOrNull() == null,
-                        modifier = Modifier.weight(1f)
-                    )
-                    BluetoothCaliperButton(
-                        onMeasurementReceived = { value ->
-                            remanente = value.toString()
-                        },
-                        modifier = Modifier.size(44.dp)
-                    )
-                }
+                BluetoothCaliperAutoListener(
+                    onMeasurementReceived = { value ->
+                        remanente = value.toString()
+                    }
+                )
+                OutlinedTextField(
+                    value = remanente,
+                    onValueChange = { remanente = it },
+                    label = { Text("Remanente (mm) *") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = validationAttempted && remanente.toFloatOrNull() == null,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
             item {

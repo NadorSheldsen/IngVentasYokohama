@@ -1,21 +1,15 @@
 package com.megatransportes.yokoh.utils
 
-import android.Manifest
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.hardware.input.InputManager
 import android.view.InputDevice
 import android.view.KeyEvent
-import androidx.core.content.ContextCompat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
 
 actual object BluetoothCaliperManager {
     private var _measurementFlow = MutableStateFlow<Float?>(null)
@@ -29,16 +23,6 @@ actual object BluetoothCaliperManager {
     actual fun startListening(platformContext: Any?) {
         val ctx = platformContext as? Context ?: return
         context = ctx
-        
-        // Verificar permisos Bluetooth
-        val bluetoothConnectPermission = ContextCompat.checkSelfPermission(ctx, Manifest.permission.BLUETOOTH_CONNECT)
-        val bluetoothScanPermission = ContextCompat.checkSelfPermission(ctx, Manifest.permission.BLUETOOTH_SCAN)
-        
-        if (bluetoothConnectPermission != PackageManager.PERMISSION_GRANTED || 
-            bluetoothScanPermission != PackageManager.PERMISSION_GRANTED) {
-            println("[BluetoothCaliperManager] Bluetooth permissions not granted")
-            return
-        }
         
         isListening = true
         inputBuffer.clear()
@@ -63,7 +47,11 @@ actual object BluetoothCaliperManager {
             addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
             addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
         }
-        ctx.registerReceiver(bluetoothReceiver, filter)
+        try {
+            ctx.registerReceiver(bluetoothReceiver, filter)
+        } catch (_: SecurityException) {
+            // On Android 12+ ACTION_ACL_CONNECTED requires BLUETOOTH_CONNECT; the receiver is only for logging.
+        }
         
         println("[BluetoothCaliperManager] Started listening for Bluetooth caliper input")
     }

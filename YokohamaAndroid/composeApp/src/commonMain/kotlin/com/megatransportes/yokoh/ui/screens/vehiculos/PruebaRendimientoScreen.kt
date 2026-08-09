@@ -58,7 +58,7 @@ import com.megatransportes.yokoh.data.models.*
 import com.megatransportes.yokoh.ui.components.MicButton
 import com.megatransportes.yokoh.ui.components.FieldDescriptor
 import com.megatransportes.yokoh.ui.components.FieldType
-import com.megatransportes.yokoh.ui.components.BluetoothCaliperButton
+import com.megatransportes.yokoh.ui.components.BluetoothCaliperAutoListener
 import com.megatransportes.yokoh.ui.screens.parametros.LlantasAdminScreen
 import com.megatransportes.yokoh.ui.screens.parametros.ParametrosListScreen
 import com.megatransportes.yokoh.ui.screens.parametros.EditParametroScreen
@@ -1504,48 +1504,44 @@ private fun LlantaRendimientoForm(
                     LaunchedEffect(data.mm4) { if (data.mm4 != mm4StateLocal.text) mm4StateLocal = TextFieldValue(data.mm4) }
                     LaunchedEffect(mm4FocusedLocal) { if (mm4FocusedLocal) mm4StateLocal = mm4StateLocal.copy(selection = TextRange(0, mm4StateLocal.text.length)) }
 
+                    BluetoothCaliperAutoListener(
+                        onMeasurementReceived = { value ->
+                            // Llenar el primer campo MM vacío con la medición
+                            when {
+                                data.mm1.isBlank() -> {
+                                    val allowedMax = min(lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1, 25.4f)
+                                    val finalValue = if (value > allowedMax) allowedMax else value
+                                    onDataChange(data.copy(mm1 = finalValue.toString()))
+                                }
+                                data.mm2.isBlank() -> {
+                                    val allowedMax = min(lastRecorded?.LlantasRendimientoMm2 ?: llanta.LlantasVehiculosMM2, 25.4f)
+                                    val finalValue = if (value > allowedMax) allowedMax else value
+                                    onDataChange(data.copy(mm2 = finalValue.toString()))
+                                }
+                                data.mm3.isBlank() -> {
+                                    val allowedMax = min(lastRecorded?.LlantasRendimientoMm3 ?: llanta.LlantasVehiculosMM3, 25.4f)
+                                    val finalValue = if (value > allowedMax) allowedMax else value
+                                    onDataChange(data.copy(mm3 = finalValue.toString()))
+                                }
+                                data.mm4.isBlank() -> {
+                                    val allowedMax = min(lastRecorded?.LlantasRendimientoMm4 ?: llanta.LlantasVehiculosMM4, 25.4f)
+                                    val finalValue = if (value > allowedMax) allowedMax else value
+                                    onDataChange(data.copy(mm4 = finalValue.toString()))
+                                }
+                                else -> {
+                                    // Si todos están llenos, actualizar MM1
+                                    val allowedMax = min(lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1, 25.4f)
+                                    val finalValue = if (value > allowedMax) allowedMax else value
+                                    onDataChange(data.copy(mm1 = finalValue.toString()))
+                                }
+                            }
+                        }
+                    )
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-
-                        // Bluetooth Caliper Button
-                        BluetoothCaliperButton(
-                            onMeasurementReceived = { value ->
-                                // Llenar el primer campo MM vacío con la medición
-                                when {
-                                    data.mm1.isBlank() -> {
-                                        val allowedMax = min(lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1, 25.4f)
-                                        val finalValue = if (value > allowedMax) allowedMax else value
-                                        onDataChange(data.copy(mm1 = finalValue.toString()))
-                                    }
-                                    data.mm2.isBlank() -> {
-                                        val allowedMax = min(lastRecorded?.LlantasRendimientoMm2 ?: llanta.LlantasVehiculosMM2, 25.4f)
-                                        val finalValue = if (value > allowedMax) allowedMax else value
-                                        onDataChange(data.copy(mm2 = finalValue.toString()))
-                                    }
-                                    data.mm3.isBlank() -> {
-                                        val allowedMax = min(lastRecorded?.LlantasRendimientoMm3 ?: llanta.LlantasVehiculosMM3, 25.4f)
-                                        val finalValue = if (value > allowedMax) allowedMax else value
-                                        onDataChange(data.copy(mm3 = finalValue.toString()))
-                                    }
-                                    data.mm4.isBlank() -> {
-                                        val allowedMax = min(lastRecorded?.LlantasRendimientoMm4 ?: llanta.LlantasVehiculosMM4, 25.4f)
-                                        val finalValue = if (value > allowedMax) allowedMax else value
-                                        onDataChange(data.copy(mm4 = finalValue.toString()))
-                                    }
-                                    else -> {
-                                        // Si todos están llenos, actualizar MM1
-                                        val allowedMax = min(lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1, 25.4f)
-                                        val finalValue = if (value > allowedMax) allowedMax else value
-                                        onDataChange(data.copy(mm1 = finalValue.toString()))
-                                    }
-                                }
-                            },
-                            modifier = Modifier.size(44.dp)
-                        )
-
-                        // MM1
                         CompactOutlinedTextField(
                             value = mm1StateLocal,
                             onValueChange = {
