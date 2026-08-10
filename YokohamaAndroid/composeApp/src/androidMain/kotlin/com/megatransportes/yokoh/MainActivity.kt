@@ -68,6 +68,7 @@ class MainActivity : ComponentActivity() {
     // Intercepta teclas del calibrador Bluetooth HID (dígitos + Enter) para
     // evitar que escriban en el campo enfocado y salten entre campos.
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        android.util.Log.d("Mitutoyo", "dispatchKeyEvent: keyCode=${event.keyCode} action=${event.action} uni=${event.unicodeChar} print=${event.isPrintingKey}")
         if (BluetoothCaliperManager.processKeyEvent(event)) {
             return true
         }

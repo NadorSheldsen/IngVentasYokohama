@@ -6,19 +6,23 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.hardware.input.InputManager
+import android.os.Handler
+import android.os.Looper
 import android.view.InputDevice
 import android.view.KeyEvent
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 actual object BluetoothCaliperManager {
-    private var _measurementFlow = MutableStateFlow<Float?>(null)
+    private val _measurementFlow = MutableSharedFlow<Float?>(extraBufferCapacity = 1)
     private var isListening = false
     private var context: Context? = null
-    private var inputBuffer = StringBuilder()
     private var bluetoothReceiver: BroadcastReceiver? = null
+    private val inputBuffer = StringBuilder()
+    private val flushHandler = Handler(Looper.getMainLooper())
+    private val flushRunnable = Runnable { commitBuffer() }
     
-    actual val measurementFlow: kotlinx.coroutines.flow.Flow<Float?> = _measurementFlow
+    actual val measurementFlow: Flow<Float?> = _measurementFlow
     
     actual fun startListening(platformContext: Any?) {
         val ctx = platformContext as? Context ?: return
@@ -26,6 +30,7 @@ actual object BluetoothCaliperManager {
         
         isListening = true
         inputBuffer.clear()
+        flushHandler.removeCallbacks(flushRunnable)
         
         // Registrar receiver para detectar conexión de dispositivos Bluetooth HID
         bluetoothReceiver = object : BroadcastReceiver() {
@@ -58,16 +63,15 @@ actual object BluetoothCaliperManager {
     
     actual suspend fun stopAndGet(): Float? {
         isListening = false
-        val result = _measurementFlow.value
-        _measurementFlow.value = null
+        flushHandler.removeCallbacks(flushRunnable)
         inputBuffer.clear()
         
         context?.unregisterReceiver(bluetoothReceiver)
         bluetoothReceiver = null
         context = null
         
-        println("[BluetoothCaliperManager] Stopped listening, returning: $result")
-        return result
+        println("[BluetoothCaliperManager] Stopped listening")
+        return null
     }
     
     actual fun isConnected(): Boolean {
@@ -75,45 +79,91 @@ actual object BluetoothCaliperManager {
     }
     
     /**
-     * Función para procesar entrada de teclado (debe ser llamada desde el dispatchKeyEvent)
-     * Esta función detecta patrones típicos de calibradores Bluetooth HID (números seguidos de Enter)
+     * Procesa entrada de teclado (debe ser llamada desde el dispatchKeyEvent).
+     *
+     * Los calibradores Mitutoyo Bluetooth (U-WAVE / U-WAVE fit) se comportan como un
+     * teclado HID: escriben la medición (dígitos + punto decimal) y después un terminador
+     * (Enter, Tab o CR) que en la mayoría de apps mueve el foco al siguiente campo.
+     *
+     * Estrategia según la documentación:
+     *  - Se consumen los caracteres de la medición (dígitos, punto, signo, borrado) para
+     *    que NO se escriban directamente en el campo y no se produzcan entradas dobles.
+     *  - Se acumulan en un buffer.
+     *  - La medición se publica cuando llega el terminador (Enter/Tab) O cuando dejan de
+     *    llegar caracteres durante un breve instante (inactividad), porque algunos
+     *    calibradores no envían un terminador reconocible.
+     *  - El terminador se consume para que no mueva el foco (evita el salto entre campos).
+     *  - El valor publicado se coloca en el campo enfocado (o primero vacío) por la pantalla.
      */
     fun processKeyEvent(event: KeyEvent): Boolean {
-        if (!isListening) return false
-        
-        if (event.action == KeyEvent.ACTION_DOWN) {
-            // Si es un dígito o punto decimal, agregar al buffer
-            if (event.isPrintingKey) {
-                val keyChar = event.unicodeChar.toChar()
-                if (keyChar in '0'..'9' || keyChar == '.') {
-                    inputBuffer.append(keyChar)
-                    return true
-                }
-            }
-            
-            // Si es Enter o similar, procesar el buffer como medición
-            if (event.keyCode == KeyEvent.KEYCODE_ENTER || 
-                event.keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER) {
-                val value = inputBuffer.toString().toFloatOrNull()
-                if (value != null) {
-                    _measurementFlow.value = value
-                    println("[BluetoothCaliperManager] Measurement received: $value")
-                }
-                inputBuffer.clear()
+        if (!isListening) {
+            android.util.Log.d("Mitutoyo", "processKeyEvent: NOT listening")
+            return false
+        }
+        if (event.action != KeyEvent.ACTION_DOWN) return false
+
+        when (event.keyCode) {
+            in KeyEvent.KEYCODE_0..KeyEvent.KEYCODE_9 -> {
+                val digit = ('0'.code + event.keyCode - KeyEvent.KEYCODE_0).toChar()
+                inputBuffer.append(digit)
+                scheduleFlush()
                 return true
             }
-            
-            // Si es backspace, eliminar del buffer
-            if (event.keyCode == KeyEvent.KEYCODE_DEL || 
-                event.keyCode == KeyEvent.KEYCODE_FORWARD_DEL) {
+            in KeyEvent.KEYCODE_NUMPAD_0..KeyEvent.KEYCODE_NUMPAD_9 -> {
+                val digit = ('0'.code + event.keyCode - KeyEvent.KEYCODE_NUMPAD_0).toChar()
+                inputBuffer.append(digit)
+                scheduleFlush()
+                return true
+            }
+            KeyEvent.KEYCODE_PERIOD, KeyEvent.KEYCODE_NUMPAD_DOT, KeyEvent.KEYCODE_COMMA -> {
+                if (!inputBuffer.contains('.')) {
+                    if (inputBuffer.isEmpty()) inputBuffer.append('0')
+                    inputBuffer.append('.')
+                }
+                scheduleFlush()
+                return true
+            }
+            KeyEvent.KEYCODE_MINUS, KeyEvent.KEYCODE_NUMPAD_SUBTRACT -> {
+                if (inputBuffer.isEmpty()) inputBuffer.append('-')
+                scheduleFlush()
+                return true
+            }
+            KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_FORWARD_DEL -> {
                 if (inputBuffer.isNotEmpty()) {
                     inputBuffer.deleteCharAt(inputBuffer.length - 1)
                 }
+                scheduleFlush()
+                return true
+            }
+            KeyEvent.KEYCODE_ENTER,
+            KeyEvent.KEYCODE_NUMPAD_ENTER,
+            KeyEvent.KEYCODE_TAB -> {
+                android.util.Log.d("Mitutoyo", "processKeyEvent: terminator key, buffer='$inputBuffer'")
+                commitBuffer()
                 return true
             }
         }
-        
+
+        android.util.Log.d("Mitutoyo", "processKeyEvent: unhandled key ${event.keyCode} (uni=${event.unicodeChar})")
         return false
+    }
+
+    private fun scheduleFlush() {
+        flushHandler.removeCallbacks(flushRunnable)
+        flushHandler.postDelayed(flushRunnable, 400)
+    }
+
+    private fun commitBuffer() {
+        flushHandler.removeCallbacks(flushRunnable)
+        if (inputBuffer.isEmpty()) return
+        val raw = inputBuffer.toString()
+        val value = raw.toFloatOrNull()
+        inputBuffer.clear()
+        android.util.Log.d("Mitutoyo", "commitBuffer: raw='$raw' value=$value")
+        if (value != null) {
+            _measurementFlow.tryEmit(value)
+            println("[BluetoothCaliperManager] Measurement received: $value")
+        }
     }
     
     /**

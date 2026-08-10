@@ -233,7 +233,7 @@ fun LlantaEditDialog(editing: Llanta?, onDismiss: () -> Unit, onSave: (LlantaCre
 
                 OutlinedTextField(value = medida, onValueChange = { medida = it }, label = { Text("Medida") }, modifier = Modifier.fillMaxWidth())
 
-                // MM field (el valor se llena automáticamente con el calibrador Bluetooth)
+                // MM field (el valor se coloca en el campo enfocado con el calibrador Bluetooth)
                 BluetoothCaliperAutoListener(
                     onMeasurementReceived = { value ->
                         mm = value.toString()

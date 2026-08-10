@@ -122,6 +122,8 @@ fun PruebaRendimientoScreen(
     val scrollState = rememberScrollState()
     var showLlantasAdmin by remember { mutableStateOf(false) }
     var catalogRefreshKey by remember { mutableStateOf(0) }
+    // Formulario activo para el calibrador Bluetooth: solo este responde a la medición
+    var activeFormIndex by remember { mutableStateOf(0) }
     // Incrementar key cuando se cierra LlantasAdmin o ParametrosDialog para refrescar catálogos
     LaunchedEffect(showLlantasAdmin) { if (!showLlantasAdmin) catalogRefreshKey++ }
     var showParametrosDialog by remember { mutableStateOf(false) }
@@ -694,6 +696,11 @@ fun PruebaRendimientoScreen(
                     CircularProgressIndicator()
                 }
             } else {
+                // 4 focus requesters por posición para que el calibrador pueda saltar
+                // al mm1 del siguiente formulario editable tras llenar mm4.
+                val formFocusRequesters = remember(displayedLlantas.size) {
+                    Array(displayedLlantas.size) { List(4) { FocusRequester() } }
+                }
                 displayedLlantas.forEachIndexed { index, llanta ->
                     if (llanta == null) {
                         // Slot para montar nueva llanta en esta posición
@@ -774,6 +781,15 @@ fun PruebaRendimientoScreen(
                                 catalogRefreshKey = catalogRefreshKey
                             )
                         } else {
+                        val nextEditableIndex = (index + 1 until displayedLlantas.size)
+                            .firstOrNull { j ->
+                                val l = displayedLlantas[j]
+                                if (l == null) return@firstOrNull false
+                                val d = llantasData.getOrNull(j)
+                                val lst = lastRendimientoMap[l.idLlantasVehiculos]
+                                !(d?.pTerminada == true || lst?.LlantasRendimientoPTerminada == 1)
+                            }
+                        val nextFormMm1Requester = nextEditableIndex?.let { formFocusRequesters.getOrNull(it)?.getOrNull(0) }
                         LlantaRendimientoForm(
                             index = index + 1,
                             llanta = llanta,
@@ -782,6 +798,8 @@ fun PruebaRendimientoScreen(
                             repository = repository,
                             canTerminatePrueba = canTerminatePrueba,
                             showValidationErrors = validationAttempted,
+                            isActive = index == activeFormIndex,
+                            onFormActivated = { activeFormIndex = index },
                             onRequestTerminarConfirm = { id ->
                                 llantaIdPendienteTerminar = id
                                 showConfirmTerminarDialog = true
@@ -793,7 +811,9 @@ fun PruebaRendimientoScreen(
                                     while (size <= index) add(LlantaRendimientoFormData())
                                     this[index] = newData
                                 }
-                            }
+                            },
+                            focusRequesters = formFocusRequesters[index],
+                            nextFormMm1Requester = nextFormMm1Requester
                         )
                         }
                     }
@@ -1073,10 +1093,14 @@ private fun LlantaRendimientoForm(
     repository: YokohamaRepository,
     canTerminatePrueba: Boolean,
     showValidationErrors: Boolean,
+    isActive: Boolean,
+    onFormActivated: () -> Unit,
     onRequestTerminarConfirm: (Int) -> Unit,
     onDataChange: (LlantaRendimientoFormData) -> Unit,
     onOpenBitacora: (llantaVehiculo: com.megatransportes.yokoh.data.models.LlantaVehiculo) -> Unit = {},
-    onOpenLlantasAdmin: (() -> Unit)? = null
+    onOpenLlantasAdmin: (() -> Unit)? = null,
+    focusRequesters: List<FocusRequester>,
+    nextFormMm1Requester: FocusRequester?
 ) {
     val coroutineScope = rememberCoroutineScope()
     var isLoadingFile by remember { mutableStateOf(false) }
@@ -1091,11 +1115,23 @@ private fun LlantaRendimientoForm(
     
     // 'condPel' (Condición peligrosa) is now manual-only and not derived from MM values.
     // Focus requesters for MM inputs so IME Next/Done moves between fields
-    val focusRequester1 = remember { FocusRequester() }
-    val focusRequester2 = remember { FocusRequester() }
-    val focusRequester3 = remember { FocusRequester() }
-    val focusRequester4 = remember { FocusRequester() }
+    val focusRequester1 = focusRequesters[0]
+    val focusRequester2 = focusRequesters[1]
+    val focusRequester3 = focusRequesters[2]
+    val focusRequester4 = focusRequesters[3]
     val focusManager = LocalFocusManager.current
+
+    // Foco post-composición para el calibrador: se asigna desde el callback de
+    // medición y se aplica en un LaunchedEffect (tras la composición) con try/catch,
+    // evitando que requestFocus() desde el colector crashee la app.
+    var pendingCaliperFocus by remember { mutableStateOf<FocusRequester?>(null) }
+    LaunchedEffect(pendingCaliperFocus) {
+        val target = pendingCaliperFocus
+        if (target != null) {
+            try { target.requestFocus() } catch (_: Exception) {}
+            pendingCaliperFocus = null
+        }
+    }
 
     var showExtras by remember { mutableStateOf(false) }
 
@@ -1504,39 +1540,83 @@ private fun LlantaRendimientoForm(
                     LaunchedEffect(data.mm4) { if (data.mm4 != mm4StateLocal.text) mm4StateLocal = TextFieldValue(data.mm4) }
                     LaunchedEffect(mm4FocusedLocal) { if (mm4FocusedLocal) mm4StateLocal = mm4StateLocal.copy(selection = TextRange(0, mm4StateLocal.text.length)) }
 
+                    if (isActive) {
                     BluetoothCaliperAutoListener(
                         onMeasurementReceived = { value ->
-                            // Llenar el primer campo MM vacío con la medición
+                            val mm1AllowedMax = min(lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1, 25.4f)
+                            val mm2AllowedMax = min(lastRecorded?.LlantasRendimientoMm2 ?: llanta.LlantasVehiculosMM2, 25.4f)
+                            val mm3AllowedMax = min(lastRecorded?.LlantasRendimientoMm3 ?: llanta.LlantasVehiculosMM3, 25.4f)
+                            val mm4AllowedMax = min(lastRecorded?.LlantasRendimientoMm4 ?: llanta.LlantasVehiculosMM4, 25.4f)
+                            val clamp = { v: Float, max: Float -> if (v > max) max else v }
+
+                            // Colocar la medición en el campo MM enfocado (reemplazando su valor),
+                            // o en el primero vacío cuando no hay campo enfocado,
+                            // y luego avanzar el foco al siguiente campo MM.
+                            // Se actualiza TANTO el estado local (visual inmediato) como el data
+                            // (persistente), evitando que un LaunchedEffect posterior lo revierta.
                             when {
+                                mm1FocusedLocal -> {
+                                    val final = clamp(value, mm1AllowedMax).toString()
+                                    mm1StateLocal = TextFieldValue(final, selection = TextRange(final.length))
+                                    onDataChange(data.copy(mm1 = final))
+                                    pendingCaliperFocus = focusRequester2
+                                }
+                                mm2FocusedLocal -> {
+                                    val final = clamp(value, mm2AllowedMax).toString()
+                                    mm2StateLocal = TextFieldValue(final, selection = TextRange(final.length))
+                                    onDataChange(data.copy(mm2 = final))
+                                    pendingCaliperFocus = focusRequester3
+                                }
+                                mm3FocusedLocal -> {
+                                    val final = clamp(value, mm3AllowedMax).toString()
+                                    mm3StateLocal = TextFieldValue(final, selection = TextRange(final.length))
+                                    onDataChange(data.copy(mm3 = final))
+                                    pendingCaliperFocus = focusRequester4
+                                }
+                                mm4FocusedLocal -> {
+                                    val final = clamp(value, mm4AllowedMax).toString()
+                                    mm4StateLocal = TextFieldValue(final, selection = TextRange(final.length))
+                                    onDataChange(data.copy(mm4 = final))
+                                    // Saltar al mm1 del siguiente formulario editable; si no hay,
+                                    // limpiar el foco sin crashear (el valor ya quedó persistido).
+                                    val next = nextFormMm1Requester
+                                    if (next != null) pendingCaliperFocus = next else focusManager.clearFocus()
+                                }
                                 data.mm1.isBlank() -> {
-                                    val allowedMax = min(lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1, 25.4f)
-                                    val finalValue = if (value > allowedMax) allowedMax else value
-                                    onDataChange(data.copy(mm1 = finalValue.toString()))
+                                    val final = clamp(value, mm1AllowedMax).toString()
+                                    mm1StateLocal = TextFieldValue(final, selection = TextRange(final.length))
+                                    onDataChange(data.copy(mm1 = final))
+                                    pendingCaliperFocus = focusRequester2
                                 }
                                 data.mm2.isBlank() -> {
-                                    val allowedMax = min(lastRecorded?.LlantasRendimientoMm2 ?: llanta.LlantasVehiculosMM2, 25.4f)
-                                    val finalValue = if (value > allowedMax) allowedMax else value
-                                    onDataChange(data.copy(mm2 = finalValue.toString()))
+                                    val final = clamp(value, mm2AllowedMax).toString()
+                                    mm2StateLocal = TextFieldValue(final, selection = TextRange(final.length))
+                                    onDataChange(data.copy(mm2 = final))
+                                    pendingCaliperFocus = focusRequester3
                                 }
                                 data.mm3.isBlank() -> {
-                                    val allowedMax = min(lastRecorded?.LlantasRendimientoMm3 ?: llanta.LlantasVehiculosMM3, 25.4f)
-                                    val finalValue = if (value > allowedMax) allowedMax else value
-                                    onDataChange(data.copy(mm3 = finalValue.toString()))
+                                    val final = clamp(value, mm3AllowedMax).toString()
+                                    mm3StateLocal = TextFieldValue(final, selection = TextRange(final.length))
+                                    onDataChange(data.copy(mm3 = final))
+                                    pendingCaliperFocus = focusRequester4
                                 }
                                 data.mm4.isBlank() -> {
-                                    val allowedMax = min(lastRecorded?.LlantasRendimientoMm4 ?: llanta.LlantasVehiculosMM4, 25.4f)
-                                    val finalValue = if (value > allowedMax) allowedMax else value
-                                    onDataChange(data.copy(mm4 = finalValue.toString()))
+                                    val final = clamp(value, mm4AllowedMax).toString()
+                                    mm4StateLocal = TextFieldValue(final, selection = TextRange(final.length))
+                                    onDataChange(data.copy(mm4 = final))
+                                    val next = nextFormMm1Requester
+                                    if (next != null) pendingCaliperFocus = next else focusManager.clearFocus()
                                 }
                                 else -> {
-                                    // Si todos están llenos, actualizar MM1
-                                    val allowedMax = min(lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1, 25.4f)
-                                    val finalValue = if (value > allowedMax) allowedMax else value
-                                    onDataChange(data.copy(mm1 = finalValue.toString()))
+                                    val final = clamp(value, mm1AllowedMax).toString()
+                                    mm1StateLocal = TextFieldValue(final, selection = TextRange(final.length))
+                                    onDataChange(data.copy(mm1 = final))
+                                    pendingCaliperFocus = focusRequester2
                                 }
                             }
                         }
                     )
+                    }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1555,7 +1635,7 @@ private fun LlantaRendimientoForm(
                             label = "MM",
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(onNext = { focusRequester2.requestFocus() }),
-                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester1).onFocusChanged { mm1FocusedLocal = it.isFocused },
+                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester1).onFocusChanged { mm1FocusedLocal = it.isFocused; if (it.isFocused) onFormActivated() },
                             singleLine = true,
                             enabled = !data.pTerminada,
                             isError = showValidationErrors && (data.mm1.isBlank() || data.mm1.toFloatOrNull() == null)
@@ -1575,7 +1655,7 @@ private fun LlantaRendimientoForm(
                             label = "MM",
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(onNext = { focusRequester3.requestFocus() }),
-                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester2).onFocusChanged { mm2FocusedLocal = it.isFocused },
+                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester2).onFocusChanged { mm2FocusedLocal = it.isFocused; if (it.isFocused) onFormActivated() },
                             singleLine = true,
                             enabled = !data.pTerminada,
                             isError = showValidationErrors && !data.pTerminada && (data.mm2.isBlank() || data.mm2.toFloatOrNull() == null)
@@ -1595,7 +1675,7 @@ private fun LlantaRendimientoForm(
                             label = "MM",
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(onNext = { focusRequester4.requestFocus() }),
-                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester3).onFocusChanged { mm3FocusedLocal = it.isFocused },
+                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester3).onFocusChanged { mm3FocusedLocal = it.isFocused; if (it.isFocused) onFormActivated() },
                             singleLine = true,
                             enabled = !data.pTerminada,
                             isError = showValidationErrors && !data.pTerminada && (data.mm3.isBlank() || data.mm3.toFloatOrNull() == null)
@@ -1615,7 +1695,7 @@ private fun LlantaRendimientoForm(
                             label = "MM",
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester4).onFocusChanged { mm4FocusedLocal = it.isFocused },
+                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester4).onFocusChanged { mm4FocusedLocal = it.isFocused; if (it.isFocused) onFormActivated() },
                             singleLine = true,
                             enabled = !data.pTerminada,
                             isError = showValidationErrors && !data.pTerminada && (data.mm4.isBlank() || data.mm4.toFloatOrNull() == null)
