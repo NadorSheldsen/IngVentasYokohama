@@ -16,8 +16,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Keyboard
-import androidx.compose.material.icons.outlined.Keyboard
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material3.*
@@ -127,8 +125,6 @@ fun PruebaRendimientoScreen(
     var catalogRefreshKey by remember { mutableStateOf(0) }
     // Formulario activo para el calibrador Bluetooth: solo este responde a la medición
     var activeFormIndex by remember { mutableStateOf(0) }
-    // Toggle manual de teclado en pantalla (el calibrador HID suprime el soft keyboard)
-    var softKeyboardForced by remember { mutableStateOf(false) }
     // Incrementar key cuando se cierra LlantasAdmin o ParametrosDialog para refrescar catálogos
     LaunchedEffect(showLlantasAdmin) { if (!showLlantasAdmin) catalogRefreshKey++ }
     var showParametrosDialog by remember { mutableStateOf(false) }
@@ -638,27 +634,6 @@ fun PruebaRendimientoScreen(
                     }
                 },
                 actions = {
-                    if (canTerminatePrueba) {
-                        // Toggle manual de teclado en pantalla: el calibrador HID
-                        // hace que el sistema suprima el soft keyboard.
-                        val softwareKeyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
-                        val platformCtx = getPlatformContext()
-                        IconButton(onClick = {
-                            if (softKeyboardForced) {
-                                softwareKeyboardController?.hide()
-                            } else {
-                                softwareKeyboardController?.show()
-                                forceShowSoftwareKeyboard(platformCtx)
-                            }
-                            softKeyboardForced = !softKeyboardForced
-                        }) {
-                            Icon(
-                                imageVector = if (softKeyboardForced) Icons.Default.Keyboard else Icons.Outlined.Keyboard,
-                                contentDescription = if (softKeyboardForced) "Ocultar teclado en pantalla" else "Mostrar teclado en pantalla",
-                                tint = if (softKeyboardForced) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
                     IconButton(onClick = onHome) {
                         Icon(imageVector = Icons.Default.Home, contentDescription = "Home")
                     }
@@ -839,8 +814,7 @@ fun PruebaRendimientoScreen(
                                 }
                             },
                             focusRequesters = formFocusRequesters[index],
-                            nextFormMm1Requester = nextFormMm1Requester,
-                            softKeyboardForced = softKeyboardForced
+                            nextFormMm1Requester = nextFormMm1Requester
                         )
                         }
                     }
@@ -1128,7 +1102,6 @@ private fun LlantaRendimientoForm(
     onOpenLlantasAdmin: (() -> Unit)? = null,
     focusRequesters: List<FocusRequester>,
     nextFormMm1Requester: FocusRequester?,
-    softKeyboardForced: Boolean = false
 ) {
     val coroutineScope = rememberCoroutineScope()
     var isLoadingFile by remember { mutableStateOf(false) }
@@ -1559,12 +1532,11 @@ private fun LlantaRendimientoForm(
                     var mm2FocusedLocal by remember { mutableStateOf(false) }
                     var mm3FocusedLocal by remember { mutableStateOf(false) }
                     var mm4FocusedLocal by remember { mutableStateOf(false) }
-                    // Re-forzar el teclado en pantalla cuando el toggle está activo y el usuario
-                    // enfoca/cambia entre campos MM, ya que el calibrador HID hace que el sistema
-                    // suprima el soft keyboard.
+                    // El calibrador HID hace que el sistema suprima el soft keyboard; forzarlo
+                    // cada vez que se enfoca un campo MM para poder tipear manualmente.
                     val platformContextForKeyboard = getPlatformContext()
-                    LaunchedEffect(softKeyboardForced, mm1FocusedLocal, mm2FocusedLocal, mm3FocusedLocal, mm4FocusedLocal, isActive) {
-                        if (softKeyboardForced && isActive && (mm1FocusedLocal || mm2FocusedLocal || mm3FocusedLocal || mm4FocusedLocal)) {
+                    LaunchedEffect(mm1FocusedLocal, mm2FocusedLocal, mm3FocusedLocal, mm4FocusedLocal, isActive) {
+                        if (isActive && (mm1FocusedLocal || mm2FocusedLocal || mm3FocusedLocal || mm4FocusedLocal)) {
                             forceShowSoftwareKeyboard(platformContextForKeyboard)
                         }
                     }
