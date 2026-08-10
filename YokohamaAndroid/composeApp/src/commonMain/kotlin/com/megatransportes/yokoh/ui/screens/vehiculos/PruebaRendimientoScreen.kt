@@ -47,7 +47,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.platform.LocalFocusManager
 import com.megatransportes.yokoh.utils.getPlatformContext
-import com.megatransportes.yokoh.utils.forceShowSoftwareKeyboard
+import com.megatransportes.yokoh.utils.isPhysicalKeyboardConnected
+import com.megatransportes.yokoh.ui.components.NumericKeypad
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.foundation.shape.CircleShape
@@ -71,6 +72,7 @@ import com.megatransportes.yokoh.utils.InitializeFilePickerIfNeeded
 import com.megatransportes.yokoh.ui.components.PhotoPickerDialog
 import com.megatransportes.yokoh.ui.components.PhotoSlot
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import androidx.compose.ui.text.font.FontWeight
 import com.megatransportes.yokoh.utils.ErrorUtils
 import com.megatransportes.yokoh.platform.getLastKnownLocation
@@ -1532,12 +1534,14 @@ private fun LlantaRendimientoForm(
                     var mm2FocusedLocal by remember { mutableStateOf(false) }
                     var mm3FocusedLocal by remember { mutableStateOf(false) }
                     var mm4FocusedLocal by remember { mutableStateOf(false) }
-                    // El calibrador HID hace que el sistema suprima el soft keyboard; forzarlo
-                    // cada vez que se enfoca un campo MM para poder tipear manualmente.
+                    // El calibrador HID hace que el sistema suprima el soft keyboard: detectar la
+                    // presencia de teclado físico y mostrar el teclado numérico propio de la app.
                     val platformContextForKeyboard = getPlatformContext()
-                    LaunchedEffect(mm1FocusedLocal, mm2FocusedLocal, mm3FocusedLocal, mm4FocusedLocal, isActive) {
-                        if (isActive && (mm1FocusedLocal || mm2FocusedLocal || mm3FocusedLocal || mm4FocusedLocal)) {
-                            forceShowSoftwareKeyboard(platformContextForKeyboard)
+                    var physicalKeyboardConnected by remember { mutableStateOf(false) }
+                    LaunchedEffect(isActive) {
+                        while (true) {
+                            physicalKeyboardConnected = isPhysicalKeyboardConnected(platformContextForKeyboard)
+                            delay(400)
                         }
                     }
                     LaunchedEffect(data.mm1) { if (data.mm1 != mm1StateLocal.text) mm1StateLocal = TextFieldValue(data.mm1) }
@@ -1714,6 +1718,65 @@ private fun LlantaRendimientoForm(
                             singleLine = true,
                             enabled = !data.pTerminada,
                             isError = showValidationErrors && !data.pTerminada && (data.mm4.isBlank() || data.mm4.toFloatOrNull() == null)
+                        )
+                    }
+
+                    // Teclado numérico propio: se muestra cuando hay un teclado físico (HID)
+                    // conectado (el calibrador) y un campo MM tiene el foco, porque en ese
+                    // caso el sistema operativo oculta el teclado en pantalla. Al ser UI de
+                    // la app, funciona igual en iOS y Android.
+                    if (physicalKeyboardConnected && (mm1FocusedLocal || mm2FocusedLocal || mm3FocusedLocal || mm4FocusedLocal)) {
+                        val focusedMm = when {
+                            mm1FocusedLocal -> 1
+                            mm2FocusedLocal -> 2
+                            mm3FocusedLocal -> 3
+                            else -> 4
+                        }
+                        val allowedMax = when (focusedMm) {
+                            1 -> min(lastRecorded?.LlantasRendimientoMm1 ?: llanta.LlantasVehiculosMM1, 25.4f)
+                            2 -> min(lastRecorded?.LlantasRendimientoMm2 ?: llanta.LlantasVehiculosMM2, 25.4f)
+                            3 -> min(lastRecorded?.LlantasRendimientoMm3 ?: llanta.LlantasVehiculosMM3, 25.4f)
+                            else -> min(lastRecorded?.LlantasRendimientoMm4 ?: llanta.LlantasVehiculosMM4, 25.4f)
+                        }
+                        NumericKeypad(
+                            onKey = { key ->
+                                val current = when (focusedMm) {
+                                    1 -> mm1StateLocal.text
+                                    2 -> mm2StateLocal.text
+                                    3 -> mm3StateLocal.text
+                                    else -> mm4StateLocal.text
+                                }
+                                val newRaw = when (key) {
+                                    "del" -> current.dropLast(1)
+                                    "." -> if (current.contains('.')) current else if (current.isEmpty()) "0." else current + "."
+                                    "-" -> if (current.isEmpty()) "-" else current
+                                    else -> if (key.length == 1 && key[0].isDigit()) current + key else current
+                                }
+                                val parsed = newRaw.toFloatOrNull()
+                                val finalText = if (parsed != null && parsed > allowedMax) allowedMax.toString() else newRaw
+                                when (focusedMm) {
+                                    1 -> {
+                                        mm1StateLocal = TextFieldValue(finalText, selection = TextRange(finalText.length))
+                                        onDataChange(data.copy(mm1 = finalText))
+                                    }
+                                    2 -> {
+                                        mm2StateLocal = TextFieldValue(finalText, selection = TextRange(finalText.length))
+                                        onDataChange(data.copy(mm2 = finalText))
+                                    }
+                                    3 -> {
+                                        mm3StateLocal = TextFieldValue(finalText, selection = TextRange(finalText.length))
+                                        onDataChange(data.copy(mm3 = finalText))
+                                    }
+                                    else -> {
+                                        mm4StateLocal = TextFieldValue(finalText, selection = TextRange(finalText.length))
+                                        onDataChange(data.copy(mm4 = finalText))
+                                    }
+                                }
+                            },
+                            onDone = {
+                                val next = nextFormMm1Requester
+                                if (next != null) pendingCaliperFocus = next else focusManager.clearFocus()
+                            }
                         )
                     }
                     // No mostrar helper de "Máx"; el valor se clampa automáticamente conforme a la regla estricta.
