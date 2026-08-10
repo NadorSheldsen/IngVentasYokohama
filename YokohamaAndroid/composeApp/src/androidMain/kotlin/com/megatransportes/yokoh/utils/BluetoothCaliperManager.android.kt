@@ -102,6 +102,14 @@ actual object BluetoothCaliperManager {
         }
         if (event.action != KeyEvent.ACTION_DOWN) return false
 
+        // Dejar pasar las teclas del teclado virtual/IME (teclado en pantalla):
+        // el calibrador HID Bluetooth tiene su propio deviceId, pero las teclas
+        // sintetizadas por el soft keyboard usan VIRTUAL_KEYBOARD_ID.
+        if (event.deviceId == -1) {
+            android.util.Log.d("Mitutoyo", "processKeyEvent: skip software keyboard (deviceId=${event.deviceId})")
+            return false
+        }
+
         when (event.keyCode) {
             in KeyEvent.KEYCODE_0..KeyEvent.KEYCODE_9 -> {
                 val digit = ('0'.code + event.keyCode - KeyEvent.KEYCODE_0).toChar()
