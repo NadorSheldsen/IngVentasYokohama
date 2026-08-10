@@ -1694,7 +1694,13 @@ private fun LlantaRendimientoForm(
                             },
                             label = "MM",
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Done),
-                            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                            keyboardActions = KeyboardActions(onDone = {
+                                // En iOS el calibrador actúa como teclado HID: Enter termina la
+                                // medición y dispara esta acción. Saltar al mm1 del siguiente
+                                // formulario editable, o limpiar el foco si no hay más.
+                                val next = nextFormMm1Requester
+                                if (next != null) pendingCaliperFocus = next else focusManager.clearFocus()
+                            }),
                             modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester4).onFocusChanged { mm4FocusedLocal = it.isFocused; if (it.isFocused) onFormActivated() },
                             singleLine = true,
                             enabled = !data.pTerminada,
