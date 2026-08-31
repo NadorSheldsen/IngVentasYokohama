@@ -122,7 +122,7 @@ fun PruebaRendimientoScreen(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
-    val scrollState = rememberScrollState()
+    // NO USAR rememberScrollState() ni verticalScroll - permitiremos scroll natural
     var showLlantasAdmin by remember { mutableStateOf(false) }
     var catalogRefreshKey by remember { mutableStateOf(0) }
     // Formulario activo para el calibrador Bluetooth: solo este responde a la medición
@@ -648,7 +648,7 @@ fun PruebaRendimientoScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
-                .verticalScroll(scrollState)
+                // NO usar verticalScroll - permitir scroll natural
                 .imePadding(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -1117,11 +1117,6 @@ private fun LlantaRendimientoForm(
     val filePickerUtils = remember { createFilePickerUtils() }
     
     // 'condPel' (Condición peligrosa) is now manual-only and not derived from MM values.
-    // Focus requesters for MM inputs so IME Next/Done moves between fields
-    val focusRequester1 = focusRequesters[0]
-    val focusRequester2 = focusRequesters[1]
-    val focusRequester3 = focusRequesters[2]
-    val focusRequester4 = focusRequesters[3]
     val focusManager = LocalFocusManager.current
 
     // Foco post-composición para el calibrador: se asigna desde el callback de
@@ -1648,7 +1643,7 @@ private fun LlantaRendimientoForm(
                             label = "MM",
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(onNext = { focusRequester2.requestFocus() }),
-                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester1).onFocusChanged { mm1FocusedLocal = it.isFocused; if (it.isFocused) onFormActivated() },
+                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester1).onFocusChanged { mm1FocusedLocal = it.isFocused },
                             singleLine = true,
                             enabled = !data.pTerminada,
                             isError = showValidationErrors && (data.mm1.isBlank() || data.mm1.toFloatOrNull() == null)
@@ -1668,7 +1663,7 @@ private fun LlantaRendimientoForm(
                             label = "MM",
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(onNext = { focusRequester3.requestFocus() }),
-                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester2).onFocusChanged { mm2FocusedLocal = it.isFocused; if (it.isFocused) onFormActivated() },
+                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester2).onFocusChanged { mm2FocusedLocal = it.isFocused },
                             singleLine = true,
                             enabled = !data.pTerminada,
                             isError = showValidationErrors && !data.pTerminada && (data.mm2.isBlank() || data.mm2.toFloatOrNull() == null)
@@ -1688,7 +1683,7 @@ private fun LlantaRendimientoForm(
                             label = "MM",
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(onNext = { focusRequester4.requestFocus() }),
-                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester3).onFocusChanged { mm3FocusedLocal = it.isFocused; if (it.isFocused) onFormActivated() },
+                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester3).onFocusChanged { mm3FocusedLocal = it.isFocused },
                             singleLine = true,
                             enabled = !data.pTerminada,
                             isError = showValidationErrors && !data.pTerminada && (data.mm3.isBlank() || data.mm3.toFloatOrNull() == null)
@@ -1714,7 +1709,7 @@ private fun LlantaRendimientoForm(
                                 val next = nextFormMm1Requester
                                 if (next != null) pendingCaliperFocus = next else focusManager.clearFocus()
                             }),
-                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester4).onFocusChanged { mm4FocusedLocal = it.isFocused; if (it.isFocused) onFormActivated() },
+                            modifier = Modifier.weight(1f).height(56.dp).focusRequester(focusRequester4).onFocusChanged { mm4FocusedLocal = it.isFocused },
                             singleLine = true,
                             enabled = !data.pTerminada,
                             isError = showValidationErrors && !data.pTerminada && (data.mm4.isBlank() || data.mm4.toFloatOrNull() == null)

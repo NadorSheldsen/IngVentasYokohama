@@ -539,6 +539,14 @@ fun NuevaLlantaDesechoScreen(
                 Button(
                     onClick = {
                         validationAttempted = true
+                        // Verificar que todos los campos obligatorios estén llenos
+                        // Los campos de ID son autoincrementales por el backend, pero los mandamos seguros
+                        val pisoSeguro = pisoSeleccionado.isNotBlank() ? pisoSeleccionado : "Original"
+                        val causaSegura = causaSeleccionada.isNotBlank() ? causaSeleccionada : "CORTE EN PISO"
+                        val noLlantaSeguro = noLlanta.isNotBlank() ? noLlanta : "1"
+                        val remanenteSeguro = remanente.toFloatOrNull() != null ? remanente.toFloatOrNull()!! : 1.0f
+                        val comentariosSeguros = comentarios.isNotBlank() ? comentarios : "Ninguno"
+                        
                         if (llantaSeleccionada != null && noLlanta.isNotBlank() && pisoSeleccionado.isNotBlank() && ubicacionSeleccionada.isNotBlank() && causaSeleccionada.isNotBlank() && remanente.toFloatOrNull() != null && comentarios.isNotBlank()) {
                             isLoading = true
                             coroutineScope.launch {
@@ -549,16 +557,16 @@ fun NuevaLlantaDesechoScreen(
                                             LlantasDesechoCreateRequest(
                                                 PruebasDesecho_idPruebasDesecho = pruebaDesecho.idPruebasDesecho,
                                                 Llantas_idLlantas = llantaSeleccionada!!.idLlantas,
-                                                LlantasDesechoNoLlanta = noLlanta.takeIf { it.isNotBlank() },
-                                                LlantasDesechoPiso = pisoSeleccionado,
-                                                LlantasDesechoCausaDes = causaSeleccionada,
+                                                LlantasDesechoNoLlanta = noLlantaSeguro,
+                                                LlantasDesechoPiso = pisoSeguro,
+                                                LlantasDesechoCausaDes = causaSegura,
                                                 LlantasDesechoUbi = ubicacionSeleccionada.takeIf { it.isNotBlank() },
                                                 Latitud = loc?.latitude,
                                                 Longitud = loc?.longitude,
-                                                LlantasDesechoRemanente = remanente.toFloatOrNull(),
+                                                LlantasDesechoRemanente = remanenteSeguro,
                                                 Usuarios_idUsuarios = currentUser?.idUsuarios,
                                                 LlantasDesechoFecha = DateFormatter.format(TimeProvider.getCurrentTimeMillis(), "yyyy-MM-dd"),
-                                                LlantasDesechoComentarios = comentarios,
+                                                LlantasDesechoComentarios = comentariosSeguros,
                                                 LlantasDesechoFoto1 = foto1,
                                                 LlantasDesechoFoto2 = foto2
                                             )
@@ -567,6 +575,7 @@ fun NuevaLlantaDesechoScreen(
                                         }.onFailure {
                                             // Manejar error
                                             isLoading = false
+                                            errorMessage = "Error guardando la llanta: ${it.exceptionOrNull()?.message ?: "Error desconocido"}"
                                         }
                                     } else {
                                         // Update existing
@@ -575,15 +584,15 @@ fun NuevaLlantaDesechoScreen(
                                             LlantasDesechoUpdateRequest(
                                                 PruebasDesecho_idPruebasDesecho = pruebaDesecho.idPruebasDesecho,
                                                 Llantas_idLlantas = llantaSeleccionada!!.idLlantas,
-                                                LlantasDesechoNoLlanta = noLlanta.takeIf { it.isNotBlank() },
-                                                LlantasDesechoPiso = pisoSeleccionado,
-                                                LlantasDesechoCausaDes = causaSeleccionada,
+                                                LlantasDesechoNoLlanta = noLlantaSeguro,
+                                                LlantasDesechoPiso = pisoSeguro,
+                                                LlantasDesechoCausaDes = causaSegura,
                                                 LlantasDesechoUbi = ubicacionSeleccionada.takeIf { it.isNotBlank() },
                                                 Latitud = loc?.latitude,
                                                 Longitud = loc?.longitude,
-                                                LlantasDesechoRemanente = remanente.toFloatOrNull(),
+                                                LlantasDesechoRemanente = remanenteSeguro,
                                                 LlantasDesechoFecha = DateFormatter.format(TimeProvider.getCurrentTimeMillis(), "yyyy-MM-dd"),
-                                                LlantasDesechoComentarios = comentarios,
+                                                LlantasDesechoComentarios = comentariosSeguros,
                                                 LlantasDesechoFoto1 = foto1,
                                                 LlantasDesechoFoto2 = foto2
                                             )
@@ -595,6 +604,7 @@ fun NuevaLlantaDesechoScreen(
                                     }
                                 } catch (e: Exception) {
                                     isLoading = false
+                                    errorMessage = e.message ?: "Error inesperado"
                                 }
                             }
                         }
