@@ -295,18 +295,14 @@ private fun PhotoSlotCard(
                         try {
                             val fileData = filePickerUtils.pickImageFromCamera()
                             if (fileData != null) {
-                                if (fileData.size > 5L * 1024L * 1024L) {
-                                    onError("El archivo es demasiado grande (máximo 5MB)")
-                                } else {
-                                    val base64Data = FileConverter.fileDataToBase64(fileData)
-                                    onPhotoSelected(
-                                        slot.copy(
-                                            base64Data = base64Data,
-                                            fileName = fileData.name,
-                                            fileSize = fileData.size
-                                        )
+                                val base64Data = FileConverter.fileDataToBase64(fileData)
+                                onPhotoSelected(
+                                    slot.copy(
+                                        base64Data = base64Data,
+                                        fileName = fileData.name,
+                                        fileSize = fileData.size
                                     )
-                                }
+                                )
                             }
                         } catch (e: Exception) {
                             onError(ErrorUtils.userMessage(e, "Error al tomar foto"))
@@ -327,18 +323,14 @@ private fun PhotoSlotCard(
                         try {
                             val fileData = filePickerUtils.pickImageFile()
                             if (fileData != null) {
-                                if (fileData.size > 5L * 1024L * 1024L) {
-                                    onError("El archivo es demasiado grande (máximo 5MB)")
-                                } else {
-                                    val base64Data = FileConverter.fileDataToBase64(fileData)
-                                    onPhotoSelected(
-                                        slot.copy(
-                                            base64Data = base64Data,
-                                            fileName = fileData.name,
-                                            fileSize = fileData.size
-                                        )
+                                val base64Data = FileConverter.fileDataToBase64(fileData)
+                                onPhotoSelected(
+                                    slot.copy(
+                                        base64Data = base64Data,
+                                        fileName = fileData.name,
+                                        fileSize = fileData.size
                                     )
-                                }
+                                )
                             }
                         } catch (e: Exception) {
                             onError(ErrorUtils.userMessage(e, "Error al seleccionar imagen"))

@@ -90,12 +90,14 @@ router.post('/', async (req, res) => {
       LlantasDesechoFoto1,
       LlantasDesechoFoto2,
       LlantasDesechoComentarios
-    } = req.body;
+    } = req.body || {};
     
+    const causaFinal = (LlantasDesechoCausaDes == null ? '' : String(LlantasDesechoCausaDes)).trim() || 'CORTE EN PISO';
     const creatorId = (req.body && (req.body.Usuarios_idUsuarios || req.body.UsuariosId)) || (req.user && (req.user.id || req.user.idUsuarios)) || null;
     
     // Log para debugging
     try {
+      console.log('[llantasDesecho POST] causa=%o (type=%s)', LlantasDesechoCausaDes, typeof LlantasDesechoCausaDes)
       console.log('[llantasDesecho POST] values: NoLlanta=%o (type=%s), Remanente=%o (type=%s), Comentarios=%o (type=%s)',
         LlantasDesechoNoLlanta, typeof LlantasDesechoNoLlanta,
         LlantasDesechoRemanente, typeof LlantasDesechoRemanente,
@@ -140,7 +142,7 @@ router.post('/', async (req, res) => {
         Llantas_idLlantas,
         llantaNoParam,  // Ahora puede ser texto
         LlantasDesechoPiso,
-        LlantasDesechoCausaDes,
+        causaFinal,
         LlantasDesechoUbi,
         Latitud,
         Longitud,
@@ -169,6 +171,7 @@ router.post('/', async (req, res) => {
 
     res.status(201).json(normalizeFotoFields(rows[0]));
   } catch (error) {
+    console.error('[llantasDesecho POST] Insert error:', error.message, error.code);
     handleServerError(res, 'Error al crear la llanta de desecho', error);
   }
 });
@@ -252,10 +255,11 @@ router.put('/:id', async (req, res) => {
     }
 
     if (hasKey('LlantasDesechoCausaDes')) {
-      if (body.LlantasDesechoCausaDes == null || body.LlantasDesechoCausaDes === '') {
-        // treat empty as no-change
+      const causaVal = (body.LlantasDesechoCausaDes == null ? '' : String(body.LlantasDesechoCausaDes)).trim();
+      if (causaVal) {
+        setParts.push('LlantasDesechoCausaDes = ?'); params.push(causaVal);
       } else {
-        setParts.push('LlantasDesechoCausaDes = ?'); params.push(body.LlantasDesechoCausaDes);
+        setParts.push('LlantasDesechoCausaDes = ?'); params.push('CORTE EN PISO');
       }
     }
 

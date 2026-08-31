@@ -1740,11 +1740,17 @@ class ApiClient(
                 request.LlantasDesechoFoto2?.let { if (it.isNotBlank()) put("LlantasDesechoFoto2", kotlinx.serialization.json.JsonPrimitive(it)) }
             }
             println("[ApiClient] POST $baseUrl/llantas-desecho -> body=${jsonObj}")
-            val response: LlantasDesecho = client.post("$baseUrl/llantas-desecho") {
+            val httpResponse = client.post("$baseUrl/llantas-desecho") {
                 setBody(jsonObj)
-            }.body()
+            }
+            if (httpResponse.status.value >= 400) {
+                println("[ApiClient] POST error: status=${httpResponse.status}, body=${httpResponse.bodyAsText()}")
+                return Result.failure(Exception("HTTP ${httpResponse.status}: ${httpResponse.bodyAsText()}"))
+            }
+            val response: LlantasDesecho = httpResponse.body()
             Result.success(response)
         } catch (e: Exception) {
+            println("[ApiClient] POST exception: ${e.message}")
             Result.failure(e)
         }
     }
