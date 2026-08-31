@@ -1133,6 +1133,11 @@ private fun LlantaRendimientoForm(
 
     var showExtras by remember { mutableStateOf(false) }
 
+    val focusRequester1 = remember { FocusRequester() }
+    val focusRequester2 = remember { FocusRequester() }
+    val focusRequester3 = remember { FocusRequester() }
+    val focusRequester4 = remember { FocusRequester() }
+
     var presionState by remember { mutableStateOf(TextFieldValue(data.presion)) }
     var presionFocused by remember { mutableStateOf(false) }
     LaunchedEffect(data.presion) { if (data.presion != presionState.text) presionState = TextFieldValue(data.presion) }
@@ -1529,6 +1534,10 @@ private fun LlantaRendimientoForm(
                     var mm2FocusedLocal by remember { mutableStateOf(false) }
                     var mm3FocusedLocal by remember { mutableStateOf(false) }
                     var mm4FocusedLocal by remember { mutableStateOf(false) }
+                    val focusRequester1 = remember { FocusRequester() }
+                    val focusRequester2 = remember { FocusRequester() }
+                    val focusRequester3 = remember { FocusRequester() }
+                    val focusRequester4 = remember { FocusRequester() }
                     // El calibrador HID hace que el sistema suprima el soft keyboard: detectar la
                     // presencia de teclado físico y mostrar el teclado numérico propio de la app.
                     val platformContextForKeyboard = getPlatformContext()

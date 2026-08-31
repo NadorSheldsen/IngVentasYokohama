@@ -90,6 +90,7 @@ fun NuevaLlantaDesechoScreen(
     var foto2Tamano by remember { mutableStateOf<Long?>(null) }
     var showPhotoPickerDialog by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     var validationAttempted by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
@@ -541,11 +542,11 @@ fun NuevaLlantaDesechoScreen(
                         validationAttempted = true
                         // Verificar que todos los campos obligatorios estén llenos
                         // Los campos de ID son autoincrementales por el backend, pero los mandamos seguros
-                        val pisoSeguro = pisoSeleccionado.isNotBlank() ? pisoSeleccionado : "Original"
-                        val causaSegura = causaSeleccionada.isNotBlank() ? causaSeleccionada : "CORTE EN PISO"
-                        val noLlantaSeguro = noLlanta.isNotBlank() ? noLlanta : "1"
-                        val remanenteSeguro = remanente.toFloatOrNull() != null ? remanente.toFloatOrNull()!! : 1.0f
-                        val comentariosSeguros = comentarios.isNotBlank() ? comentarios : "Ninguno"
+                        val pisoSeguro = if (pisoSeleccionado.isNotBlank()) pisoSeleccionado else "Original"
+                        val causaSegura = if (causaSeleccionada.isNotBlank()) causaSeleccionada else "CORTE EN PISO"
+                        val noLlantaSeguro = if (noLlanta.isNotBlank()) noLlanta else "1"
+                        val remanenteSeguro = if (remanente.toFloatOrNull() != null) remanente.toFloatOrNull()!! else 1.0f
+                        val comentariosSeguros = if (comentarios.isNotBlank()) comentarios else "Ninguno"
                         
                         if (llantaSeleccionada != null && noLlanta.isNotBlank() && pisoSeleccionado.isNotBlank() && ubicacionSeleccionada.isNotBlank() && causaSeleccionada.isNotBlank() && remanente.toFloatOrNull() != null && comentarios.isNotBlank()) {
                             isLoading = true
@@ -575,7 +576,7 @@ fun NuevaLlantaDesechoScreen(
                                         }.onFailure {
                                             // Manejar error
                                             isLoading = false
-                                            errorMessage = "Error guardando la llanta: ${it.exceptionOrNull()?.message ?: "Error desconocido"}"
+                                            errorMessage = "Error guardando la llanta: ${it.message ?: "Error desconocido"}"
                                         }
                                     } else {
                                         // Update existing
@@ -626,7 +627,20 @@ fun NuevaLlantaDesechoScreen(
             }
             // Host overlay removed temporarily (was causing compile-time parse issues).
         }
-        
+
+        if (errorMessage != null) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+            ) {
+                Text(
+                    text = errorMessage ?: "Error inesperado",
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+
         if (showPhotoPickerDialog) {
             PhotoPickerDialog(
                 photoSlots = listOf(
@@ -660,3 +674,4 @@ fun NuevaLlantaDesechoScreen(
     }
 }
 }
+
