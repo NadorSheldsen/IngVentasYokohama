@@ -1739,7 +1739,9 @@ class ApiClient(
                 request.LlantasDesechoFoto1?.let { if (it.isNotBlank()) put("LlantasDesechoFoto1", kotlinx.serialization.json.JsonPrimitive(it)) }
                 request.LlantasDesechoFoto2?.let { if (it.isNotBlank()) put("LlantasDesechoFoto2", kotlinx.serialization.json.JsonPrimitive(it)) }
             }
-            println("[ApiClient] POST $baseUrl/llantas-desecho -> body=${jsonObj}")
+            // Log all required fields for debugging
+            println("[ApiClient] POST desecho - PruebasDesecho_idPruebasDesecho=${request.PruebasDesecho_idPruebasDesecho}, Llantas_idLlantas=${request.Llantas_idLlantas}, Piso='${request.LlantasDesechoPiso}', Causa='${request.LlantasDesechoCausaDes.trim()}'")
+            println("[ApiClient] POST $baseUrl/llantas-desecho -> body keys=${jsonObj.keys}")
             val httpResponse = client.post("$baseUrl/llantas-desecho") {
                 setBody(jsonObj)
             }
@@ -1751,6 +1753,7 @@ class ApiClient(
             Result.success(response)
         } catch (e: Exception) {
             println("[ApiClient] POST exception: ${e.message}")
+            e.printStackTrace()
             Result.failure(e)
         }
     }

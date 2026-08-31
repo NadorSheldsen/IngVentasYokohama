@@ -74,6 +74,11 @@ router.get('/:id', async (req, res) => {
 // POST a new llanta desecho
 router.post('/', async (req, res) => {
   try {
+    // Log incoming request body size and keys
+    const bodyStr = JSON.stringify(req.body);
+    console.log('[llantasDesecho POST] Incoming body size:', bodyStr.length, 'bytes');
+    console.log('[llantasDesecho POST] Incoming body keys:', Object.keys(req.body));
+    
     const { 
       LlantasDesechocol,
       PruebasDesecho_idPruebasDesecho,
@@ -91,6 +96,16 @@ router.post('/', async (req, res) => {
       LlantasDesechoFoto2,
       LlantasDesechoComentarios
     } = req.body || {};
+
+    // Validar campos obligatorios
+    if (!PruebasDesecho_idPruebasDesecho || !Llantas_idLlantas || !LlantasDesechoPiso) {
+      console.error('[llantasDesecho POST] Missing required fields:', { 
+        PruebasDesecho_idPruebasDesecho, 
+        Llantas_idLlantas, 
+        LlantasDesechoPiso 
+      });
+      return res.status(400).json({ error: 'Campos obligatorios faltando: PruebasDesecho_idPruebasDesecho, Llantas_idLlantas, LlantasDesechoPiso' });
+    }
     
     const causaFinal = (LlantasDesechoCausaDes == null ? '' : String(LlantasDesechoCausaDes)).trim() || 'CORTE EN PISO';
     const creatorId = (req.body && (req.body.Usuarios_idUsuarios || req.body.UsuariosId)) || (req.user && (req.user.id || req.user.idUsuarios)) || null;
@@ -171,7 +186,9 @@ router.post('/', async (req, res) => {
 
     res.status(201).json(normalizeFotoFields(rows[0]));
   } catch (error) {
-    console.error('[llantasDesecho POST] Insert error:', error.message, error.code);
+    console.error('[llantasDesecho POST] Insert error:', error.message);
+    console.error('[llantasDesecho POST] SQL Error Code:', error.code);
+    console.error('[llantasDesecho POST] Full error:', error);
     handleServerError(res, 'Error al crear la llanta de desecho', error);
   }
 });
