@@ -104,7 +104,7 @@ fun NuevaLlantaDesechoScreen(
             // prefill simple fields
             noLlanta = ex.LlantasDesechoNoLlanta?.toString() ?: ""
             pisoSeleccionado = ex.LlantasDesechoPiso
-            causaSeleccionada = ex.LlantasDesechoCausaDes
+            causaSeleccionada = ex.LlantasDesechoCausaDes ?: ""
             ubicacionSeleccionada = ex.LlantasDesechoUbi ?: ""
             remanente = ex.LlantasDesechoRemanente?.toString() ?: ""
             comentarios = ex.LlantasDesechoComentarios ?: ""
@@ -553,6 +553,8 @@ fun NuevaLlantaDesechoScreen(
                             coroutineScope.launch {
                                 try {
                                     val loc = getLastKnownLocation()
+                                    val causaFinal = causaSeleccionada.trim()
+                                    println("[NuevaLlantaDesechoScreen] Guardando llanta: causaFinal='$causaFinal', ubicacion='${ubicacionSeleccionada.trim()}'")
                                     if (existingLlanta == null) {
                                         repository.createLlantaDesecho(
                                             LlantasDesechoCreateRequest(
@@ -560,7 +562,7 @@ fun NuevaLlantaDesechoScreen(
                                                 Llantas_idLlantas = llantaSeleccionada!!.idLlantas,
                                                 LlantasDesechoNoLlanta = noLlantaSeguro,
                                                 LlantasDesechoPiso = pisoSeguro,
-                                                LlantasDesechoCausaDes = causaSegura,
+                                                LlantasDesechoCausaDes = causaFinal,
                                                 LlantasDesechoUbi = ubicacionSeleccionada.takeIf { it.isNotBlank() },
                                                 Latitud = loc?.latitude,
                                                 Longitud = loc?.longitude,
@@ -587,7 +589,7 @@ fun NuevaLlantaDesechoScreen(
                                                 Llantas_idLlantas = llantaSeleccionada!!.idLlantas,
                                                 LlantasDesechoNoLlanta = noLlantaSeguro,
                                                 LlantasDesechoPiso = pisoSeguro,
-                                                LlantasDesechoCausaDes = causaSegura,
+                                                LlantasDesechoCausaDes = causaFinal,
                                                 LlantasDesechoUbi = ubicacionSeleccionada.takeIf { it.isNotBlank() },
                                                 Latitud = loc?.latitude,
                                                 Longitud = loc?.longitude,

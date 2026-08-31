@@ -64,7 +64,6 @@ fun LlantasVehiculoScreen(
 
     val formPositions = remember { mutableStateMapOf<Int, Float>() }
 
-    var containerHeightPx by remember { mutableFloatStateOf(0f) }
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
@@ -106,8 +105,7 @@ fun LlantasVehiculoScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
-                .onGloballyPositioned { containerHeightPx = it.size.height.toFloat() },
+                .padding(16.dp),
             state = scrollState,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
@@ -203,16 +201,6 @@ fun LlantasVehiculoScreen(
                         }
                     )
 
-                    LaunchedEffect(collapsedForms[index], formPositions[index + 1]) {
-                        if (!collapsedForms[index]) {
-                            val formY = formPositions[index + 1] ?: return@LaunchedEffect
-                            val targetVisibleY = (containerHeightPx / 2f).toInt()
-                            val currentScroll = scrollState.value
-                            val absoluteFormY = (formY + currentScroll).toInt()
-                            val targetScroll = (absoluteFormY - targetVisibleY).coerceAtLeast(0)
-                            scrollState.animateScrollTo(targetScroll)
-                        }
-                    }
                 }
 
                 if (errorMessage != null) {

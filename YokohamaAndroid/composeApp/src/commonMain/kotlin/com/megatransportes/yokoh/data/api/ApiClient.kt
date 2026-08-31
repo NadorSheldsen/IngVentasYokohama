@@ -1722,8 +1722,26 @@ class ApiClient(
 
     suspend fun createLlantaDesecho(request: LlantasDesechoCreateRequest): Result<LlantasDesecho> {
         return try {
+            val jsonObj = kotlinx.serialization.json.buildJsonObject {
+                request.LlantasDesechocol?.let { if (it.isNotBlank()) put("LlantasDesechocol", kotlinx.serialization.json.JsonPrimitive(it)) }
+                put("PruebasDesecho_idPruebasDesecho", kotlinx.serialization.json.JsonPrimitive(request.PruebasDesecho_idPruebasDesecho))
+                put("Llantas_idLlantas", kotlinx.serialization.json.JsonPrimitive(request.Llantas_idLlantas))
+                request.LlantasDesechoNoLlanta?.let { if (it.isNotBlank()) put("LlantasDesechoNoLlanta", kotlinx.serialization.json.JsonPrimitive(it)) }
+                put("LlantasDesechoPiso", kotlinx.serialization.json.JsonPrimitive(request.LlantasDesechoPiso))
+                put("LlantasDesechoCausaDes", kotlinx.serialization.json.JsonPrimitive(request.LlantasDesechoCausaDes.trim()))
+                request.LlantasDesechoUbi?.let { if (it.isNotBlank()) put("LlantasDesechoUbi", kotlinx.serialization.json.JsonPrimitive(it)) }
+                request.Latitud?.let { put("Latitud", kotlinx.serialization.json.JsonPrimitive(it)) }
+                request.Longitud?.let { put("Longitud", kotlinx.serialization.json.JsonPrimitive(it)) }
+                request.LlantasDesechoRemanente?.let { put("LlantasDesechoRemanente", kotlinx.serialization.json.JsonPrimitive(it)) }
+                request.Usuarios_idUsuarios?.let { put("Usuarios_idUsuarios", kotlinx.serialization.json.JsonPrimitive(it)) }
+                request.LlantasDesechoFecha?.let { if (it.isNotBlank()) put("LlantasDesechoFecha", kotlinx.serialization.json.JsonPrimitive(it)) }
+                request.LlantasDesechoComentarios?.let { if (it.isNotBlank()) put("LlantasDesechoComentarios", kotlinx.serialization.json.JsonPrimitive(it)) }
+                request.LlantasDesechoFoto1?.let { if (it.isNotBlank()) put("LlantasDesechoFoto1", kotlinx.serialization.json.JsonPrimitive(it)) }
+                request.LlantasDesechoFoto2?.let { if (it.isNotBlank()) put("LlantasDesechoFoto2", kotlinx.serialization.json.JsonPrimitive(it)) }
+            }
+            println("[ApiClient] POST $baseUrl/llantas-desecho -> body=${jsonObj}")
             val response: LlantasDesecho = client.post("$baseUrl/llantas-desecho") {
-                setBody(request)
+                setBody(jsonObj)
             }.body()
             Result.success(response)
         } catch (e: Exception) {
@@ -1747,7 +1765,7 @@ class ApiClient(
                 request.LlantasDesechoNoLlanta?.let { put("LlantasDesechoNoLlanta", kotlinx.serialization.json.JsonPrimitive(it)) }
 
                 put("LlantasDesechoPiso", kotlinx.serialization.json.JsonPrimitive(request.LlantasDesechoPiso))
-                put("LlantasDesechoCausaDes", kotlinx.serialization.json.JsonPrimitive(request.LlantasDesechoCausaDes))
+                put("LlantasDesechoCausaDes", kotlinx.serialization.json.JsonPrimitive(request.LlantasDesechoCausaDes.trim()))
 
                 // Ubicación (zona) and GPS coordinates
                 request.LlantasDesechoUbi?.let { if (it.isNotBlank()) put("LlantasDesechoUbi", kotlinx.serialization.json.JsonPrimitive(it)) }

@@ -215,7 +215,10 @@ fun PruebaDesechoReportScreen(
     val catalogMap = catalog.associateBy { it.idLlantas }
 
     // Aggregations
-    val causaCounts = llantas.groupingBy { it.LlantasDesechoCausaDes }.eachCount()
+    val causaCounts = llantas
+        .map { it.LlantasDesechoCausaDes ?: "Sin causa" }
+        .groupingBy { it }
+        .eachCount()
     val marcaCounts = llantas.map { brandMap[it.Llantas_idLlantas] ?: "Otras" }.groupingBy { it }.eachCount()
     val remanentes = llantas.mapNotNull { it.LlantasDesechoRemanente }
     val dateCounts = llantas.groupingBy { it.LlantasDesechoFecha?.split('T',' ')?.firstOrNull() ?: "Sin fecha" }.eachCount()

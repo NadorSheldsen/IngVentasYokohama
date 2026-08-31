@@ -399,7 +399,9 @@ data class LlantasDesecho(
     val Llantas_idLlantas: Int,
     val LlantasDesechoNoLlanta: String? = null,
     val LlantasDesechoPiso: String,
-    val LlantasDesechoCausaDes: String,
+    // Some backend deployments may omit this field or return null for older records.
+    // Keep it nullable so deserialization does not fail during the save/read flow.
+    val LlantasDesechoCausaDes: String? = null,
     val LlantasDesechoUbi: String? = null,
     val Latitud: Double? = null,
     val Longitud: Double? = null,
