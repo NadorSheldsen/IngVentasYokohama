@@ -554,7 +554,14 @@ fun NuevaLlantaDesechoScreen(
                                 try {
                                     val loc = getLastKnownLocation()
                                     val causaFinal = causaSeleccionada.trim()
-                                    println("[NuevaLlantaDesechoScreen] Guardando llanta: causaFinal='$causaFinal', ubicacion='${ubicacionSeleccionada.trim()}'")
+                                    println("[NuevaLlantaDesechoScreen] ========== GUARDANDO LLANTA ==========")
+                                    println("[NuevaLlantaDesechoScreen] pruebaDesecho.idPruebasDesecho=${pruebaDesecho.idPruebasDesecho}")
+                                    println("[NuevaLlantaDesechoScreen] llantaSeleccionada.idLlantas=${llantaSeleccionada!!.idLlantas}")
+                                    println("[NuevaLlantaDesechoScreen] pisoSeguro='$pisoSeguro'")
+                                    println("[NuevaLlantaDesechoScreen] causaFinal='$causaFinal'")
+                                    println("[NuevaLlantaDesechoScreen] foto1 present: ${foto1 != null}, length: ${foto1?.length ?: 0}")
+                                    println("[NuevaLlantaDesechoScreen] foto2 present: ${foto2 != null}, length: ${foto2?.length ?: 0}")
+                                    println("[NuevaLlantaDesechoScreen] =====================================")
                                     if (existingLlanta == null) {
                                         repository.createLlantaDesecho(
                                             LlantasDesechoCreateRequest(

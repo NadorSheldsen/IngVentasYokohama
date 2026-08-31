@@ -186,9 +186,17 @@ router.post('/', async (req, res) => {
 
     res.status(201).json(normalizeFotoFields(rows[0]));
   } catch (error) {
-    console.error('[llantasDesecho POST] Insert error:', error.message);
-    console.error('[llantasDesecho POST] SQL Error Code:', error.code);
-    console.error('[llantasDesecho POST] Full error:', error);
+    console.error('[llantasDesecho POST] ========== ERROR ==========');
+    console.error('[llantasDesecho POST] Error message:', error.message);
+    console.error('[llantasDesecho POST] Error code:', error.code);
+    console.error('[llantasDesecho POST] Error errno:', error.errno);
+    console.error('[llantasDesecho POST] Error sqlState:', error.sqlState);
+    console.error('[llantasDesecho POST] Error sqlMessage:', error.sqlMessage);
+    if (error.stack) {
+      console.error('[llantasDesecho POST] Stack trace:');
+      console.error(error.stack);
+    }
+    console.error('[llantasDesecho POST] ============================');
     handleServerError(res, 'Error al crear la llanta de desecho', error);
   }
 });
