@@ -895,11 +895,11 @@ private fun LlantaSemaforoForm(
 
                     // Filter suggestions
                     LaunchedEffect(searchText) {
-                        if (searchText.isNotEmpty() && data.selectedLlanta == null) {
+                        if (searchText.isNotBlank() && data.selectedLlanta == null) {
                             val loaded = llantas.filter { llanta ->
                                 llanta.LlantasMarca.contains(searchText, ignoreCase = true) ||
                                         llanta.LlantasModelo.contains(searchText, ignoreCase = true) ||
-                                        llanta.LlantasMedida.toString().contains(searchText)
+                                        llanta.LlantasMedida.contains(searchText, ignoreCase = true)
                             }.take(10)
                             filteredLlantas = loaded
                             showSuggestions = loaded.isNotEmpty()

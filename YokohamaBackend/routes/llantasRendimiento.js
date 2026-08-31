@@ -7,6 +7,10 @@ const { processImageForStorage } = require('../utils/imageProcessor');
 // Helper to normalize DB row values for JSON clients
 function normalizeRendimientoRow(r) {
   // Ensure boolean fields are booleans for JSON consumers (Kotlin expects boolean)
+  const fotoRendimiento = Buffer.isBuffer(r.LlantasRendimientoFoto)
+    ? r.LlantasRendimientoFoto.toString('base64')
+    : (r.LlantasRendimientoFoto || null);
+
   const out = {
     idLlantasRendimiento: r.idLlantasRendimiento,
     PruebaRendimiento_idPruebaRendimiento: r.PruebaRendimiento_idPruebaRendimiento,
@@ -17,7 +21,7 @@ function normalizeRendimientoRow(r) {
     LlantasRendimientoMm4: r.LlantasRendimientoMm4,
     LlantasRendimientoPresion: r.LlantasRendimientoPresion,
     LlantasRendimientoCondPel: !!r.LlantasRendimientoCondPel,
-    LlantasRendimientoFoto: r.LlantasRendimientoFoto || null,
+    LlantasRendimientoFoto: fotoRendimiento,
     LlantasRendimientoPTerminada: r.LlantasRendimientoPTerminada || 0,
     PruebaRendimientoOdometro: r.PruebaRendimientoOdometro == null ? null : Number(r.PruebaRendimientoOdometro),
     VehiculosOdometro: r.VehiculosOdometro == null ? null : Number(r.VehiculosOdometro),

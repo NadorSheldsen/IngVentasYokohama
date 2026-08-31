@@ -9,12 +9,12 @@ function normalizeFotoFields(obj) {
     if (!obj || typeof obj !== 'object') return obj;
     try {
         if (obj.LlantasInspeccionFoto && Buffer.isBuffer(obj.LlantasInspeccionFoto)) {
-            obj.LlantasInspeccionFoto = obj.LlantasInspeccionFoto.toString('base64');
+            obj.LlantasInspeccionFoto = obj.LlantasInspeccionFoto.toString('utf8');
         }
     } catch (_) {}
     try {
         if (obj.LlantasInspeccionFoto2 && Buffer.isBuffer(obj.LlantasInspeccionFoto2)) {
-            obj.LlantasInspeccionFoto2 = obj.LlantasInspeccionFoto2.toString('base64');
+            obj.LlantasInspeccionFoto2 = obj.LlantasInspeccionFoto2.toString('utf8');
         }
     } catch (_) {}
     return obj;
@@ -413,32 +413,44 @@ router.put('/:id', async (req, res) => {
             LlantasInspeccionDesgaste
         } = req.body;
 
-        LlantasInspeccionFoto = await processImageForStorage(LlantasInspeccionFoto);
-        LlantasInspeccionFoto2 = await processImageForStorage(LlantasInspeccionFoto2);
+        const fields = [];
+        const params = [];
 
-        const [result] = await db.execute(`
-            UPDATE llantasinspeccion 
-            SET LlantasInspeccionMm1 = ?,
-                LlantasInspeccionMm2 = ?,
-                LlantasInspeccionMm3 = ?,
-                LlantasInspeccionMm4 = ?,
-                LlantasInspeccionPresion = ?,
-                LlantasInspeccionCondPel = ?,
-                LlantasInspeccionObservacion = ?,
-                LlantasInspeccionComentario = ?,
-                LlantasInspeccionFoto = ?,
-                LlantasInspeccionFoto2 = ?,
-                LlantasInspeccionDOT = ?,
-                LlantasInspeccionPiso = ?,
-                LlantasInspeccionDesgaste = ?
-            WHERE idLlantasInspeccion = ?
-        `, [
-            LlantasInspeccionMm1, LlantasInspeccionMm2, LlantasInspeccionMm3, LlantasInspeccionMm4,
-            LlantasInspeccionPresion, LlantasInspeccionCondPel, LlantasInspeccionObservacion,
-            LlantasInspeccionComentario, LlantasInspeccionFoto, LlantasInspeccionFoto2,
-            LlantasInspeccionDOT,
-            LlantasInspeccionPiso, LlantasInspeccionDesgaste, id
-        ]);
+        const addField = (name, val) => {
+            if (val !== undefined) {
+                fields.push(`${name} = ?`);
+                params.push(val);
+            }
+        };
+
+        addField('LlantasInspeccionMm1', LlantasInspeccionMm1);
+        addField('LlantasInspeccionMm2', LlantasInspeccionMm2);
+        addField('LlantasInspeccionMm3', LlantasInspeccionMm3);
+        addField('LlantasInspeccionMm4', LlantasInspeccionMm4);
+        addField('LlantasInspeccionPresion', LlantasInspeccionPresion);
+        addField('LlantasInspeccionCondPel', LlantasInspeccionCondPel);
+        addField('LlantasInspeccionObservacion', LlantasInspeccionObservacion);
+        addField('LlantasInspeccionComentario', LlantasInspeccionComentario);
+        addField('LlantasInspeccionDOT', LlantasInspeccionDOT);
+        addField('LlantasInspeccionPiso', LlantasInspeccionPiso);
+        addField('LlantasInspeccionDesgaste', LlantasInspeccionDesgaste);
+
+        if (LlantasInspeccionFoto !== null && LlantasInspeccionFoto !== undefined) {
+            fields.push('LlantasInspeccionFoto = ?');
+            params.push(await processImageForStorage(LlantasInspeccionFoto));
+        }
+
+        if (LlantasInspeccionFoto2 !== null && LlantasInspeccionFoto2 !== undefined) {
+            fields.push('LlantasInspeccionFoto2 = ?');
+            params.push(await processImageForStorage(LlantasInspeccionFoto2));
+        }
+
+        if (fields.length === 0) {
+            return res.status(400).json({ message: 'No hay campos para actualizar' });
+        }
+
+        params.push(id);
+        const [result] = await db.execute(`UPDATE llantasinspeccion SET ${fields.join(', ')} WHERE idLlantasInspeccion = ?`, params);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Llanta de inspección no encontrada' });

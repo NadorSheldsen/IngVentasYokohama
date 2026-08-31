@@ -1,4 +1,4 @@
-﻿package com.megatransportes.yokoh.ui.screens.vehiculos
+package com.megatransportes.yokoh.ui.screens.vehiculos
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState

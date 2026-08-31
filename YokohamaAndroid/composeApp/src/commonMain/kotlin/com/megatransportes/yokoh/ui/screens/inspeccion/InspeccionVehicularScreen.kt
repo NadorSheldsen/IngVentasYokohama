@@ -117,18 +117,35 @@ fun InspeccionVehicularScreen(
 
     // Cargar tipos de vehículos y llantas (usar directamente el scope de LaunchedEffect)
     LaunchedEffect(key1 = catalogRefreshKey) {
-        repository.getTiposVehiculos()
-            .onSuccess { result -> tipoVehiculos = result }
-            .onFailure { _ -> errorMessage = "Error cargando tipos de vehículos" }
+        try {
+            repository.getTiposVehiculos()
+                .onSuccess { result -> tipoVehiculos = result }
+                .onFailure { err ->
+                    val msg = err.message ?: ""
+                    val isCancellation = err is kotlinx.coroutines.CancellationException ||
+                        err.cause is kotlinx.coroutines.CancellationException ||
+                        msg.contains("coroutine scope left the composition", ignoreCase = true)
+                    if (!isCancellation) errorMessage = "Error cargando tipos de vehículos"
+                }
 
-        repository.getLlantasByFlota(flota.idFlotas)
-            .onSuccess { result -> llantas = result }
-            .onFailure { _ -> errorMessage = "Error cargando llantas" }
+            repository.getLlantasByFlota(flota.idFlotas)
+                .onSuccess { result -> llantas = result }
+                .onFailure { err ->
+                    val msg = err.message ?: ""
+                    val isCancellation = err is kotlinx.coroutines.CancellationException ||
+                        err.cause is kotlinx.coroutines.CancellationException ||
+                        msg.contains("coroutine scope left the composition", ignoreCase = true)
+                    if (!isCancellation) errorMessage = "Error cargando llantas"
+                }
 
-        // Cargar parámetros de la flota para validar selección de llantas
-        repository.getParametrosByFlotaId(flota.idFlotas)
-            .onSuccess { result -> parametros = result }
-            .onFailure { _ -> /* silencioso, se mostrará advertencia en envío/selección */ }
+            // Cargar parámetros de la flota para validar selección de llantas
+            repository.getParametrosByFlotaId(flota.idFlotas)
+                .onSuccess { result -> parametros = result }
+                .onFailure { _ -> /* silencioso, se mostrará advertencia en envío/selección */ }
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            // Recomposición normal — no mostrar error al usuario
+            throw e // relanzar para que Compose maneje la cancelación correctamente
+        }
 
         // If opened for editing an existing VehiculoInspeccion, prefill fields and load llantasInspeccion
         vehiculoInspeccionExisting?.let { existing ->
@@ -1058,17 +1075,21 @@ private fun LlantaInspeccionForm(
 
                     // Filter suggestions
                     LaunchedEffect(searchText) {
-                        if (searchText.isNotEmpty() && data.selectedLlanta == null) {
-                            val loaded = llantas.filter { llanta ->
-                                llanta.LlantasMarca.contains(searchText, ignoreCase = true) ||
-                                        llanta.LlantasModelo.contains(searchText, ignoreCase = true) ||
-                                        llanta.LlantasMedida.toString().contains(searchText)
-                            }.take(10)
-                            filteredLlantas = loaded
-                            showSuggestions = loaded.isNotEmpty()
-                        } else {
-                            filteredLlantas = emptyList()
-                            showSuggestions = false
+                        try {
+                            if (searchText.isNotEmpty() && data.selectedLlanta == null) {
+                                val loaded = llantas.filter { llanta ->
+                                    llanta.LlantasMarca.contains(searchText, ignoreCase = true) ||
+                                            llanta.LlantasModelo.contains(searchText, ignoreCase = true) ||
+                                            llanta.LlantasMedida.toString().contains(searchText)
+                                }.take(10)
+                                filteredLlantas = loaded
+                                showSuggestions = loaded.isNotEmpty()
+                            } else {
+                                filteredLlantas = emptyList()
+                                showSuggestions = false
+                            }
+                        } catch (e: Exception) {
+                            if (e is kotlinx.coroutines.CancellationException) throw e
                         }
                     }
 

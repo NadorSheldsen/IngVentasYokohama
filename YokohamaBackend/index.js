@@ -17,6 +17,26 @@ app.use(cors({
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error('[bodyParser ERROR] JSON parse error:', err.message);
+    console.error('[bodyParser ERROR] Content-Length:', req.headers['content-length']);
+    console.error('[bodyParser ERROR] Content-Type:', req.headers['content-type']);
+    return res.status(400).json({ error: 'Invalid JSON: ' + err.message });
+  }
+  next(err);
+});
+
+// Middleware para loguear requests a desecho
+app.use((req, res, next) => {
+  if (req.path === '/api/llantas-desecho' && req.method === 'POST') {
+    console.log('[express] Incoming POST /api/llantas-desecho');
+    console.log('[express] Content-Length:', req.headers['content-length']);
+    console.log('[express] Content-Type:', req.headers['content-type']);
+  }
+  next();
+});
+
 // Servir archivos estáticos de la carpeta public (CSS, JS, HTML)
 app.use(express.static(path.join(__dirname, 'public')));
 console.log('Serving static files from:', path.join(__dirname, 'public'));

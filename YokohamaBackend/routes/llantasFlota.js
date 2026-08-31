@@ -18,7 +18,7 @@ router.get('/flota/:flotaId', async (req, res) => {
         console.log('GET /api/llantas-flota/flota/:flotaId - rows count:', rows.length)
         res.json(rows);
     } catch (error) {
-            handleServerError(res, 'Error al obtener llantas', error);
+        handleServerError(res, 'Error al obtener llantas', error);
     }
 });
 

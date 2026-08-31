@@ -125,8 +125,7 @@ data class Llanta(
     val LlantasModelo: String,
     val LlantasPrecio: Float? = null,
     val LlantasMedida: String,
-    val LlantasMm: Float
-    ,
+    val LlantasMm: Float,
     val asociada: Int? = 0
 )
 

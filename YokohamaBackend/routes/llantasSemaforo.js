@@ -22,12 +22,12 @@ function normalizeFotoFields(obj) {
   if (!obj || typeof obj !== 'object') return obj;
   try {
     if (obj.LlantasSemaforoFoto1 && Buffer.isBuffer(obj.LlantasSemaforoFoto1)) {
-      obj.LlantasSemaforoFoto1 = obj.LlantasSemaforoFoto1.toString('base64');
+      obj.LlantasSemaforoFoto1 = obj.LlantasSemaforoFoto1.toString('utf8');
     }
   } catch (_) {}
   try {
     if (obj.LlantasSemaforoFoto2 && Buffer.isBuffer(obj.LlantasSemaforoFoto2)) {
-      obj.LlantasSemaforoFoto2 = obj.LlantasSemaforoFoto2.toString('base64');
+      obj.LlantasSemaforoFoto2 = obj.LlantasSemaforoFoto2.toString('utf8');
     }
   } catch (_) {}
   // Normalize boolean-like fields coming from MySQL tinyint(1) -> convert 0/1 to true/false
@@ -398,16 +398,15 @@ router.put('/:id', async (req, res) => {
         // if normalization fails, proceed to handle normally
       }
 
+      // Si es null, lo ignoramos para evitar que se borre la foto si el frontend la omitió
+      if (val === null) {
+        return;
+      }
+
       setParts.push(`${paramName} = ?`);
       // continue below to coerce and push param
       
       // const val = req.body[fieldName];
-
-      // explicit null -> delete
-      if (val === null) {
-        params.push(null);
-        return;
-      }
 
       // empty string -> treat as delete
       if (typeof val === 'string' && val.trim() === '') {
